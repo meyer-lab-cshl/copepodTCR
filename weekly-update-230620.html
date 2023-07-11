@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Reports - Weekly update 23/06/20</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+
+
+    <meta name="tags" content="peptide_pooling" />
+    <meta name="tags" content="public_tcrs" />
+    <meta name="tags" content="hgt" />
+
+  <link rel="stylesheet" href="./theme/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="./theme/css/friendly.css" /> <!-- Adapted from https://richleland.github.io/pygments-css/ -->
+  <link rel="stylesheet" href="./theme/css/custom.css" />
+  <style media="screen">@font-face {font-family: ubuntumono;src: url("./theme/css/UbuntuMono-Regular.ttf");}</style>
+</head>
+
+<body id="index" class="home">
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="https://meyerdiaries.cshl.edu/">The Meyer Diaries Homepage</a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="navbar collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+            <a href="." class="nav-link">Reports</a>
+        </li>
+      </ul>
+      <ul class="navbar-nav">
+
+
+        <li class="nav-item" >
+          <a href="./category/plans.html" class="nav-link">plans</a>
+        </li>
+        <li class="nav-item active" >
+          <a href="./category/updates.html" class="nav-link">updates</a>
+        </li>
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item">
+            <a href="./everything.html" class="nav-link">By date</a>
+        </li>
+      </ul>
+    </div>
+  </nav><!-- /#menu -->
+
+  <div class="container main-content" style="margin-bottom: 200px">
+<section id="content" class="body">
+  <header>
+    <h2 class="entry-title">
+      <a href="./weekly-update-230620.html" rel="bookmark" title="Permalink to Weekly update 23/06/20">Weekly update 23/06/20</a>
+    </h2>
+  </header>
+  <footer class="post-info">
+    <p>
+      Created: <time class="published" datetime="2023-06-20T10:00:00+02:00">Tue 20 June 2023</time>
+    </p>
+    Category: <a href="./category/updates.html">updates</a>
+    <div class="tags">
+        Tags:
+            <a href="./tag/peptide_pooling.html">peptide_pooling</a>
+            <a href="./tag/public_tcrs.html">public_tcrs</a>
+            <a href="./tag/hgt.html">hgt</a>
+    </div>
+  </footer><!-- /.post-info -->
+  <div class="entry-content">
+    <hr>
+    <h1>Peptide pooling</h1>
+<h3>Outline</h3>
+<ul>
+<li>[ ]  I should think about the features of the method we want to get in the end</li>
+<li>[ ]  drop-outs (especially useful for the PBMCs sequencing part)</li>
+<li>[ ]  improve address selection using Hannah’s idea — <strong><a href="https://en.wikipedia.org/wiki/Set_cover_problem">Set coverage problem</a></strong></li>
+<li>[ ]  balance between number of pools, number of peptides in one pool, using user’s threshold</li>
+<li>[ ]  add to the code option to choose the number of max undistinguishable peptides (for more overlapping peptides)</li>
+<li>[ ]  add to the code check for how strongly peptides overlap</li>
+</ul>
+<hr>
+<h3>Features</h3>
+<ul>
+<li>Decodable result — using pools pattern activation, we should understand, which two (or one, in case of the first and last peptides) led to this pattern</li>
+<li>Robust scheme: ideally, one mistake still allows to find cognate peptide, but it would be alright, if one dropout leads to not more than 10 possible peptides with TRUE one</li>
+<li>Flexible scheme: ideally, it should be applies to any number of peptides with overlap of any length</li>
+<li>Number of pools should be minimized</li>
+<li>Number of peptides in one pools should be minimized too (== number of pools to which one peptide goes should be minimized)</li>
+<li>Number of peptides in pools should be more or less balanced</li>
+</ul>
+<h3>Ideas for the new algorithm</h3>
+<ol>
+<li>Assign address not to a single peptide, but to a pair of peptides sharing the epitope (or N number of peptides sharing the epitope)<ul>
+<li>Flexible scheme: user can give us the list of peptides and number of aminoacids with which this peptide overlaps with neighbours, and we can assign addresses to N number of peptides with shared epitope (in our scheme - to pairs of peptides)</li>
+<li>Absence of collisions, since we assign addresses to pairs of peptides, and these assigned addresses are unique</li>
+</ul>
+</li>
+<li>Think not about the peptide, but about the overlapping epitope (similar to the first one)<ul>
+<li>Problem: what if peptides do not overlap at all?</li>
+</ul>
+</li>
+<li>Divide all peptides into two groups of non-overlapping peptides and treat them as different samples<ul>
+<li>Limits our number of addresses</li>
+</ul>
+</li>
+</ol>
+<h3>Error-correcting codes</h3>
+<p>Each address can be a message containing zeros and ones (zero for pool where peptides was not added and one for pool where in was added).</p>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Message</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>[0, 1, 2, 3]</td>
+<td>111100000000</td>
+</tr>
+<tr>
+<td>[1, 4, 7, 9]</td>
+<td>010010010100</td>
+</tr>
+</tbody>
+</table>
+<p>And because of that we can use Hamming’s error-correcting method.</p>
+<p>Number of parity bits: 2^p ≥ d + p + 1, where <em>p</em> is the number of parity bits and <em>d</em> is the number of data bits. Then we can use 11 data bits and 4 parity bits. Each value with only a single binary 1 and the remaining digits 0s (powers of 2) become parity bits. All other bits are data bits. Each parity bit covers all data bits that have the parity bit's value set to 1.</p>
+<p>P1 checks D1, D3, D5, D7, D9, D11, D13, D15
+P2 checks D2, D3, D6, D7, D10, D11, D14, D15
+P4 checks D4, D5, D6, D7, D12, D13, D14, D15
+P8 checks D8, D9, D10, D11, D12, D13, D14, D15</p>
+<p>Parity bit is 0 if number of 1 in its data bits is even and 1 if number of 1 in its data bits is odd. After the error occurs, first all parity bits should be checked and changed accordingly. Then all parity bits are extracted and written in a reverse order. The number which is decimal version of this number is number of a data bit where the error occured.</p>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Message</th>
+<th>Dropped pool</th>
+<th>Corrected message</th>
+<th>Found error</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>[6, 8, 9, 10, 14]</td>
+<td>0000001011100010</td>
+<td>6</td>
+<td>110100001110001</td>
+<td>6</td>
+</tr>
+<tr>
+<td>[6, 10, 12, 13, 14]</td>
+<td>0000001000101110</td>
+<td>14</td>
+<td>110100110010110</td>
+<td>14</td>
+</tr>
+</tbody>
+</table>
+<p>Problems:</p>
+<ul>
+<li>there are very limited number of addresses that are suited to the composition of message decoded with error-correcting code (out of 3003 combinations of 5 out of 15, only 168 are suitable for us)</li>
+<li>the balance of number of peptides in one pool is disturbed because there are pools (which are also parity bits) that will have more peptides</li>
+<li>what if error happens in parity bit pool?</li>
+</ul>
+<p>Decision: We will not use error-correcting codes in their original version. But we can use similar idea for our own algorithm because we do not need so high precision.</p>
+<hr>
+<h3>Outline</h3>
+<ul>
+<li>I need to read a paper about TCRdb — why do they have beta chains there only?</li>
+<li>I need to download information about alpha-chains from projects myself (maybe I can use TCRdb workflow of database curation?)</li>
+<li>Pathological conditions need to be manually curated</li>
+<li>paper on TCR fingerprinting clustering</li>
+<li>paper about CDR3 length — <a href="https://www.sciencedirect.com/science/article/pii/S2589004222012408">Two types of human TCR differentially regulate reactivity to self and non-self antigens</a></li>
+<li>Why are TRA CDR3s in McPAS shorter than others?</li>
+<li>Clustering tool — <a href="https://academic.oup.com/bioinformatics/article/37/24/4865/6300511">ClusTCR</a> (<a href="https://svalkiers.github.io/clusTCR/docs/clustering/how-to-use.html">Usage</a>)</li>
+</ul>
+<hr>
+<h1>Public TCRs</h1>
+<hr>
+<p><img alt="New distribution of TCR p gen for data from TCRdb" src="./images/TCRdb_pgen.png"></p>
+<p>New distribution of TCR p gen for data from TCRdb</p>
+<h1>HTG and Molecular mimicry</h1>
+<ul>
+<li>
+<p>[ ]  PalmDB</p>
+<p>https://github.com/rcedgar/palmdb</p>
+</li>
+</ul>
+<hr>
+<h1>Useful resources</h1>
+<ul>
+<li><a href="https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository">Git</a></li>
+<li><a href="https://docs.getpelican.com/en/latest/quickstart.html">Pelican</a></li>
+<li><a href="https://meyerdiaries.cshl.edu/homepage/set-up-instructions.html">Meyer Diaries Set up instructions</a></li>
+</ul>
+  </div><!-- /.entry-content -->
+</section>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+</body>
+
+</html>

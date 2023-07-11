@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Reports - Weekly update 23/06/26</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+
+
+    <meta name="tags" content="peptide_pooling" />
+
+  <link rel="stylesheet" href="./theme/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="./theme/css/friendly.css" /> <!-- Adapted from https://richleland.github.io/pygments-css/ -->
+  <link rel="stylesheet" href="./theme/css/custom.css" />
+  <style media="screen">@font-face {font-family: ubuntumono;src: url("./theme/css/UbuntuMono-Regular.ttf");}</style>
+</head>
+
+<body id="index" class="home">
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="https://meyerdiaries.cshl.edu/">The Meyer Diaries Homepage</a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="navbar collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+            <a href="." class="nav-link">Reports</a>
+        </li>
+      </ul>
+      <ul class="navbar-nav">
+
+
+        <li class="nav-item" >
+          <a href="./category/plans.html" class="nav-link">plans</a>
+        </li>
+        <li class="nav-item active" >
+          <a href="./category/updates.html" class="nav-link">updates</a>
+        </li>
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item">
+            <a href="./everything.html" class="nav-link">By date</a>
+        </li>
+      </ul>
+    </div>
+  </nav><!-- /#menu -->
+
+  <div class="container main-content" style="margin-bottom: 200px">
+<section id="content" class="body">
+  <header>
+    <h2 class="entry-title">
+      <a href="./weekly-update-230626.html" rel="bookmark" title="Permalink to Weekly update 23/06/26">Weekly update 23/06/26</a>
+    </h2>
+  </header>
+  <footer class="post-info">
+    <p>
+      Created: <time class="published" datetime="2023-06-26T12:00:00+02:00">Mon 26 June 2023</time>
+    </p>
+    Category: <a href="./category/updates.html">updates</a>
+    <div class="tags">
+        Tags:
+            <a href="./tag/peptide_pooling.html">peptide_pooling</a>
+    </div>
+  </footer><!-- /.post-info -->
+  <div class="entry-content">
+    <hr>
+    <h1>Peptide pooling</h1>
+<h3>Outline</h3>
+<ul>
+<li>[ ]  We can not use error-correcting codes, because they are too restricting in terms of the addresses, but we can come with similar idea based on parity checks for message contructed from an address</li>
+<li>[ ]  Hannah connected with Carl to discuss Set coverage problem for pools balance</li>
+<li>[ ]  New sequence of tasks:<ul>
+<li>~~write an algorithm for assigning addresses not to peptides but to pairs / triples / etc peptides~~</li>
+<li>think about set coverage problem for this addresses</li>
+<li>come up with the idea for error correction for this new algorithm</li>
+</ul>
+</li>
+<li>[x]  RAID5? — also uses Hamming codes</li>
+</ul>
+<hr>
+<h3>Algorithm assigning addresses not to peptides but to pairs / triples/ etc of peptides</h3>
+<ul>
+<li>All possible combinations of ITERS+1 out of N_POOLS</li>
+<li>
+<p>Then we need to order these combinations in a way that we can then produce actual addresses for peptide</p>
+<p><code>[0, 1, 2, 3, 4] - [0, 1, 2, 3] + [0, 1, 2, 4]
+[0, 1, 2, 4, 5] - [0, 1, 2, 4] + [0, 1, 2, 5]
+[0, 1, 2, 5, 6] - [0, 1, 2, 5] + [0, 1, 2, 6]</code></p>
+</li>
+</ul>
+<h3>UP-and-DOWN algorithm</h3>
+<p>But the simplest way to do so I came up with is just order peptides addresses in a way that neighbours always produce together a combination of length 5.</p>
+<p>So, I returned to my previous idea of ordering addresses in that way. Last time I did that, I encountered problems of too many collisions:</p>
+<div class="highlight"><pre><span></span><code><span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">3</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">4</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">5</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">6</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">7</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">8</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">9</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">10</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">11</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">3</span><span class="w"> </span><span class="mf">11</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">3</span><span class="w"> </span><span class="mf">10</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">3</span><span class="w"> </span><span class="mf">9</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">3</span><span class="w"> </span><span class="mf">8</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">3</span><span class="w"> </span><span class="mf">7</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">3</span><span class="w"> </span><span class="mf">6</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">3</span><span class="w"> </span><span class="mf">5</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">3</span><span class="w"> </span><span class="mf">4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">3</span><span class="w"> </span><span class="mf">4</span><span class="w"> </span><span class="mf">5</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">3</span><span class="w"> </span><span class="mf">4</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">4</span><span class="w"> </span><span class="mf">5</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">3</span><span class="w"> </span><span class="mf">4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">3</span><span class="w"> </span><span class="mf">4</span><span class="w"> </span><span class="mf">5</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">4</span><span class="w"> </span><span class="mf">6</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">4</span><span class="w"> </span><span class="mf">7</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">4</span><span class="w"> </span><span class="mf">8</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">4</span><span class="w"> </span><span class="mf">9</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">4</span><span class="w"> </span><span class="mf">10</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">4</span><span class="w"> </span><span class="mf">11</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">5</span><span class="w"> </span><span class="mf">11</span>
+<span class="ow">and</span><span class="w"> </span><span class="n">so</span><span class="w"> </span><span class="kr">on</span>
+</code></pre></div>
+
+<p>But this time I understood that we can simply remove the middle of the controversial region (the tip) which will improve the situation and at the same time will not spoil the order.</p>
+<p><img alt="up_down_explanation" src=".images/up_down_explanation.png"></p>
+<p>But when I did that another problem showed up. It turned out that similar addresses now have similar neighbours because of this UP-and-DOWN structure.</p>
+<div class="highlight"><pre><span></span><code><span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">10</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">11</span>
+<span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="mf">11</span>
+
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="mf">11</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="mf">11</span>
+<span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="mf">11</span>
+</code></pre></div>
+
+<p>This problem can not be simply solved by removing one of the addresses because it would spoil the order. A bunch of addresses should be removed in this situation to get rid of this collision.</p>
+<p>Available addresses</p>
+<div class="highlight"><pre><span></span><code><span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="n">stays</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">11</span><span class="w"> </span><span class="n">stays</span>
+
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">10</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">11</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">9</span><span class="w"> </span><span class="mf">11</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">9</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="n">already</span><span class="w"> </span><span class="c1">removed as a tip</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="mf">11</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="mf">11</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">9</span><span class="w"> </span><span class="mf">11</span><span class="w"> </span><span class="n">already</span><span class="w"> </span><span class="c1">removed as a tip</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">9</span><span class="w"> </span><span class="mf">10</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">9</span><span class="w"> </span><span class="n">already</span><span class="w"> </span><span class="c1">removed as a tip</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">10</span>
+</code></pre></div>
+
+<p>What should we do?</p>
+<div class="highlight"><pre><span></span><code><span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="n">stays</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">11</span><span class="w"> </span><span class="n">stays</span>
+
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">10</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">11</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">9</span><span class="w"> </span><span class="mf">11</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="mf">11</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="kd">let</span><span class="err">&#39;</span><span class="n">s</span><span class="w"> </span><span class="c1">remove this one</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="mf">11</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">9</span><span class="w"> </span><span class="mf">10</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">10</span>
+
+<span class="n">The</span><span class="w"> </span><span class="ow">or</span><span class="n">der</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">now</span><span class="w"> </span><span class="n">spoiled</span><span class="p">:</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">10</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">11</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">9</span><span class="w"> </span><span class="mf">11</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="mf">11</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">9</span><span class="w"> </span><span class="mf">10</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">10</span>
+
+<span class="kr">To</span><span class="w"> </span><span class="kd">restore</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="ow">or</span><span class="n">der</span><span class="p">,</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">need</span><span class="w"> </span><span class="kr">to</span><span class="w"> </span><span class="c1">remove addresses until neighbour addresses differentiate only by one amino acid:</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">10</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">11</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="c1">remove</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">9</span><span class="w"> </span><span class="mf">11</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="c1">remove</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="mf">11</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="c1">remove</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">9</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="c1">remove</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">10</span>
+
+<span class="kr">Then</span><span class="p">:</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">10</span>
+<span class="mf">0</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">10</span>
+<span class="kr">toget</span><span class="n">her</span><span class="w"> </span><span class="n">give</span><span class="w"> </span><span class="n">us</span><span class="w"> </span><span class="mf">0</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">10</span>
+<span class="n">We</span><span class="w"> </span><span class="n">did</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="n">have</span><span class="w"> </span><span class="n">this</span><span class="w"> </span><span class="n">combination</span><span class="w"> </span><span class="n">before</span><span class="p">,</span><span class="w"> </span><span class="n">so</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">can</span><span class="w"> </span><span class="n">leave</span><span class="w"> </span><span class="n">it</span>
+</code></pre></div>
+
+<ul>
+<li>[ ]  calculate how many such cases happen because of UP-and-DOWN structure</li>
+<li>[ ]  calculate how many addresses will be removed after this procedure</li>
+</ul>
+<h3>Circular algorithm</h3>
+<p>Another way to assign addreses in a way that neighbours combined give length 5 is to imagine available pools not as a line but a circle.</p>
+<p><img alt="circular_algorithm_" src=".images/circular.png"></p>
+<p>And then we need to interate through this circle.</p>
+<p>For example, like this:</p>
+<div class="highlight"><pre><span></span><code><span class="mf">1</span><span class="w"> </span><span class="mf">3</span><span class="w"> </span><span class="mf">4</span><span class="w"> </span><span class="mf">5</span>
+<span class="mf">1</span><span class="w"> </span><span class="mf">4</span><span class="w"> </span><span class="mf">5</span><span class="w"> </span><span class="mf">6</span>
+<span class="mf">1</span><span class="w"> </span><span class="mf">5</span><span class="w"> </span><span class="mf">6</span><span class="w"> </span><span class="mf">7</span>
+<span class="mf">1</span><span class="w"> </span><span class="mf">6</span><span class="w"> </span><span class="mf">7</span><span class="w"> </span><span class="mf">8</span>
+<span class="mf">1</span><span class="w"> </span><span class="mf">7</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">9</span>
+<span class="mf">1</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">9</span><span class="w"> </span><span class="mf">10</span>
+<span class="mf">1</span><span class="w"> </span><span class="mf">9</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="mf">11</span>
+<span class="mf">1</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="mf">11</span><span class="w"> </span><span class="mf">12</span>
+<span class="mf">1</span><span class="w"> </span><span class="mf">11</span><span class="w"> </span><span class="mf">12</span><span class="w"> </span><span class="mf">2</span>
+<span class="mf">11</span><span class="w"> </span><span class="mf">12</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">4</span>
+<span class="mf">12</span><span class="w"> </span><span class="mf">2</span><span class="w"> </span><span class="mf">4</span><span class="w"> </span><span class="mf">5</span>
+<span class="mf">2</span><span class="w"> </span><span class="mf">4</span><span class="w"> </span><span class="mf">5</span><span class="w"> </span><span class="mf">6</span>
+<span class="mf">2</span><span class="w"> </span><span class="mf">5</span><span class="w"> </span><span class="mf">6</span><span class="w"> </span><span class="mf">7</span>
+<span class="mf">2</span><span class="w"> </span><span class="mf">6</span><span class="w"> </span><span class="mf">7</span><span class="w"> </span><span class="mf">8</span>
+<span class="mf">2</span><span class="w"> </span><span class="mf">7</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">9</span>
+<span class="mf">2</span><span class="w"> </span><span class="mf">8</span><span class="w"> </span><span class="mf">9</span><span class="w"> </span><span class="mf">10</span>
+<span class="mf">2</span><span class="w"> </span><span class="mf">9</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="mf">11</span>
+<span class="mf">2</span><span class="w"> </span><span class="mf">10</span><span class="w"> </span><span class="mf">11</span><span class="w"> </span><span class="mf">12</span>
+<span class="mf">2</span><span class="w"> </span><span class="mf">11</span><span class="w"> </span><span class="mf">12</span><span class="w"> </span><span class="mf">3</span>
+<span class="mf">11</span><span class="w"> </span><span class="mf">12</span><span class="w"> </span><span class="mf">3</span><span class="w"> </span><span class="mf">5</span>
+<span class="ow">and</span><span class="w"> </span><span class="n">so</span><span class="w"> </span><span class="kr">on</span>
+</code></pre></div>
+
+<ul>
+<li>[ ]  imagine the logic between transfers from skipping one to skipping two and so on</li>
+<li>[ ]  calculate how many addresses we can get this way</li>
+<li>[ ]  check them for presence of collisions</li>
+<li>[ ]  the structure of addresses that we can generate this way is very similar to the structure of addresses assigned to pairs of peptides, can we use it somehow?</li>
+</ul>
+<hr>
+<h3>Properties of our algorithm</h3>
+<ul>
+<li>Decodable result — using pools pattern activation, we should understand, which two (or one, in case of the first and last peptides) led to this pattern</li>
+<li>Robust scheme: ideally, one mistake still allows to find cognate peptide, but it would be alright, if one dropout leads to not more than 10 possible peptides with TRUE one</li>
+<li>Flexible scheme: ideally, it should be applies to any number of peptides with overlap of any length</li>
+<li>Number of pools should be minimized</li>
+<li>Number of peptides in one pools should be minimized too (== number of pools to which one peptide goes should be minimized)</li>
+<li>Number of peptides in pools should be more or less balanced</li>
+</ul>
+<hr>
+<h1>Useful resources</h1>
+<ul>
+<li><a href="https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository">Git</a></li>
+<li><a href="https://docs.getpelican.com/en/latest/quickstart.html">Pelican</a></li>
+<li><a href="https://meyerdiaries.cshl.edu/homepage/set-up-instructions.html">Meyer Diaries Set up instructions</a></li>
+</ul>
+  </div><!-- /.entry-content -->
+</section>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+</body>
+
+</html>

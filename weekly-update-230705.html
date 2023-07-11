@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Reports - Weekly update 23/07/05</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+
+
+    <meta name="tags" content="peptide_pooling" />
+
+  <link rel="stylesheet" href="./theme/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="./theme/css/friendly.css" /> <!-- Adapted from https://richleland.github.io/pygments-css/ -->
+  <link rel="stylesheet" href="./theme/css/custom.css" />
+  <style media="screen">@font-face {font-family: ubuntumono;src: url("./theme/css/UbuntuMono-Regular.ttf");}</style>
+</head>
+
+<body id="index" class="home">
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="https://meyerdiaries.cshl.edu/">The Meyer Diaries Homepage</a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="navbar collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+            <a href="." class="nav-link">Reports</a>
+        </li>
+      </ul>
+      <ul class="navbar-nav">
+
+
+        <li class="nav-item" >
+          <a href="./category/plans.html" class="nav-link">plans</a>
+        </li>
+        <li class="nav-item active" >
+          <a href="./category/updates.html" class="nav-link">updates</a>
+        </li>
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item">
+            <a href="./everything.html" class="nav-link">By date</a>
+        </li>
+      </ul>
+    </div>
+  </nav><!-- /#menu -->
+
+  <div class="container main-content" style="margin-bottom: 200px">
+<section id="content" class="body">
+  <header>
+    <h2 class="entry-title">
+      <a href="./weekly-update-230705.html" rel="bookmark" title="Permalink to Weekly update 23/07/05">Weekly update 23/07/05</a>
+    </h2>
+  </header>
+  <footer class="post-info">
+    <p>
+      Created: <time class="published" datetime="2023-07-05T20:00:00+02:00">Wed 05 July 2023</time>
+    </p>
+    Category: <a href="./category/updates.html">updates</a>
+    <div class="tags">
+        Tags:
+            <a href="./tag/peptide_pooling.html">peptide_pooling</a>
+    </div>
+  </footer><!-- /.post-info -->
+  <div class="entry-content">
+    <hr>
+    <h1>Peptide pooling</h1>
+<h3>Outline</h3>
+<ul>
+<li>[x]  check circular algorithm for unions</li>
+<li>[x]  understand skipping in up-and-down structure</li>
+<li>[x]  check Carl’s idea</li>
+</ul>
+<hr>
+<h3>Properties of our algorithm</h3>
+<p>E - protein with E_1 … E_M peptides,
+for which we want to find a mixing scheme into p pools p_i with n the total number of pools.</p>
+<p><strong>Objective</strong>. Find the optimal distribution of peptides into the pools, such that the number of pools n is minimized, the total occurrence of each peptide across pools equals x, where x is minimized, and the total number of peptides per pool is approximately constant and not higher than R.</p>
+<p>We consider the distribution of peptides E_j into pools p_i as assigning addresses a_j to each peptide E_j.</p>
+<p>The construction of the pools is limited by the following constraints:</p>
+<ul>
+<li>
+<p>The number of peptides per pool should be approximately the same for each pool, with the upper limit of peptides per pool R</p>
+</li>
+<li>
+<p>Each address a_j consists of a combination of unique pools:</p>
+</li>
+<li>
+<p>Each address a_j differs only in one pool from the its successor a_{j+1}:</p>
+</li>
+<li>
+<p>For all other addresses, the Hamming distance is greater than 1:</p>
+</li>
+<li>
+<p>The Hamming distance between the union of two adjacent addresses and any other union of adjacent addresses is equal or greater than 1:</p>
+</li>
+</ul>
+<hr>
+<h2>Two types of structure</h2>
+<h3>UP-and-DOWN</h3>
+<ul>
+<li>[ ]  understand the logic between address pruning</li>
+<li>[ ]  code it</li>
+<li>[ ]  calculate how many addresses are lost for any ITERS and N_POOLS</li>
+<li>[ ]  think about balancing</li>
+</ul>
+<p><img alt="Manually pruned" src="/output/images/up_and_down_structure.png"></p>
+<p><img alt="Accumulation of pools in addresses (manually pruned)" src="/output/images/up_and-down.gif"></p>
+<p>Accumulation of pools in addresses (manually pruned)</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pool 0</td>
+<td>128</td>
+</tr>
+<tr>
+<td>Pool 1</td>
+<td>128</td>
+</tr>
+<tr>
+<td>Pool 2</td>
+<td>105</td>
+</tr>
+<tr>
+<td>Pool 3</td>
+<td>87</td>
+</tr>
+<tr>
+<td>Pool 4</td>
+<td>83</td>
+</tr>
+<tr>
+<td>Pool 5</td>
+<td>78</td>
+</tr>
+<tr>
+<td>Pool 6</td>
+<td>77</td>
+</tr>
+<tr>
+<td>Pool 7</td>
+<td>69</td>
+</tr>
+<tr>
+<td>Pool 8</td>
+<td>69</td>
+</tr>
+<tr>
+<td>Pool 9</td>
+<td>61</td>
+</tr>
+<tr>
+<td>Pool 10</td>
+<td>59</td>
+</tr>
+<tr>
+<td>Pool 11</td>
+<td>64</td>
+</tr>
+</tbody>
+</table>
+<h3>Circular</h3>
+<ul>
+<li>[ ]  check for mistakes my layout</li>
+<li>[ ]  find a way to go for the next round</li>
+</ul>
+<p><img alt="circular_explanation" src="/output/images/circular_structure2.png"></p>
+<p><img alt="circular_structure" src="/output/images/circular_structure.png"></p>
+<p><img alt="Accumulation of pools in first round" src="/output/images/circular.gif"></p>
+<hr>
+<p>Carl sent us his idea that our requirement looks very simular to Gray codes after adjustment to the constant number of 1 and 0. For example, if N_POOLS = 4 and ITERS = 2:</p>
+<div class="highlight"><pre><span></span><code><span class="mf">0011</span>
+<span class="mf">0110</span>
+<span class="mf">0101</span>
+<span class="mf">1100</span>
+<span class="mf">1010</span>
+<span class="mf">1001</span>
+</code></pre></div>
+
+<p>I noticed the proble with first three addresses, that they have same unions:</p>
+<div class="highlight"><pre><span></span><code><span class="mf">0011</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0110</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0111</span>
+<span class="mf">0110</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0101</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0111</span>
+</code></pre></div>
+
+<p>And it reminded me out “tips” in Up-and-Down algorithm because there are triples of addresses that have the same unions. So I just removed the middle address from such triples: </p>
+<div class="highlight"><pre><span></span><code><span class="mf">0011</span>
+<span class="mf">0101</span>
+<span class="mf">1100</span>
+<span class="mf">1010</span>
+<span class="mf">1001</span>
+</code></pre></div>
+
+<p>And then tried to simulate experiment using 252 peptides from S-protein. N_POOLS = 12, ITERS = 4.</p>
+<p>With these parameters, pools were a little bit unbalanced:</p>
+<table>
+<thead>
+<tr>
+<th>Pool</th>
+<th># of peptides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1</td>
+<td>90</td>
+</tr>
+<tr>
+<td>2</td>
+<td>104</td>
+</tr>
+<tr>
+<td>3</td>
+<td>103</td>
+</tr>
+<tr>
+<td>4</td>
+<td>102</td>
+</tr>
+<tr>
+<td>5</td>
+<td>100</td>
+</tr>
+<tr>
+<td>6</td>
+<td>91</td>
+</tr>
+<tr>
+<td>7</td>
+<td>92</td>
+</tr>
+<tr>
+<td>8</td>
+<td>92</td>
+</tr>
+<tr>
+<td>9</td>
+<td>79</td>
+</tr>
+<tr>
+<td>10</td>
+<td>77</td>
+</tr>
+<tr>
+<td>11</td>
+<td>78</td>
+</tr>
+</tbody>
+</table>
+<p>But then I looked at the arrangement of the addresses and noticed that all addresses with pool 0 were in the end of the arrangement, and because of that they were not assigned to peptides. So I tried the same algorithm with N_POOLS=11 and ITERS=4:</p>
+<table>
+<thead>
+<tr>
+<th>Pool</th>
+<th># of peptides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>90</td>
+</tr>
+<tr>
+<td>1</td>
+<td>104</td>
+</tr>
+<tr>
+<td>2</td>
+<td>103</td>
+</tr>
+<tr>
+<td>3</td>
+<td>102</td>
+</tr>
+<tr>
+<td>4</td>
+<td>100</td>
+</tr>
+<tr>
+<td>5</td>
+<td>91</td>
+</tr>
+<tr>
+<td>6</td>
+<td>92</td>
+</tr>
+<tr>
+<td>7</td>
+<td>92</td>
+</tr>
+<tr>
+<td>8</td>
+<td>79</td>
+</tr>
+<tr>
+<td>9</td>
+<td>77</td>
+</tr>
+<tr>
+<td>10</td>
+<td>78</td>
+</tr>
+</tbody>
+</table>
+<p>And it worked! All peptides were identified correctly.</p>
+<p>Then I checked the robustness of this arrangement looking at all possible drop-outs. It turned out, that the TRUE peptide was always present in a list of possible peptides, and in case of 1 dropouts this list consisted of 10 possible peptides. Which is robust enough!</p>
+<p><img alt="drop_outs check 1" src="/output/images/gray_codes_dropouts1.png"></p>
+<p><img alt="drop_outs check 2" src="/output/images/gray_codes_dropouts2.png"></p>
+<p>Scheme looks like a corporation of Circular and Up-and-Down structures, and it turns out to be more balanced because of the more frequent ups and downs.</p>
+<p><img alt="Pools accumulation" src="/output/images/gray_codes.gif"></p>
+<p><img alt="Structure 1" src="/output/images/gray_codes_structure1.png"></p>
+<p><img alt="Structure 2" src="/output/images/gray_codes_structure2.png"></p>
+<hr>
+<h1>Useful resources</h1>
+<ul>
+<li><a href="https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository">Git</a></li>
+<li><a href="https://docs.getpelican.com/en/latest/quickstart.html">Pelican</a></li>
+<li><a href="https://meyerdiaries.cshl.edu/homepage/set-up-instructions.html">Meyer Diaries Set up instructions</a></li>
+</ul>
+  </div><!-- /.entry-content -->
+</section>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+</body>
+
+</html>
