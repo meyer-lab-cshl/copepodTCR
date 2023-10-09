@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "combinatorial_peptide_pooling"
+version = "0.0.26"
+authors = [
+  { name="Vasilisa Kovaleva", email="vasilisa.kovaliova@gmail.com" },
+]
+description = "TCR deorphanization using combinatorial pooling strategy"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pandas >= 1.5.3",
+    "numpy >= 1.23.5",
+    "cvxpy >= 1.3.2",
+    "trimesh >= 3.23.5",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/meyer-lab-cshl/combinatorial_pooling"
+"Bug Tracker" = "https://github.com/meyer-lab-cshl/combinatorial_pooling/issues"
