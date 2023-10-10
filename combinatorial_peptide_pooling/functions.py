@@ -904,6 +904,30 @@ def find_pair_with_overlap(strings, target_overlap):
             target.append([strings[i], strings[i+1]])
     return target
 
+def how_many_peptides(lst, ep_length):
+    """
+    Takes list of peptides and expected epitope length.
+    Returns 1) Counter object with number of epitopes shared across number of peptides;
+    2) dictionary with all possible epitopes as keys and in how many peptides thet are present as values.
+    """
+
+    sequence_counts = dict()
+    counts = []
+
+    for peptide in lst:
+        for i in range(0, len(peptide) - ep_length + 1):
+            sequence = peptide[i:i+ep_length]
+            if sequence in sequence_counts.keys():
+                sequence_counts[sequence] += 1
+            else:
+                sequence_counts[sequence] = 1
+
+    for key in sequence_counts.keys():
+        counts.append(sequence_counts[key])
+    counts = Counter(counts)
+
+    return counts, sequence_counts
+
 
 # # Pooling
 

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "combinatorial_peptide_pooling"
-version = "0.0.26"
+version = "0.0.28"
 authors = [
   { name="Vasilisa Kovaleva", email="vasilisa.kovaliova@gmail.com" },
 ]
