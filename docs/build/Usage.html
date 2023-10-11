@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Usage &mdash; Combinatorial peptide pooling 0.0.26 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Shiny App" href="ShinyApp.html" />
+    <link rel="prev" title="Requirements" href="Requirements.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Combinatorial peptide pooling
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Combinatorial peptide pooling</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">Intro</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Requirements.html">Requirements</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#quickstart">Quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#peptide-occurrence-search">Peptide occurrence search</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#arrangement-section">Address arrangement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#peptide-overlap">Peptide overlap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pooling-and-simulation">Pooling and simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#d-models">3D models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ShinyApp.html">Shiny App</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Recommended_parameters.html">Recommended parameters</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Combinatorial peptide pooling</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Usage</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Usage.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this heading"></a></h1>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">combinatorial_peptide_pooling</span> <span class="k">as</span> <span class="nn">cpp</span>
+</pre></div>
+</div>
+<p>To use the package for basic tasks, the <strong>Quickstart</strong> section is
+enough. To read more about used functions, check other sections.</p>
+<section id="quickstart">
+<span id="quickstart-section"></span><h2>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this heading"></a></h2>
+<ol class="arabic">
+<li><p>(Optional) <strong>Check your peptide list for overlap consistency.</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Incosistent overlap length can lead to hindered results interpretation.</p>
+</div>
+<p>You can check all peptides for their overlap length with the next
+peptide (list of peptides should be ordered):</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">all_overlaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Counter</span> <span class="pre">object</span></span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>lst</strong> (<em>list</em>) – ordered list of peptides</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Counter object with the dictionary, where the key is the overlap length and the value is the number of pairs with such overlap.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Counter object</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">all_overlaps</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">Counter({12: 251, 16: 1})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<p>=&gt; 251 pairs of peptides with an overlap of length of 12 amino acids,
+and 1 pair with an overlap of length 16 amino acids.</p>
+<p>Also, you can check which peptides have such an overlap with the next
+peptide:</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">find_pair_with_overlap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_overlap</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lst</strong> (<em>list</em>) – ordered list of peptides</p></li>
+<li><p><strong>target_overlap</strong> (<em>int</em>) – overlap length</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of lists with peptides with specified overlap length.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">find_pair_with_overlap</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+<span class="go">[[&#39;FDEDDSEPVLKGVKLHY&#39;, &#39;DEDDSEPVLKGVKLHYT&#39;]]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<p>=&gt; Overlap of length 16 amino acids is in peptides <em>FDEDDSEPVLKGVKLHY</em> and <em>DEDDSEPVLKGVKLHYT</em>.</p>
+<p>Also, you can check what number of peptides share the same epitope.
+It might help to interpret the results later.</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">how_many_peptides</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ep_length</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Counter</span> <span class="pre">object,</span> <span class="pre">dictionary</span></span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lst</strong> (<em>list</em>) – ordered list of peptides</p></li>
+<li><p><strong>ep_length</strong> (<em>int</em>) – expected epitope length</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ol class="arabic simple">
+<li><p>the Counter object with the number of epitopes shared across the number of peptides;</p></li>
+<li><p>the dictionary with all possible epitopes of expected length as keys and the number of peptides where these epitopes are present as values.</p></li>
+</ol>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Counter object, dictionary</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">how_many_peptides</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span>
+<span class="go">Counter({1: 6, 2: 1256, 3: 4})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span>
+<span class="go">{&#39;MFVFLVLL&#39;: 1,&#39;FVFLVLLP&#39;: 1,VFLVLLPL&#39;: 1,&#39;FLVLLPLV&#39;: 1,&#39;LVLLPLVS&#39;: 1,&#39;VLLPLVSS&#39;: 2, ...,}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<p>=&gt; There are 6 epitopes present in a single peptide, 1256 epitopes present shared by two peptides, and 4 epitopes shared by 4 peptides. For each epitope, number of peptides sharing it is in the dictionary.</p>
+</li>
+<li><p>(Optional) <strong>Then you need to determine peptide occurrence across
+pools, i.e. to how many pools one peptide would be added.</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Peptide occurrence affects number of peptides in one pool, and therefore too high peptide occurrence may lead to higher dilution of a single peptide.</p>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">find_possible_k_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<em>int</em>) – number of pools</p></li>
+<li><p><strong>l</strong> (<em>int</em>) – number of peptides</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list with possible peptide occurrences given number of pools and number of peptides.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Counter object, dictionary</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">find_possible_k_values</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">250</span><span class="p">)</span>
+<span class="go">[4, 5, 6, 7, 8]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<p>=&gt; Given 12 pools and 250 peptides, you can use peptide occurrence equal to 4, 5, 6, 7, 8.</p>
+<p>Choose one occurrence value appropriate for your task and proceed.</p>
+</li>
+<li><p><strong>Now, you need to find the address arrangement given your number of
+pools, number of peptides, and peptide occurrence.</strong></p>
+<p>We suggest you use the <a class="reference internal" href="#cpp.address_rearrangement_AU" title="cpp.address_rearrangement_AU"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.address_rearrangement_AU()</span></code></a> function. In the section <a class="reference external" href="#arrangement-section">Address arrangement</a> you can find other functions that can perform such a task (based on Gray codes and on a trivial Hamiltonian path search).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>With large parameters, the algorithm needs some time to finish the arrangement. If the arrangement fails, try with other parameters.</p>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">address_rearrangement_AU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">len_lst</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span></span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_pools</strong> (<em>int</em>) – number of pools</p></li>
+<li><p><strong>iters</strong> (<em>int</em>) – peptide occurrence</p></li>
+<li><p><strong>len_lst</strong> (<em>int</em>) – number of peptides</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ol class="arabic simple">
+<li><p>list with number of peptides in each pool;</p></li>
+<li><p>list with address arrangement</p></li>
+</ol>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list, list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">address_rearrangement_AU</span><span class="p">(</span><span class="n">n_pools</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">iters</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">len_lst</span><span class="o">=</span><span class="mi">250</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span>
+<span class="go">[81, 85, 85, 85, 81, 82, 87, 81, 85, 81, 84, 83]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lines</span>
+<span class="go">[[0, 1, 2, 3],[0, 1, 3, 6],[0, 1, 6, 8],[1, 6, 8, 9],[6, 8, 9, 11], ... ]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<p>=&gt; You will get the expected number of peptides in each pool and address arrangement, which will be used in following steps.</p>
+</li>
+<li><p><strong>Now, you can distribute peptides across pools using the produced
+address arrangement. One peptide will be added to one produced
+address.</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Keep in mind that peptides should be ordered as they overlap.</p>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">pooling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">addresses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pools</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dictionary</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dictionary</span></span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lst</strong> (<em>list</em>) – ordered list with peptides</p></li>
+<li><p><strong>addresses</strong> (<em>list</em>) – produced address arrangement</p></li>
+<li><p><strong>n_pools</strong> (<em>int</em>) – number of pools</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ol class="arabic simple">
+<li><p>pools – dictionary with keys as pools indices and values as peptides that should be added to this pools;</p></li>
+<li><p>peptide address – dictionary with peptides as keys and corresponding addresses as values.</p></li>
+</ol>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dictionary, dictionary</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pools</span><span class="p">,</span> <span class="n">peptide_address</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">pooling</span><span class="p">(</span><span class="n">lst</span><span class="o">=</span><span class="n">lst</span><span class="p">,</span> <span class="n">addresses</span><span class="o">=</span><span class="n">lines</span><span class="p">,</span> <span class="n">n_pools</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pools</span>
+<span class="go">{0: [&#39;MFVFLVLLPLVSSQCVN&#39;,&#39;VLLPLVSSQCVNLTTRT&#39;,VSSQCVNLTTRTQLPPA&#39;, ...], 1: [&#39;MFVFLVLLPLVSSQCVN&#39;,&#39;VLLPLVSSQCVNLTTRT&#39;,&#39;TQDLFLPFFSNVTWFHA&#39;, ...], ... }</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">peptide_address</span>
+<span class="go">{&#39;MFVFLVLLPLVSSQCVN&#39;: [0, 1, 2, 3], &#39;VLLPLVSSQCVNLTTRT&#39;: [0, 1, 2, 10], ... }</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<p>=&gt; You will get the pooling scheme and peptide addresses.</p>
+</li>
+<li><p><strong>Now, you can run the simulation using produced pools and peptide_address.</strong></p>
+<p>The simulation produces a DataFrame with every possible epitope of the provided length and all pools where this epitope is present. This table is needed to interpret the results.</p>
+<p>The function has two regimes: with and without drop-outs. Without
+drop-outs, it returns a table as there were no mistakes, and all
+pools that should be activated were activated. With drop-outs, it
+returns a table with all possible mistakes (i.e.all possible
+non-activated pools). This option will need time to be generated,
+usually several minutes, although it depends on the number of
+peptides and on occurrence.</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">run_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peptide_address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ep_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regime</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas</span> <span class="pre">DataFrame</span></span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lst</strong> (<em>list</em>) – ordered list with peptides</p></li>
+<li><p><strong>peptide_address</strong> (<em>dictionary</em>) – peptides addresses produced by pooling</p></li>
+<li><p><strong>ep_length</strong> (<em>int</em>) – expected epitope length</p></li>
+<li><p><strong>pools</strong> (<em>dictionary</em>) – pools produced by pooling</p></li>
+<li><p><strong>iters</strong> (<em>int</em>) – peptide occurrence</p></li>
+<li><p><strong>n_pools</strong> (<em>int</em>) – number of pools</p></li>
+<li><p><strong>regime</strong> (<em>“with dropouts”</em><em> or </em><em>“without dropouts”</em>) – regime of simulation, with or without drop-outs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ol class="arabic simple">
+<li><p>pools – dictionary with keys as pools indices and values as peptides that should be added to this pools;</p></li>
+<li><p>peptide address – dictionary with peptides as keys and corresponding addresses as values.</p></li>
+</ol>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dictionary, dictionary</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">run_experiment</span><span class="p">(</span><span class="n">lst</span><span class="o">=</span><span class="n">lst</span><span class="p">,</span> <span class="n">peptide_address</span><span class="o">=</span><span class="n">peptide_address</span><span class="p">,</span> <span class="n">ep_length</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">pools</span><span class="o">=</span><span class="n">pools</span><span class="p">,</span> <span class="n">iters</span><span class="o">=</span><span class="n">iters</span><span class="p">,</span> <span class="n">n_pools</span><span class="o">=</span><span class="n">n_pools</span><span class="p">,</span> <span class="n">regime</span><span class="o">=</span><span class="s1">&#39;without dropouts&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span>
+</pre></div>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Peptide</p></th>
+<th class="head"><p>Address</p></th>
+<th class="head"><p>Epitope</p></th>
+<th class="head"><p>Act Pools</p></th>
+<th class="head"><p># of pools</p></th>
+<th class="head"><p># of epitopes</p></th>
+<th class="head"><p># of peptides</p></th>
+<th class="head"><p>Remained</p></th>
+<th class="head"><p># of lost</p></th>
+<th class="head"><p>Right peptide</p></th>
+<th class="head"><p>Right epitope</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>MFVFLVLLPLVSSQCVN</p></td>
+<td><p>[0, 1, 2, 3]</p></td>
+<td><p>MFVFLVLL</p></td>
+<td><p>[0, 1, 2, 3]</p></td>
+<td><p>4</p></td>
+<td><p>5</p></td>
+<td><p>1</p></td>
+<td><p>–</p></td>
+<td><p>0</p></td>
+<td><p>True</p></td>
+<td><p>True</p></td>
+</tr>
+<tr class="row-odd"><td><p>MFVFLVLLPLVSSQCVN</p></td>
+<td><p>[0, 1, 2, 3]</p></td>
+<td><p>MFVFLVLL</p></td>
+<td><p>[0, 1, 2, 3]</p></td>
+<td><p>4</p></td>
+<td><p>5</p></td>
+<td><p>1</p></td>
+<td><p>–</p></td>
+<td><p>0</p></td>
+<td><p>True</p></td>
+<td><p>True</p></td>
+</tr>
+<tr class="row-even"><td><p>…</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>MFVFLVLLPLVSSQCVN</p></td>
+<td><p>[0, 1, 2, 3]</p></td>
+<td><p>VLLPLVSS</p></td>
+<td><p>[0, 1, 2, 3, 10]</p></td>
+<td><p>5</p></td>
+<td><p>5</p></td>
+<td><p>2</p></td>
+<td><p>–</p></td>
+<td><p>0</p></td>
+<td><p>True</p></td>
+<td><p>True</p></td>
+</tr>
+<tr class="row-even"><td><p>…</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>VLLPLVSSQCVNLTTRT</p></td>
+<td><p>[0, 1, 2, 10]</p></td>
+<td><p>VLLPLVSS</p></td>
+<td><p>[0, 1, 2, 3, 10]</p></td>
+<td><p>5</p></td>
+<td><p>5</p></td>
+<td><p>2</p></td>
+<td><p>–</p></td>
+<td><p>0</p></td>
+<td><p>True</p></td>
+<td><p>True</p></td>
+</tr>
+<tr class="row-even"><td><p>…</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Peptide</strong> — peptide sequence</p>
+<p><strong>Address</strong> — pool indices where this peptide should be added</p>
+<p><strong>Epitope</strong> — checked epitope from this peptide</p>
+<p><strong>Act pools</strong> — list with pool indices where this epitope is present</p>
+<p><strong># of pools</strong> — number of pools where this epitope is present</p>
+<p><strong># of epitopes</strong> — number of epitopes that are present in the same pools (= number of possible peptides upon activation of such pools)</p>
+<p><strong># of peptides</strong> — number of peptides in which there are epitopes that are present in the same pools (= number of possible peptides upon activation of such pools)</p>
+<p><strong>Remained</strong> — only upon regime=”with dropouts”, list of pools remained after mistake</p>
+<p><strong># of lost</strong> — only upon regime=”with dropouts”, number of dropped pools due to mistake</p>
+<p><strong>Right peptide</strong> — True or False, whether the peptide is present in the list of possible peptides</p>
+<p><strong>Right epitope</strong> — True or False, whether the peptide is present in the list of possible peptides</p>
+<p>To interpret the results of the experiment, you need to find all rows
+where the “Act Pools” column contains your combination of activated
+pools. Then, you will know all possible peptides and epitopes that
+could lead to the activation of such a combination of pools.</p>
+<p>If you can not find your combination of activated pools in the table,
+here is the sequence of actions.</p>
+<p>After the experiment, you will know the number of activated pools.
+This number depends on the length of overlap and the length of the
+expected epitope. You can check the distribution of epitope presence
+in your peptides using <a class="reference internal" href="#cpp.how_many_peptides" title="cpp.how_many_peptides"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.how_many_peptides()</span></code></a>
+function. The number of activated pools would be equal to peptide
+occurrence plus one per additional peptide sharing this epitope.</p>
+<p>This way, if the epitope is present only in 1 peptide (usually, it is
+the case for epitopes at the ends of the protein), then the number of
+activated pools is equal to peptide occurrence. If the epitope is
+present in two peptides, then the number of activated pools is equal
+to peptide occurrence +1.</p>
+<p>If overlap length is consistent across all peptides, then the number
+of activated pools would be the same for almost all epitopes (except
+for the epitopes at the ends of the protein). Although even if the
+overlap is inconsistent, you can use the analysis, but it will hinder
+the interpretation of the results in some cases.</p>
+<p>If a shift length between two peptides is equal to or less than the
+expected epitope length divided by two, then the number of activated
+pools should be equal to the peptide occurrence value + 1.</p>
+<p>If the number of activated pools is less than according to the rule
+described above, then three options are possible:</p>
+<ul class="simple">
+<li><p>The target peptide is the peptide at the end of your peptide list,
+and the target epitope is located not in an overlap of this
+peptide with the next one. This could be checked easily: if your
+activated pools are not the same as the activated pools for any
+epitope from the first or last peptide, then you should check our
+second option.</p></li>
+<li><p>For the target peptide, overlap with its neighbor is less than
+usual, and therefore target epitope is not shared by the usual
+number of peptides. You can check that using <a class="reference internal" href="#cpp.all_overlaps" title="cpp.all_overlaps"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.all_overlaps()</span></code></a> or <a class="reference internal" href="#cpp.how_many_peptides" title="cpp.how_many_peptides"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.how_many_peptides()</span></code></a>. Nevertheless, given the absence of drop-outs, you still should be able to find the target peptide in the table with simulation results by searching for all rows where the “Act Pools” column contains your combination of activated pools.</p></li>
+<li><p>Some pools were not activated, although they should be; then, we
+recommend using the “with drop-outs” regime of the simulation. It
+imitates drop-outs of all possible pools, so you should be able to
+find your case in the resulting table.</p></li>
+</ul>
+<p>If the number of activated pools is higher than according to the rule
+described above, then two options are possible:</p>
+<ul class="simple">
+<li><p>For the target peptide, overlap with its neighbor is bigger than
+usual, and therefore target epitope is shared between more
+peptides. You can check that using <a class="reference internal" href="#cpp.all_overlaps" title="cpp.all_overlaps"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.all_overlaps()</span></code></a> or <a class="reference internal" href="#cpp.how_many_peptides" title="cpp.how_many_peptides"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.how_many_peptides()</span></code></a>. Nevertheless, given the absence of drop-outs, you still should be able to find the target peptide in the table with simulation results by searching for all rows where the “Act Pools” column contains your combination of activated pools.</p></li>
+<li><p>Some pools were activated, although they should not be. This issue
+is not addressed in the package.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">run_experiment</span><span class="p">(</span><span class="n">lst</span><span class="o">=</span><span class="n">lst</span><span class="p">,</span> <span class="n">peptide_address</span><span class="o">=</span><span class="n">peptide_address</span><span class="p">,</span> <span class="n">ep_length</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">pools</span><span class="o">=</span><span class="n">pools</span><span class="p">,</span> <span class="n">iters</span><span class="o">=</span><span class="n">iters</span><span class="p">,</span> <span class="n">n_pools</span><span class="o">=</span><span class="n">n_pools</span><span class="p">,</span> <span class="n">regime</span><span class="o">=</span><span class="s1">&#39;with dropouts&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span>
+</pre></div>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+<col style="width: 9%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Peptide</p></th>
+<th class="head"><p>Address</p></th>
+<th class="head"><p>Epitope</p></th>
+<th class="head"><p>Act Pools</p></th>
+<th class="head"><p># of pools</p></th>
+<th class="head"><p># of epitopes</p></th>
+<th class="head"><p># of peptides</p></th>
+<th class="head"><p>Remained</p></th>
+<th class="head"><p># of lost</p></th>
+<th class="head"><p>Right peptide</p></th>
+<th class="head"><p>Right epitope</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>MFVFLVLLPLVSSQCVN</p></td>
+<td><p>[0, 1, 2, 3]</p></td>
+<td><p>MFVFLVLL</p></td>
+<td><p>[0, 1, 2, 3]</p></td>
+<td><p>4</p></td>
+<td><p>40</p></td>
+<td><p>12</p></td>
+<td><p>[0, 1, 2]</p></td>
+<td><p>1</p></td>
+<td><p>True</p></td>
+<td><p>False</p></td>
+</tr>
+<tr class="row-odd"><td><p>MFVFLVLLPLVSSQCVN</p></td>
+<td><p>[0, 1, 2, 3]</p></td>
+<td><p>MFVFLVLL</p></td>
+<td><p>[0, 1, 2, 3]</p></td>
+<td><p>4</p></td>
+<td><p>76</p></td>
+<td><p>25</p></td>
+<td><p>[0, 1, 3]</p></td>
+<td><p>1</p></td>
+<td><p>True</p></td>
+<td><p>False</p></td>
+</tr>
+<tr class="row-even"><td><p>…</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>RTQLPPAYTNSFTRGVY</p></td>
+<td><p>[8, 9, 10, 11]</p></td>
+<td><p>RTQLPPAY</p></td>
+<td><p>[0, 8, 9, 10, 11]</p></td>
+<td><p>5</p></td>
+<td><p>5</p></td>
+<td><p>2</p></td>
+<td><p>[0, 8, 9, 10, 11]</p></td>
+<td><p>0</p></td>
+<td><p>True</p></td>
+<td><p>True</p></td>
+</tr>
+<tr class="row-even"><td><p>…</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>RTQLPPAYTNSFTRGVY</p></td>
+<td><p>[8, 9, 10, 11]</p></td>
+<td><p>TQLPPAYT</p></td>
+<td><p>[0, 8, 9, 10, 11]</p></td>
+<td><p>5</p></td>
+<td><p>190</p></td>
+<td><p>53</p></td>
+<td><p>[8, 9]</p></td>
+<td><p>3</p></td>
+<td><p>True</p></td>
+<td><p>True</p></td>
+</tr>
+<tr class="row-even"><td><p>…</p></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Peptide</strong> — peptide sequence</p>
+<p><strong>Address</strong> — pool indices where this peptide should be added</p>
+<p><strong>Epitope</strong> — checked epitope from this peptide</p>
+<p><strong>Act pools</strong> — list with pool indices where this epitope is present</p>
+<p><strong># of pools</strong> — number of pools where this epitope is present</p>
+<p><strong># of epitopes</strong> — number of epitopes that are present in the same pools
+(= number of possible peptides upon activation of such pools)</p>
+<p><strong># of peptides</strong> — number of peptides in which there are epitopes that
+are present in the same pools (= number of possible peptides upon
+activation of such pools)</p>
+<p><strong>Remained</strong> — only upon regime=”with dropouts”, list of pools remained
+after mistake</p>
+<p><strong># of lost</strong> — only upon regime=”with dropouts”, number of dropped pools
+due to mistake</p>
+<p><strong>Right peptide</strong> — True or False, whether the peptide is present in the list
+of possible peptides</p>
+<p><strong>Right epitope</strong> — True or False, whether the peptide is present in the list
+of possible peptides</p>
+<p><strong>Right peptide</strong> and <strong>Right epitope</strong> columns are needed to check the
+algorithm of dropped pool recovery. Either “Right peptide” or “Right
+epitope” should contain the value “True”; otherwise, recovery was
+unsuccessful.</p>
+<p>Also, the regime “with drop-outs” can not differentiate between
+dropped pools due to a mistake and absent pools due to experiment
+design. This way, for epitopes located at the end of proteins, the
+algorithm would think that pools were dropped and would try to
+recover them. Because of that, if you suspect the epitope located at
+the end of the peptide to be the target epitope, we recommend first
+using the “without drop-outs” regime. You can look at the sequence of
+actions described above. The same applies to peptides with longer
+overlap. So, we strongly recommend using peptides with consistent
+overlap length.</p>
+</li>
+<li><p>(Optional) <strong>To avoid mixing pools manually, you can print special
+punch cards using files with their 3D models produced by this step.</strong></p>
+<p>One punch card is needed for each pool. Each punch card is a thin
+card with holes located at the spots where the needed peptides are
+located in the plate. Therefore, each punch card has the number of
+holes equal to the number of peptides in a pool. Then, this card
+should be placed on an empty tip box, and a tip should be inserted
+into each hole. This way, if you are using a multichannel pipette,
+all tips are already arranged to take only the required peptides.</p>
+<p>[The process you can look up here.]</p>
+<p>To generate the files with 3D models, you need two functions.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The rendering of 3D models is a long process, so it could take time.</p>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">pools_stl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">peptides_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">24</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">122.10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">79.97</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thickness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hole_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.0</span> <span class="pre">/</span> <span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">9.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">well_spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dictionary</span></span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>peptides_table</strong> (<em>pandas DataFrame</em>) – table representing the arrangement of peptides in a plate, is not produced by any function in the package</p></li>
+<li><p><strong>pools</strong> (<em>pandas DataFrame</em>) – table with a pooling scheme, where one row represents each pool, pool index is the index column, and a string with all peptides added to this pool separated by “;” is “Peptides” column.</p></li>
+<li><p><strong>rows</strong> (<em>int</em>) – int</p></li>
+<li><p><strong>cols</strong> (<em>int</em>) – number of columns in your plate with peptides</p></li>
+<li><p><strong>length</strong> (<em>float</em>) – length of the plate in mm</p></li>
+<li><p><strong>width</strong> (<em>float</em>) – width of the plate in mm</p></li>
+<li><p><strong>thickness</strong> (<em>float</em>) – desired thickness of the punch card, in mm</p></li>
+<li><p><strong>hole_radius</strong> (<em>float</em>) – the radius of the holes, in mm, should be adjusted to fit your tip</p></li>
+<li><p><strong>x_offset</strong> (<em>float</em>) – the margin along the X axis for the A1 hole, in mm</p></li>
+<li><p><strong>y_offset</strong> (<em>float</em>) – the margin along the Y axis for the A1 hole, in mm</p></li>
+<li><p><strong>well_spacing</strong> (<em>float</em>) – the distance between wells, in mm</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dictionary with Mesh objects, where key is pool index, and value is a Mesh object of a corresponding punch card.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dictionary</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">meshes_list</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">pools_stl</span><span class="p">(</span><span class="n">peptides_table</span><span class="p">,</span> <span class="n">pools</span><span class="p">,</span> <span class="n">rows</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="mi">24</span><span class="p">,</span> <span class="n">length</span> <span class="o">=</span> <span class="mf">122.10</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="mf">79.97</span><span class="p">,</span> <span class="n">thickness</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">hole_radius</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">x_offset</span> <span class="o">=</span> <span class="mf">9.05</span><span class="p">,</span> <span class="n">y_offset</span> <span class="o">=</span> <span class="mf">6.20</span><span class="p">,</span> <span class="n">well_spacing</span> <span class="o">=</span> <span class="mf">4.5</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<p>Now, you need to pass generated dictionary to the function exporting it as a .zip file.</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">zip_meshes_export</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">meshes_list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>meshes_list</strong> (<em>dictionary</em>) – dictionary with Mesh objects, generated in previous step</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>export Mesh objects as STL files in .zip archive.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">zip_meshes_export</span><span class="p">(</span><span class="n">meshes_list</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<p>=&gt; You will get a .zip archive with generated STL files. Then, you can send these STL files directly to a 3D printer. We recommend writing the index of the pool on the punch card. Also, you can check the generated STL files using OpenSCAD.</p>
+</li>
+</ol>
+</section>
+<section id="peptide-occurrence-search">
+<span id="occurrence-section"></span><h2>Peptide occurrence search<a class="headerlink" href="#peptide-occurrence-search" title="Permalink to this heading"></a></h2>
+<p>factorial(num)</p>
+<p>combination(n, k):</p>
+<p>find_possible_k_values(n, l):</p>
+</section>
+<section id="arrangement-section">
+<span id="id1"></span><h2>Address arrangement<a class="headerlink" href="#arrangement-section" title="Permalink to this heading"></a></h2>
+<p>find_q_r(n):</p>
+<p>bgc(n, s = None):</p>
+<p>n_bgc(n):</p>
+<p>computing_ab_i_odd(s_2, l, v):</p>
+<p>m_length_BGC(m, n):</p>
+<p>gc_to_address(s_2, iters, n):</p>
+<p>union_address(address, union):</p>
+<p>address_union(address, union):</p>
+<p>hamiltonian_path_AU(size, point, t, unions, path=None):</p>
+<p>variance_score(bit_sums, s):</p>
+<p>return_address_message(code, mode):</p>
+<p>binary_union(bin_list):</p>
+<p>hamming_distance(s1, s2):</p>
+<p>sum_bits(arr):</p>
+<p>hamiltonian_path_A(G, size, pt, path=None):</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="cpp.address_rearrangement_AU">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">address_rearrangement_AU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">len_lst</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span></span></span><a class="headerlink" href="#cpp.address_rearrangement_AU" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_pools</strong> (<em>int</em>) – number of pools</p></li>
+<li><p><strong>iters</strong> (<em>int</em>) – peptide occurrence</p></li>
+<li><p><strong>len_lst</strong> (<em>int</em>) – number of peptides</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ol class="arabic simple">
+<li><p>list with number of peptides in each pool;</p></li>
+<li><p>list with address arrangement</p></li>
+</ol>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list, list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">address_rearrangement_AU</span><span class="p">(</span><span class="n">n_pools</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">iters</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">len_lst</span><span class="o">=</span><span class="mi">250</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span>
+<span class="go">[81, 85, 85, 85, 81, 82, 87, 81, 85, 81, 84, 83]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lines</span>
+<span class="go">[[0, 1, 2, 3],[0, 1, 3, 6],[0, 1, 6, 8],[1, 6, 8, 9],[6, 8, 9, 11], ... ]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<p>address_rearrangement_A(n_pools, iters, len_lst):</p>
+</section>
+<section id="peptide-overlap">
+<span id="overlap-section"></span><h2>Peptide overlap<a class="headerlink" href="#peptide-overlap" title="Permalink to this heading"></a></h2>
+<p>string_overlap(str1, str2):</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="cpp.all_overlaps">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">all_overlaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Counter</span> <span class="pre">object</span></span></span><a class="headerlink" href="#cpp.all_overlaps" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>lst</strong> (<em>list</em>) – ordered list of peptides</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Counter object with the dictionary, where the key is the overlap length and the value is the number of pairs with such overlap.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Counter object</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">all_overlaps</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">Counter({12: 251, 16: 1})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cpp.find_pair_with_overlap">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">find_pair_with_overlap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_overlap</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#cpp.find_pair_with_overlap" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lst</strong> (<em>list</em>) – ordered list of peptides</p></li>
+<li><p><strong>target_overlap</strong> (<em>int</em>) – overlap length</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of lists with peptides with specified overlap length.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">find_pair_with_overlap</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+<span class="go">[[&#39;FDEDDSEPVLKGVKLHY&#39;, &#39;DEDDSEPVLKGVKLHYT&#39;]]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cpp.how_many_peptides">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">how_many_peptides</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ep_length</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Counter</span> <span class="pre">object,</span> <span class="pre">dictionary</span></span></span><a class="headerlink" href="#cpp.how_many_peptides" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lst</strong> (<em>list</em>) – ordered list of peptides</p></li>
+<li><p><strong>ep_length</strong> (<em>int</em>) – expected epitope length</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ol class="arabic simple">
+<li><p>the Counter object with the number of epitopes shared across the number of peptides;</p></li>
+<li><p>the dictionary with all possible epitopes of expected length as keys and the number of peptides where these epitopes are present as values.</p></li>
+</ol>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Counter object, dictionary</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">how_many_peptides</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span>
+<span class="go">Counter({1: 6, 2: 1256, 3: 4})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span>
+<span class="go">{&#39;MFVFLVLL&#39;: 1,&#39;FVFLVLLP&#39;: 1,VFLVLLPL&#39;: 1,&#39;FLVLLPLV&#39;: 1,&#39;LVLLPLVS&#39;: 1,&#39;VLLPLVSS&#39;: 2, ...,}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="pooling-and-simulation">
+<span id="pooling-section"></span><h2>Pooling and simulation<a class="headerlink" href="#pooling-and-simulation" title="Permalink to this heading"></a></h2>
+<p>bad_address_predictor(all_ns):</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="cpp.pooling">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">pooling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">addresses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pools</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dictionary</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dictionary</span></span></span><a class="headerlink" href="#cpp.pooling" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lst</strong> (<em>list</em>) – ordered list with peptides</p></li>
+<li><p><strong>addresses</strong> (<em>list</em>) – produced address arrangement</p></li>
+<li><p><strong>n_pools</strong> (<em>int</em>) – number of pools</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ol class="arabic simple">
+<li><p>pools – dictionary with keys as pools indices and values as peptides that should be added to this pools;</p></li>
+<li><p>peptide address – dictionary with peptides as keys and corresponding addresses as values.</p></li>
+</ol>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dictionary, dictionary</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pools</span><span class="p">,</span> <span class="n">peptide_address</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">pooling</span><span class="p">(</span><span class="n">lst</span><span class="o">=</span><span class="n">lst</span><span class="p">,</span> <span class="n">addresses</span><span class="o">=</span><span class="n">lines</span><span class="p">,</span> <span class="n">n_pools</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pools</span>
+<span class="go">{0: [&#39;MFVFLVLLPLVSSQCVN&#39;,&#39;VLLPLVSSQCVNLTTRT&#39;,VSSQCVNLTTRTQLPPA&#39;, ...], 1: [&#39;MFVFLVLLPLVSSQCVN&#39;,&#39;VLLPLVSSQCVNLTTRT&#39;,&#39;TQDLFLPFFSNVTWFHA&#39;, ...], ... }</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">peptide_address</span>
+<span class="go">{&#39;MFVFLVLLPLVSSQCVN&#39;: [0, 1, 2, 3], &#39;VLLPLVSSQCVNLTTRT&#39;: [0, 1, 2, 10], ... }</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<p>pools_activation(pools, epitope):</p>
+<p>epitope_pools_activation(peptide_address, lst, ep_length):</p>
+<p>peptide_search(lst, act_profile, act_pools, iters, n_pools, regime):</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="cpp.run_experiment">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">run_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peptide_address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ep_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regime</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas</span> <span class="pre">DataFrame</span></span></span><a class="headerlink" href="#cpp.run_experiment" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lst</strong> (<em>list</em>) – ordered list with peptides</p></li>
+<li><p><strong>peptide_address</strong> (<em>dictionary</em>) – peptides addresses produced by pooling</p></li>
+<li><p><strong>ep_length</strong> (<em>int</em>) – expected epitope length</p></li>
+<li><p><strong>pools</strong> (<em>dictionary</em>) – pools produced by pooling</p></li>
+<li><p><strong>iters</strong> (<em>int</em>) – peptide occurrence</p></li>
+<li><p><strong>n_pools</strong> (<em>int</em>) – number of pools</p></li>
+<li><p><strong>regime</strong> (<em>“with dropouts”</em><em> or </em><em>“without dropouts”</em>) – regime of simulation, with or without drop-outs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ol class="arabic simple">
+<li><p>pools – dictionary with keys as pools indices and values as peptides that should be added to this pools;</p></li>
+<li><p>peptide address – dictionary with peptides as keys and corresponding addresses as values.</p></li>
+</ol>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dictionary, dictionary</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">run_experiment</span><span class="p">(</span><span class="n">lst</span><span class="o">=</span><span class="n">lst</span><span class="p">,</span> <span class="n">peptide_address</span><span class="o">=</span><span class="n">peptide_address</span><span class="p">,</span> <span class="n">ep_length</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">pools</span><span class="o">=</span><span class="n">pools</span><span class="p">,</span> <span class="n">iters</span><span class="o">=</span><span class="n">iters</span><span class="p">,</span> <span class="n">n_pools</span><span class="o">=</span><span class="n">n_pools</span><span class="p">,</span> <span class="n">regime</span><span class="o">=</span><span class="s1">&#39;without dropouts&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="d-models">
+<span id="d-section"></span><h2>3D models<a class="headerlink" href="#d-models" title="Permalink to this heading"></a></h2>
+<p>stl_generator(rows, cols, length, width, thickness, hole_radius,
+x_offset, y_offset, well_spacing, coordinates):</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="cpp.pools_stl">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">pools_stl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">peptides_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">24</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">122.10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">79.97</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thickness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hole_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.0</span> <span class="pre">/</span> <span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">9.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">well_spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dictionary</span></span></span><a class="headerlink" href="#cpp.pools_stl" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>peptides_table</strong> (<em>pandas DataFrame</em>) – table representing the arrangement of peptides in a plate, is not produced by any function in the package</p></li>
+<li><p><strong>pools</strong> (<em>pandas DataFrame</em>) – table with a pooling scheme, where one row represents each pool, pool index is the index column, and a string with all peptides added to this pool separated by “;” is “Peptides” column.</p></li>
+<li><p><strong>rows</strong> (<em>int</em>) – int</p></li>
+<li><p><strong>cols</strong> (<em>int</em>) – number of columns in your plate with peptides</p></li>
+<li><p><strong>length</strong> (<em>float</em>) – length of the plate in mm</p></li>
+<li><p><strong>width</strong> (<em>float</em>) – width of the plate in mm</p></li>
+<li><p><strong>thickness</strong> (<em>float</em>) – desired thickness of the punch card, in mm</p></li>
+<li><p><strong>hole_radius</strong> (<em>float</em>) – the radius of the holes, in mm, should be adjusted to fit your tip</p></li>
+<li><p><strong>x_offset</strong> (<em>float</em>) – the margin along the X axis for the A1 hole, in mm</p></li>
+<li><p><strong>y_offset</strong> (<em>float</em>) – the margin along the Y axis for the A1 hole, in mm</p></li>
+<li><p><strong>well_spacing</strong> (<em>float</em>) – the distance between wells, in mm</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dictionary with Mesh objects, where key is pool index, and value is a Mesh object of a corresponding punch card.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dictionary</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">meshes_list</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">pools_stl</span><span class="p">(</span><span class="n">peptides_table</span><span class="p">,</span> <span class="n">pools</span><span class="p">,</span> <span class="n">rows</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="mi">24</span><span class="p">,</span> <span class="n">length</span> <span class="o">=</span> <span class="mf">122.10</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="mf">79.97</span><span class="p">,</span> <span class="n">thickness</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">hole_radius</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">x_offset</span> <span class="o">=</span> <span class="mf">9.05</span><span class="p">,</span> <span class="n">y_offset</span> <span class="o">=</span> <span class="mf">6.20</span><span class="p">,</span> <span class="n">well_spacing</span> <span class="o">=</span> <span class="mf">4.5</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cpp.zip_meshes_export">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">zip_meshes_export</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">meshes_list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cpp.zip_meshes_export" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>meshes_list</strong> (<em>dictionary</em>) – dictionary with Mesh objects, generated in previous step</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>export Mesh objects as STL files in .zip archive.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">zip_meshes_export</span><span class="p">(</span><span class="n">meshes_list</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<p>zip_meshes(meshes_list):</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Requirements.html" class="btn btn-neutral float-left" title="Requirements" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ShinyApp.html" class="btn btn-neutral float-right" title="Shiny App" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Vasilisa Kovaleva.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
