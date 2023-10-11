@@ -22,8 +22,8 @@ copyright = '2023, Vasilisa Kovaleva'
 author = 'Vasilisa Kovaleva'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.26'
-
+version = '0.0.31'
+release = '0.0.31'
 
 # -- General configuration ---------------------------------------------------
 
