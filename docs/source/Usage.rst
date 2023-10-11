@@ -5,6 +5,7 @@ Usage
 
    import combinatorial_peptide_pooling as cpp
 
+
 To use the package for basic tasks, the **Quickstart** section is
 enough. To read more about used functions, check other sections.
 
@@ -12,6 +13,42 @@ enough. To read more about used functions, check other sections.
 
 Quickstart
 ----------
+
+.. code-block:: python
+
+   import combinatorial_peptide_pooling as cpp
+
+   # number of pools
+   n_pools = 12
+   # peptide occurrence
+   iters = 4
+   # number of peptides
+   len_lst = 253
+
+   # address arrangemement
+   b, lines = cpp.address_rearrangement_AU(n_pools=n_pools, iters=iters, len_lst=len_lst)
+
+   # add your peptides to lst
+   lst = list(pd.read_csv('peptides.csv', sep = "\t"))
+
+   # pooling scheme generation
+   pools, peptide_address = cpp.pooling(lst=lst, addresses=lines, n_pools=n_pools)
+
+   # simulation
+   check_results = cpp.run_experiment(lst=lst, peptide_address=peptide_address, ep_length=8, pools=pools, iters=iters, n_pools=n_pools, regime='without dropouts')
+
+   # STL files generation
+   # add peptide scheme to peptides_table_stl, with header and index as column and row numbers
+   peptides_table_stl = pd.read_csv('peptides_scheme.tsv', sep = "\t", index_col = 0)
+   pools_df = pd.DataFrame({'Peptides': [';'.join(val) for val in pools.values()]}, index=pools.keys())
+   meshes_list = cpp.pools_stl(peptides_table = peptides_table_stl, pools = pools_df, rows = 16, cols = 24, length = 122.10, width = 79.97,
+              thickness = 1.5, hole_radius = 2, x_offset = 9.05, y_offset = 6.20, well_spacing = 4.5)
+   cpp.zip_meshes_export(meshes_list)
+
+.. _quickstartf-section:
+
+More detailed quickstart
+----------------------------------------
 
 1. (Optional) **Check your peptide list for overlap consistency.**
 
