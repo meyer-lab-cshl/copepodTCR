@@ -344,7 +344,11 @@ peptides and on occurrence.</p>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">run_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peptide_address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ep_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regime</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas</span> <span class="pre">DataFrame</span></span></span></dt>
-<dd><dl class="field-list simple">
+<dd><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Simulation may take several minutes, especially upon “with drop-outs” regime.</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>lst</strong> (<em>list</em>) – ordered list with peptides</p></li>
@@ -537,7 +541,7 @@ epitope from the first or last peptide, then you should check our
 second option.</p></li>
 <li><p>For the target peptide, overlap with its neighbor is less than
 usual, and therefore target epitope is not shared by the usual
-number of peptides. You can check that using <a class="reference internal" href="#cpp.all_overlaps" title="cpp.all_overlaps"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.all_overlaps()</span></code></a> or <a class="reference internal" href="#cpp.how_many_peptides" title="cpp.how_many_peptides"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.how_many_peptides()</span></code></a>. Nevertheless, given the absence of drop-outs, you still should be able to find the target peptide in the table with simulation results by searching for all rows where the “Act Pools” column contains your combination of activated pools.</p></li>
+number of peptides. You can check that using <code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.all_overlaps()</span></code> or <a class="reference internal" href="#cpp.how_many_peptides" title="cpp.how_many_peptides"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.how_many_peptides()</span></code></a>. Nevertheless, given the absence of drop-outs, you still should be able to find the target peptide in the table with simulation results by searching for all rows where the “Act Pools” column contains your combination of activated pools.</p></li>
 <li><p>Some pools were not activated, although they should be; then, we
 recommend using the “with drop-outs” regime of the simulation. It
 imitates drop-outs of all possible pools, so you should be able to
@@ -548,7 +552,7 @@ described above, then two options are possible:</p>
 <ul class="simple">
 <li><p>For the target peptide, overlap with its neighbor is bigger than
 usual, and therefore target epitope is shared between more
-peptides. You can check that using <a class="reference internal" href="#cpp.all_overlaps" title="cpp.all_overlaps"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.all_overlaps()</span></code></a> or <a class="reference internal" href="#cpp.how_many_peptides" title="cpp.how_many_peptides"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.how_many_peptides()</span></code></a>. Nevertheless, given the absence of drop-outs, you still should be able to find the target peptide in the table with simulation results by searching for all rows where the “Act Pools” column contains your combination of activated pools.</p></li>
+peptides. You can check that using <code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.all_overlaps()</span></code> or <a class="reference internal" href="#cpp.how_many_peptides" title="cpp.how_many_peptides"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.how_many_peptides()</span></code></a>. Nevertheless, given the absence of drop-outs, you still should be able to find the target peptide in the table with simulation results by searching for all rows where the “Act Pools” column contains your combination of activated pools.</p></li>
 <li><p>Some pools were activated, although they should not be. This issue
 is not addressed in the package.</p></li>
 </ul>
@@ -776,31 +780,438 @@ all tips are already arranged to take only the required peptides.</p>
 </section>
 <section id="peptide-occurrence-search">
 <span id="occurrence-section"></span><h2>Peptide occurrence search<a class="headerlink" href="#peptide-occurrence-search" title="Permalink to this heading"></a></h2>
-<p>factorial(num)</p>
-<p>combination(n, k):</p>
-<p>find_possible_k_values(n, l):</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="cpp.factorial">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">factorial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#cpp.factorial" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>num</strong> – number</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>factorial of the num</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">factorial</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="go">3628800</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cpp.combination">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">combination</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#cpp.combination" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – set length</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>how many items are selected from the set</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">combination</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="go">120</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cpp.find_possible_k_values">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">find_possible_k_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#cpp.find_possible_k_values" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<em>int</em>) – number of pools</p></li>
+<li><p><strong>l</strong> (<em>int</em>) – number of peptides</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list with possible peptide occurrences given number of pools and number of peptides.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Counter object, dictionary</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">find_possible_k_values</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">250</span><span class="p">)</span>
+<span class="go">[4, 5, 6, 7, 8]</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 <section id="arrangement-section">
 <span id="id1"></span><h2>Address arrangement<a class="headerlink" href="#arrangement-section" title="Permalink to this heading"></a></h2>
-<p>find_q_r(n):</p>
-<p>bgc(n, s = None):</p>
-<p>n_bgc(n):</p>
-<p>computing_ab_i_odd(s_2, l, v):</p>
-<p>m_length_BGC(m, n):</p>
-<p>gc_to_address(s_2, iters, n):</p>
-<p>union_address(address, union):</p>
-<p>address_union(address, union):</p>
-<p>hamiltonian_path_AU(size, point, t, unions, path=None):</p>
-<p>variance_score(bit_sums, s):</p>
-<p>return_address_message(code, mode):</p>
-<p>binary_union(bin_list):</p>
-<p>hamming_distance(s1, s2):</p>
-<p>sum_bits(arr):</p>
-<p>hamiltonian_path_A(G, size, pt, path=None):</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Method for n-bit balanced Gray code construction is based on the textbook <a class="reference external" href="https://repository.tudelft.nl/islandora/object/uuid%3A975a4a47-7935-4f76-9503-6d4e36b674a3">Counting sequences, Gray codes and lexicodes</a>. Method for construction of balanced Gray code with flexible length is based on the paper <a class="reference external" href="https://ieeexplore.ieee.org/abstract/document/7329924">Balanced Gray Codes With Flexible Lengths</a>.</p>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py" id="cpp.find_q_r">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">find_q_r</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#cpp.find_q_r" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – number</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>solution for the equation 2**n = n*q + r (q, r)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(int, int)</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">find_q_r</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="go">(6, 2)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cpp.bgc">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">bgc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#cpp.bgc" title="Permalink to this definition"></a></dt>
+<dd><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Works only for n=4 and n=5.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<em>int</em>) – number of bits</p></li>
+<li><p><strong>s</strong> (<em>list</em>) – transition sequence for n-2 bit balanced Gray code</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>transition sequence for n bit balanced Gray code</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">bgc</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+<span class="go">[1, 2, 1, 3, 4, 3, 1, 2, 3, 2, 4, 2, 1, 4, 3, 4]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.n_bgc(n):</span> <span class="pre">-&gt;</span> <span class="pre">list</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – number of bits</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>transition sequence for n bit balanced Gray code</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">n_bgc</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="go">[1, 2, 1, 3, 4, 3, 1, 2, 3, 2, 4, 2, 1, 4, 3, 5, 3, 4, 1, 2, 4, 6, 4, 2, 1, 4, 3, 5, 3, 4, 1, 2, 4, 2, 5, 6, 3, 6, 5, 2, 5, 6, 1, 6, 5, 3, 5, 6, 4, 6, 5, 3, 5, 6, 1, 6, 5, 2, 5, 6, 1, 6, 5, 6]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.computing_ab_i_odd(s_2,</span> <span class="pre">l,</span> <span class="pre">v):</span> <span class="pre">-&gt;</span> <span class="pre">list</span></span></dt>
+<dd><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Intrinsic function for <code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.m_length_BGC()</span></code>, can not be used globally.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s_2</strong> (<em>list</em>) – transition sequence for balanced Gray code with n bits</p></li>
+<li><p><strong>l</strong> (<em>int</em>) – number, correponds to _l_ from the method described by Lu Wang et al., 2016</p></li>
+<li><p><strong>v</strong> (<em>int</em>) – number, correponds to _v_ from the method described by Lu Wang et al., 2016</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>[v, a_values, E_v]</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.m_length_BGC(m,</span> <span class="pre">n):</span> <span class="pre">-&gt;</span> <span class="pre">list</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<em>int</em>) – required length of the code</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – number of bits</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>transition sequence for n bit balanced Gray code of length m</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">m_length_BGC</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="mi">28</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="go">[0, 1, 2, 3, 2, 1, 0, 4, 0, 1, 2, 3, 2, 1, 0, 1, 3, 4, 2, 4, 3, 1, 3, 4, 0, 4, 3, 4]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.gc_to_address(s_2,</span> <span class="pre">iters,</span> <span class="pre">n):</span> <span class="pre">-&gt;</span> <span class="pre">list</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s_2</strong> (<em>list</em>) – transition sequence for Gray code</p></li>
+<li><p><strong>iters</strong> (<em>int</em>) – peptide occurrence</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – number of pools</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>address arrangement based on the produced Gray code</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">gc_to_address</span><span class="p">(</span><span class="n">cpp</span><span class="o">.</span><span class="n">m_length_BGC</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="mi">28</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="go">[[0, 4], [2, 4], [2, 3], [3, 4], [0, 3], [0, 2], [1, 3], [1, 2], [1, 4]]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.union_address(address,</span> <span class="pre">union):</span> <span class="pre">-&gt;</span> <span class="pre">list</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<em>string</em>) – address in bit view</p></li>
+<li><p><strong>union</strong> (<em>string</em>) – union in bit view</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>unions possible after given union and address</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">union_address</span><span class="p">(</span><span class="s1">&#39;110000&#39;</span><span class="p">,</span> <span class="s1">&#39;111000&#39;</span><span class="p">)</span>
+<span class="go">[&#39;110100&#39;, &#39;110010&#39;, &#39;110001&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.address_union(address,</span> <span class="pre">union):</span> <span class="pre">-&gt;</span> <span class="pre">list</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>address</strong> (<em>string</em>) – address in bit format</p></li>
+<li><p><strong>union</strong> (<em>string</em>) – union in bit format</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>addresses possible after given address and union</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">address_union</span><span class="p">(</span><span class="s1">&#39;011000&#39;</span><span class="p">,</span> <span class="s1">&#39;111000&#39;</span><span class="p">)</span>
+<span class="go">[&#39;110000&#39;, &#39;101000&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.hamiltonian_path_AU(size,</span> <span class="pre">point,</span> <span class="pre">t,</span> <span class="pre">unions,</span> <span class="pre">path=None):</span> <span class="pre">-&gt;</span> <span class="pre">list</span></span></dt>
+<dd><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function is recursive. It is intrinsic function for <a class="reference internal" href="#cpp.address_rearrangement_AU" title="cpp.address_rearrangement_AU"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.address_rearrangement_AU()</span></code></a>, though it can work globally.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>size</strong> (<em>int</em>) – length of the required path</p></li>
+<li><p><strong>point</strong> (<em>string</em>) – union or address that is added currently at this step</p></li>
+<li><p><strong>t</strong> (<em>'a'</em><em> or </em><em>'u'</em>) – type of added point (union or address)</p></li>
+<li><p><strong>unions</strong> (<em>list</em>) – unions used in the path</p></li>
+<li><p><strong>path</strong> (<em>list</em>) – addresses used in the path</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>arrangement of addresses in bit format</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">hamiltonian_path_AU</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">point</span> <span class="o">=</span> <span class="s1">&#39;110000&#39;</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">unions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;111000&#39;</span><span class="p">])</span>
+<span class="go">[&#39;110000&#39;, &#39;100100&#39;, &#39;000110&#39;, &#39;000011&#39;, &#39;001001&#39;, &#39;010001&#39;, &#39;010010&#39;, &#39;011000&#39;, &#39;001100&#39;, &#39;101000&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.variance_score(bit_sums,</span> <span class="pre">s):</span> <span class="pre">-&gt;</span> <span class="pre">float</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bit_sums</strong> (<em>list</em>) – current distribution of peptides across pools</p></li>
+<li><p><strong>s</strong> (<em>string</em>) – union or address that is added currently at this step</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>penalty for balance distortion upon this point addition to the path</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">variance_score</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s1">&#39;110001&#39;</span><span class="p">)</span>
+<span class="go">0.25</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.return_address_message(code,</span> <span class="pre">mode):</span> <span class="pre">-&gt;</span> <span class="pre">string</span> <span class="pre">or</span> <span class="pre">list</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>code</strong> (<em>list of string</em>) – address (for example, [0, 1, 2]) or address in bit format (for example, ‘111000’)</p></li>
+<li><p><strong>mode</strong> (<em>'a'</em><em> or </em><em>'mN'</em>) – indicates whether code is address or address in bit format, if latter, than second letter (N) indicates number of pools</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>corresponding address in bit format (‘111000’) or address ([0, 1, 2])</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>string or list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">return_address_message</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s1">&#39;m7&#39;</span><span class="p">)</span>
+<span class="go">&#39;0110100&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">return_address_message</span><span class="p">(</span><span class="s1">&#39;0111100&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
+<span class="go">[1, 2, 3, 4]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.binary_union(bin_list):</span> <span class="pre">-&gt;</span> <span class="pre">list</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bin_list</strong> (<em>list</em>) – list of addresses</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of their unions</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">binary_union</span><span class="p">([</span><span class="s1">&#39;110000&#39;</span><span class="p">,</span> <span class="s1">&#39;100001&#39;</span><span class="p">,</span> <span class="s1">&#39;000101&#39;</span><span class="p">,</span> <span class="s1">&#39;000110&#39;</span><span class="p">,</span> <span class="s1">&#39;001010&#39;</span><span class="p">,</span> <span class="s1">&#39;010010&#39;</span><span class="p">,</span> <span class="s1">&#39;010100&#39;</span><span class="p">,</span> <span class="s1">&#39;100100&#39;</span><span class="p">,</span> <span class="s1">&#39;101000&#39;</span><span class="p">,</span> <span class="s1">&#39;001001&#39;</span><span class="p">])</span>
+<span class="go">[&#39;110001&#39;, &#39;100101&#39;, &#39;000111&#39;, &#39;001110&#39;, &#39;011010&#39;, &#39;010110&#39;, &#39;110100&#39;, &#39;101100&#39;, &#39;101001&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.hamming_distance(s1,</span> <span class="pre">s2):</span> <span class="pre">-&gt;</span> <span class="pre">int</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s1</strong> (<em>string</em>) – address in bit format</p></li>
+<li><p><strong>s2</strong> (<em>string</em>) – address in bit format</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>hamming distance between two addresses</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">hamming_distance</span><span class="p">(</span><span class="s1">&#39;110000&#39;</span><span class="p">,</span> <span class="s1">&#39;100001&#39;</span><span class="p">)</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.sum_bits(arr):</span> <span class="pre">-&gt;</span> <span class="pre">list</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>arr</strong> (<em>list</em>) – current address arrangement in bit format</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>peptide distribution across pools given this arrangement</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">sum_bits</span><span class="p">([</span><span class="s1">&#39;110001&#39;</span><span class="p">,</span> <span class="s1">&#39;100101&#39;</span><span class="p">,</span> <span class="s1">&#39;000111&#39;</span><span class="p">,</span> <span class="s1">&#39;001110&#39;</span><span class="p">,</span> <span class="s1">&#39;011010&#39;</span><span class="p">,</span> <span class="s1">&#39;010110&#39;</span><span class="p">,</span> <span class="s1">&#39;110100&#39;</span><span class="p">,</span> <span class="s1">&#39;101100&#39;</span><span class="p">,</span> <span class="s1">&#39;101001&#39;</span><span class="p">])</span>
+<span class="go">[5, 4, 4, 6, 4, 4]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.hamiltonian_path_A(G,</span> <span class="pre">size,</span> <span class="pre">pt,</span> <span class="pre">path=None):</span> <span class="pre">-&gt;</span> <span class="pre">list</span></span></dt>
+<dd><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function is recursive. It is intrinsic function for <code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.address_rearrangement_A()</span></code>, though it can work globally.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>size</strong> (<em>int</em>) – graph representing peptide space</p></li>
+<li><p><strong>size</strong> – length of the required path</p></li>
+<li><p><strong>pt</strong> (<em>string</em>) – union or address that is added currently at this step</p></li>
+<li><p><strong>path</strong> (<em>list</em>) – addresses used in the path</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>arrangement of addresses in bit format</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">hamiltonian_path_A</span><span class="p">(</span><span class="n">G</span> <span class="o">=</span> <span class="n">G</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">pt</span> <span class="o">=</span> <span class="s1">&#39;11000&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="go">[&#39;11000&#39;, &#39;01100&#39;, &#39;00101&#39;, &#39;00011&#39;, &#39;10010&#39;, &#39;00110&#39;, &#39;01010&#39;, &#39;01001&#39;, &#39;10001&#39;, &#39;10100&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="cpp.address_rearrangement_AU">
 <span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">address_rearrangement_AU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">len_lst</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span></span></span><a class="headerlink" href="#cpp.address_rearrangement_AU" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dd><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Search for arrangement may take some time, especially with large parameters. Though this function is <strong>faster</strong> than <code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.address_rearrangement_A()</span></code>, since it considers both vertices and edges as it traverses the graph.</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>n_pools</strong> (<em>int</em>) – number of pools</p></li>
@@ -811,7 +1222,7 @@ all tips are already arranged to take only the required peptides.</p>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ol class="arabic simple">
 <li><p>list with number of peptides in each pool;</p></li>
-<li><p>list with address arrangement</p></li>
+<li><p>list with address arrangement, uses both unions and addresses for its construction</p></li>
 </ol>
 </p>
 </dd>
@@ -828,27 +1239,63 @@ all tips are already arranged to take only the required peptides.</p>
 </div>
 </dd></dl>
 
-<p>address_rearrangement_A(n_pools, iters, len_lst):</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.address_rearrangement_A(n_pools,</span> <span class="pre">iters,</span> <span class="pre">len_lst):</span> <span class="pre">-&gt;</span> <span class="pre">list,</span> <span class="pre">list</span></span></dt>
+<dd><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Search for arrangement may take some time, especially with large parameters. This function is <strong>slower</strong> than <a class="reference internal" href="#cpp.address_rearrangement_AU" title="cpp.address_rearrangement_AU"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.address_rearrangement_AU()</span></code></a>, since it considers only vertices as it traverses the graph.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_pools</strong> (<em>int</em>) – number of pools</p></li>
+<li><p><strong>iters</strong> (<em>int</em>) – peptide occurrence</p></li>
+<li><p><strong>len_lst</strong> (<em>int</em>) – number of peptides</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ol class="arabic simple">
+<li><p>list with number of peptides in each pool;</p></li>
+<li><p>list with address arrangement, uses both unions and addresses for its construction</p></li>
+</ol>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list, list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">address_rearrangement_A</span><span class="p">(</span><span class="n">n_pools</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">iters</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">len_lst</span><span class="o">=</span><span class="mi">250</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span>
+<span class="go">[82, 83, 85, 85, 83, 83, 84, 81, 83, 83, 84, 84]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lines</span>
+<span class="go">[[0, 1, 2, 3],[0, 2, 3, 7],[0, 3, 7, 11],[0, 7, 10, 11],[7, 8, 10, 11], ... ]</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 <section id="peptide-overlap">
 <span id="overlap-section"></span><h2>Peptide overlap<a class="headerlink" href="#peptide-overlap" title="Permalink to this heading"></a></h2>
-<p>string_overlap(str1, str2):</p>
 <dl class="py function">
-<dt class="sig sig-object py" id="cpp.all_overlaps">
-<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">all_overlaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Counter</span> <span class="pre">object</span></span></span><a class="headerlink" href="#cpp.all_overlaps" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.string_overlap(str1,</span> <span class="pre">str2):</span> <span class="pre">-&gt;</span> <span class="pre">int</span></span></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>lst</strong> (<em>list</em>) – ordered list of peptides</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>str1</strong> (<em>string</em>) – peptide</p></li>
+<li><p><strong>str2</strong> (<em>string</em>) – peptide</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Counter object with the dictionary, where the key is the overlap length and the value is the number of pairs with such overlap.</p>
+<dd class="field-even"><p>overlap length between two peptides</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Counter object</p>
+<dd class="field-odd"><p>int</p>
 </dd>
 </dl>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">all_overlaps</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
-<span class="go">Counter({12: 251, 16: 1})</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">string_overlap</span><span class="p">(</span><span class="s1">&#39;ASDFGHJKTYUIO&#39;</span><span class="p">,</span> <span class="s1">&#39;GHJKTYUIOTYUI&#39;</span><span class="p">)</span>
+<span class="go">9</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -909,7 +1356,30 @@ all tips are already arranged to take only the required peptides.</p>
 </section>
 <section id="pooling-and-simulation">
 <span id="pooling-section"></span><h2>Pooling and simulation<a class="headerlink" href="#pooling-and-simulation" title="Permalink to this heading"></a></h2>
-<p>bad_address_predictor(all_ns):</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.bad_address_predictor(all_ns):</span> <span class="pre">-&gt;</span> <span class="pre">list</span></span></dt>
+<dd><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Initially it is designed for address arrangement produced by <code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.gc_to_address()</span></code>. But keep in mind that produced arrangement might be imbalanced.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>all_ns</strong> (<em>list</em>) – address arrangement</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>address arrangement without addresses with the same unions. The function searches for three consecutive addresses with the same union and removes the middle one.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">bad_address_predictor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]])</span>
+<span class="go">[[0, 1, 2, 3], [0, 1, 2, 4], [0, 1, 2, 5], [0, 1, 2, 6], [0, 1, 3, 6], [0, 1, 3, 5], [0, 1, 3, 4]]</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="cpp.pooling">
 <span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">pooling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">addresses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pools</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dictionary</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dictionary</span></span></span><a class="headerlink" href="#cpp.pooling" title="Permalink to this definition"></a></dt>
@@ -941,13 +1411,90 @@ all tips are already arranged to take only the required peptides.</p>
 </div>
 </dd></dl>
 
-<p>pools_activation(pools, epitope):</p>
-<p>epitope_pools_activation(peptide_address, lst, ep_length):</p>
-<p>peptide_search(lst, act_profile, act_pools, iters, n_pools, regime):</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.pools_activation(pools,</span> <span class="pre">epitope):</span> <span class="pre">-&gt;</span> <span class="pre">list</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pools</strong> (<em>dictionary</em>) – pools, produced by <a class="reference internal" href="#cpp.pooling" title="cpp.pooling"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.pooling()</span></code></a></p></li>
+<li><p><strong>epitope</strong> (<em>string</em>) – epitope present in one or several tested peptides</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>pool indices where the epitope is present</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">pools_activation</span><span class="p">(</span><span class="n">pools</span><span class="p">,</span> <span class="s1">&#39;LGVYYHKN&#39;</span><span class="p">)</span>
+<span class="go">[0, 3, 8, 9, 11]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.epitope_pools_activation(peptide_address,</span> <span class="pre">lst,</span> <span class="pre">ep_length):</span> <span class="pre">-&gt;</span> <span class="pre">dictionary</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>peptide_address</strong> (<em>dictionary</em>) – peptide addresses, produced by <a class="reference internal" href="#cpp.pooling" title="cpp.pooling"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.pooling()</span></code></a></p></li>
+<li><p><strong>lst</strong> (<em>list</em>) – ordered list of peptides</p></li>
+<li><p><strong>ep_length</strong> (<em>ep</em>) – expected epitope length</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>activated pools for every possible epitope of expected length from entered peptides</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dictionary</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">epitope_pools_activation</span><span class="p">(</span><span class="n">peptide_address</span><span class="p">,</span> <span class="n">lst</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span class="go">{&#39;[0, 1, 2, 3]&#39;: [&#39;MFVFLVLL&#39;, &#39;FVFLVLLP&#39;, &#39;VFLVLLPL&#39;, &#39;FLVLLPLV&#39;, &#39;LVLLPLVS&#39;], &#39;[0, 1, 2, 3, 9]&#39;: [&#39;VLLPLVSS&#39;, &#39;LLPLVSSQ&#39;, &#39;LPLVSSQC&#39;, &#39;PLVSSQCV&#39;, &#39;LVSSQCVN&#39;], &#39;[0, 1, 3, 9, 11]&#39;: [&#39;VSSQCVNL&#39;, &#39;SSQCVNLT&#39;, ...], ... }</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.peptide_search(lst,</span> <span class="pre">act_profile,</span> <span class="pre">act_pools,</span> <span class="pre">iters,</span> <span class="pre">n_pools,</span> <span class="pre">regime):</span> <span class="pre">-&gt;</span> <span class="pre">list,</span> <span class="pre">list</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lst</strong> (<em>list</em>) – ordered list of peptides</p></li>
+<li><p><strong>act_profile</strong> (<em>dictionary</em>) – activated pools for every possible epitope of expected length from entered peptides, produced by <code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.epitope_pools_activation()</span></code></p></li>
+<li><p><strong>act_pools</strong> (<em>list</em>) – activated pools</p></li>
+<li><p><strong>iters</strong> (<em>int</em>) – peptide occurrence</p></li>
+<li><p><strong>n_pools</strong> (<em>int</em>) – number of pools</p></li>
+<li><p><strong>regime</strong> (<em>&quot;with dropouts&quot;</em><em> or </em><em>&quot;without dropouts&quot;</em>) – regime of simulation, with or without drop-outs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>possible peptides and possible epitopes given such activated pools</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list, list</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">peptide_search</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">act_profile</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="s1">&#39;without dropouts&#39;</span><span class="p">)</span>
+<span class="go">([&#39;CNDPFLGVYYHKNNKSW&#39;, &#39;LGVYYHKNNKSWMESEF&#39;], [&#39;LGVYYHKN&#39;, &#39;GVYYHKNN&#39;, &#39;VYYHKNNK&#39;, &#39;YYHKNNKS&#39;, &#39;YHKNNKSW&#39;])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">peptide_search</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">act_profile</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span> <span class="n">iters</span><span class="p">,</span> <span class="n">n_pools</span><span class="p">,</span> <span class="s1">&#39;with dropouts&#39;</span><span class="p">)</span>
+<span class="go">([&#39;CNDPFLGVYYHKNNKSW&#39;, &#39;LLKYNENGTITDAVDCA&#39;, &#39;LGVYYHKNNKSWMESEF&#39;, &#39;QPRTFLLKYNENGTITD&#39;], [&#39;YNENGTIT&#39;, &#39;LKYNENGT&#39;, &#39;YHKNNKSW&#39;, &#39;KYNENGTI&#39;, &#39;YYHKNNKS&#39;, &#39;LGVYYHKN&#39;, &#39;VYYHKNNK&#39;, &#39;NENGTITD&#39;, &#39;LLKYNENG&#39;, &#39;GVYYHKNN&#39;])</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="cpp.run_experiment">
 <span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">run_experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peptide_address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ep_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regime</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pandas</span> <span class="pre">DataFrame</span></span></span><a class="headerlink" href="#cpp.run_experiment" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dd><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Simulation may take several minutes, especially upon “with drop-outs” regime.</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>lst</strong> (<em>list</em>) – ordered list with peptides</p></li>
@@ -978,12 +1525,45 @@ all tips are already arranged to take only the required peptides.</p>
 </section>
 <section id="d-models">
 <span id="d-section"></span><h2>3D models<a class="headerlink" href="#d-models" title="Permalink to this heading"></a></h2>
-<p>stl_generator(rows, cols, length, width, thickness, hole_radius,
-x_offset, y_offset, well_spacing, coordinates):</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.stl_generator(rows,</span> <span class="pre">cols,</span> <span class="pre">length,</span> <span class="pre">width,</span> <span class="pre">thickness,</span> <span class="pre">hole_radius,</span> <span class="pre">x_offset,</span> <span class="pre">y_offset,</span> <span class="pre">well_spacing,</span> <span class="pre">coordinates):</span> <span class="pre">-&gt;</span> <span class="pre">Mesh</span> <span class="pre">object</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rows</strong> (<em>int</em>) – int</p></li>
+<li><p><strong>cols</strong> (<em>int</em>) – number of columns in your plate with peptides</p></li>
+<li><p><strong>length</strong> (<em>float</em>) – length of the plate in mm</p></li>
+<li><p><strong>width</strong> (<em>float</em>) – width of the plate in mm</p></li>
+<li><p><strong>thickness</strong> (<em>float</em>) – desired thickness of the punch card, in mm</p></li>
+<li><p><strong>hole_radius</strong> (<em>float</em>) – the radius of the holes, in mm, should be adjusted to fit your tip</p></li>
+<li><p><strong>x_offset</strong> (<em>float</em>) – the margin along the X axis for the A1 hole, in mm</p></li>
+<li><p><strong>y_offset</strong> (<em>float</em>) – the margin along the Y axis for the A1 hole, in mm</p></li>
+<li><p><strong>well_spacing</strong> (<em>float</em>) – the distance between wells, in mm</p></li>
+<li><p><strong>coordinates</strong> (<em>list</em>) – coordinates of holes, in tuples in list</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>punch cards with holes based in entered coordinates</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Mesh object</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">stl_generator</span><span class="p">(</span><span class="n">rows</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="mi">24</span><span class="p">,</span> <span class="n">length</span> <span class="o">=</span> <span class="mf">122.10</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="mf">79.97</span><span class="p">,</span> <span class="n">thickness</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">hole_radius</span> <span class="o">=</span> <span class="mf">4.0</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">x_offset</span> <span class="o">=</span> <span class="mf">9.05</span><span class="p">,</span> <span class="n">y_offset</span> <span class="o">=</span> <span class="mf">6.20</span><span class="p">,</span> <span class="n">well_spacing</span> <span class="o">=</span> <span class="mf">4.5</span><span class="p">,</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
+<span class="go">Mesh object</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="cpp.pools_stl">
 <span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">pools_stl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">peptides_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">24</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">122.10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">79.97</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thickness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hole_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.0</span> <span class="pre">/</span> <span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">9.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">well_spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dictionary</span></span></span><a class="headerlink" href="#cpp.pools_stl" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dd><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Rendeting of 3D models will take some time.</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>peptides_table</strong> (<em>pandas DataFrame</em>) – table representing the arrangement of peptides in a plate, is not produced by any function in the package</p></li>
@@ -1007,8 +1587,11 @@ x_offset, y_offset, well_spacing, coordinates):</p>
 </dd>
 </dl>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">meshes_list</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">pools_stl</span><span class="p">(</span><span class="n">peptides_table</span><span class="p">,</span> <span class="n">pools</span><span class="p">,</span> <span class="n">rows</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="mi">24</span><span class="p">,</span> <span class="n">length</span> <span class="o">=</span> <span class="mf">122.10</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="mf">79.97</span><span class="p">,</span> <span class="n">thickness</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">hole_radius</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">x_offset</span> <span class="o">=</span> <span class="mf">9.05</span><span class="p">,</span> <span class="n">y_offset</span> <span class="o">=</span> <span class="mf">6.20</span><span class="p">,</span> <span class="n">well_spacing</span> <span class="o">=</span> <span class="mf">4.5</span><span class="p">)</span>
+
+<span class="go">Generated STL file you can check using OpenSCAD:</span>
 </pre></div>
 </div>
+<a class="reference internal image-reference" href="_images/pools_stl.png"><img alt="_images/pools_stl.png" src="_images/pools_stl.png" style="width: 400px; height: 200px;" /></a>
 </dd></dl>
 
 <dl class="py function">
@@ -1016,7 +1599,7 @@ x_offset, y_offset, well_spacing, coordinates):</p>
 <span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">zip_meshes_export</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">meshes_list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#cpp.zip_meshes_export" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>meshes_list</strong> (<em>dictionary</em>) – dictionary with Mesh objects, generated in previous step</p>
+<dd class="field-odd"><p><strong>meshes_list</strong> (<em>dictionary</em>) – dictionary with Mesh objects, generated by <a class="reference internal" href="#cpp.pools_stl" title="cpp.pools_stl"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.pools_stl()</span></code></a></p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>export Mesh objects as STL files in .zip archive.</p>
@@ -1030,7 +1613,26 @@ x_offset, y_offset, well_spacing, coordinates):</p>
 </div>
 </dd></dl>
 
-<p>zip_meshes(meshes_list):</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">cpp.zip_meshes(meshes_list):</span> <span class="pre">-&gt;</span> <span class="pre">BytesIO</span> <span class="pre">object</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>meshes_list</strong> (<em>dictionary</em>) – dictionary with Mesh objects, generated by <a class="reference internal" href="#cpp.pools_stl" title="cpp.pools_stl"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.pools_stl()</span></code></a></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>zip archive with generated STL files in BytesIO format (suitable for emails)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>BytesIO</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">zip_meshes</span><span class="p">(</span><span class="n">meshes_list</span><span class="p">)</span>
+<span class="go">&lt;_io.BytesIO at 0x1d42a1440&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 </section>
 

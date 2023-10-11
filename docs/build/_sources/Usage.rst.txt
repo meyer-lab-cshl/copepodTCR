@@ -219,6 +219,8 @@ More detailed quickstart
    .. function:: cpp.run_experiment(lst, peptide_address, ep_length, pools, iters, n_pools, regime) -> pandas DataFrame
       :noindex:
 
+      .. note:: Simulation may take several minutes, especially upon "with drop-outs" regime.
+
       :param lst: ordered list with peptides
       :type lst: list
       :param peptide_address: peptides addresses produced by pooling
@@ -488,48 +490,276 @@ More detailed quickstart
 Peptide occurrence search
 ------------------------------
 
-factorial(num)
+.. function:: cpp.factorial(num) -> int
 
-combination(n, k):
+      :param num: number
+      :type n: int
+      :return: factorial of the num
+      :rtype: int
 
-find_possible_k_values(n, l):
+      .. code-block:: python
+
+         >>> cpp.factorial(10)
+         3628800
+
+.. function:: cpp.combination(n, k) -> int
+
+      :param n: set length
+      :type n: int
+      :return: how many items are selected from the set
+      :rtype: int
+
+      .. code-block:: python
+
+         >>> cpp.combination(10, 3)
+         120
+
+.. function:: cpp.find_possible_k_values (n, l) -> list
+
+      :param n: number of pools
+      :type n: int
+      :param l: number of peptides
+      :type l: int
+      :return: list with possible peptide occurrences given number of pools and number of peptides.
+      :rtype: Counter object, dictionary
+
+      .. code-block:: python
+
+         >>> cpp.find_possible_k_values(12, 250)
+         [4, 5, 6, 7, 8]
 
 .. _arrangement-section:
 
 Address arrangement
 --------------------
 
-find_q_r(n):
+.. note:: Method for n-bit balanced Gray code construction is based on the textbook `Counting sequences, Gray codes and lexicodes <https://repository.tudelft.nl/islandora/object/uuid%3A975a4a47-7935-4f76-9503-6d4e36b674a3>`_. Method for construction of balanced Gray code with flexible length is based on the paper `Balanced Gray Codes With Flexible Lengths <https://ieeexplore.ieee.org/abstract/document/7329924>`_.
 
-bgc(n, s = None):
+.. function:: cpp.find_q_r(n) -> tuple
 
-n_bgc(n):
+      :param n: number
+      :type n: int
+      :return: solution for the equation 2**n = n*q + r (q, r)
+      :rtype: (int, int)
 
-computing_ab_i_odd(s_2, l, v):
+      .. code-block:: python
 
-m_length_BGC(m, n):
+         >>> cpp.find_q_r(5)
+         (6, 2)
 
-gc_to_address(s_2, iters, n):
+.. function:: cpp.bgc(n, s = None) -> list
 
-union_address(address, union):
+      .. note:: Works only for n=4 and n=5.
 
-address_union(address, union):
+      :param n: number of bits
+      :type n: int
+      :param s: transition sequence for n-2 bit balanced Gray code
+      :type s: list
+      :return: transition sequence for n bit balanced Gray code
+      :rtype: list
 
-hamiltonian_path_AU(size, point, t, unions, path=None):
+      .. code-block:: python
 
-variance_score(bit_sums, s):
+         >>> cpp.bgc(4, s = None)
+         [1, 2, 1, 3, 4, 3, 1, 2, 3, 2, 4, 2, 1, 4, 3, 4]
 
-return_address_message(code, mode):
+.. function:: cpp.n_bgc(n): -> list
 
-binary_union(bin_list):
+      :param n: number of bits
+      :type n: int
+      :return: transition sequence for n bit balanced Gray code
+      :rtype: list
 
-hamming_distance(s1, s2):
+      .. code-block:: python
 
-sum_bits(arr):
+         >>> cpp.n_bgc(6)
+         [1, 2, 1, 3, 4, 3, 1, 2, 3, 2, 4, 2, 1, 4, 3, 5, 3, 4, 1, 2, 4, 6, 4, 2, 1, 4, 3, 5, 3, 4, 1, 2, 4, 2, 5, 6, 3, 6, 5, 2, 5, 6, 1, 6, 5, 3, 5, 6, 4, 6, 5, 3, 5, 6, 1, 6, 5, 2, 5, 6, 1, 6, 5, 6]
 
-hamiltonian_path_A(G, size, pt, path=None):
+.. function:: cpp.computing_ab_i_odd(s_2, l, v): -> list
+
+      .. note:: Intrinsic function for :func:`cpp.m_length_BGC`, can not be used globally.
+
+      :param s_2: transition sequence for balanced Gray code with n bits
+      :type s_2: list
+      :param l: number, correponds to _l_ from the method described by Lu Wang et al., 2016
+      :type l: int
+      :param v: number, correponds to _v_ from the method described by Lu Wang et al., 2016
+      :type v: int
+      :return: [v, a_values, E_v]
+      :rtype: list
+
+.. function:: cpp.m_length_BGC(m, n): -> list
+
+      :param m: required length of the code
+      :type m: int
+      :param n: number of bits
+      :type n: int
+      :return: transition sequence for n bit balanced Gray code of length m
+      :rtype: list
+
+      .. code-block:: python
+
+         >>> cpp.m_length_BGC(m=28, n=5)
+         [0, 1, 2, 3, 2, 1, 0, 4, 0, 1, 2, 3, 2, 1, 0, 1, 3, 4, 2, 4, 3, 1, 3, 4, 0, 4, 3, 4]
+
+.. function:: cpp.gc_to_address(s_2, iters, n): -> list
+
+      :param s_2: transition sequence for Gray code
+      :type s_2: list
+      :param iters: peptide occurrence
+      :type iters: int
+      :param n: number of pools
+      :type n: int
+      :return: address arrangement based on the produced Gray code
+      :rtype: list
+
+      .. code-block:: python
+
+         >>> cpp.gc_to_address(cpp.m_length_BGC(m=28, n=5), 2, 5)
+         [[0, 4], [2, 4], [2, 3], [3, 4], [0, 3], [0, 2], [1, 3], [1, 2], [1, 4]]
+
+.. function:: cpp.union_address(address, union): -> list
+
+      :param address: address in bit view
+      :type address: string
+      :param union: union in bit view
+      :type union: string
+      :return: unions possible after given union and address
+      :rtype: list
+
+      .. code-block:: python
+
+         >>> cpp.union_address('110000', '111000')
+         ['110100', '110010', '110001']
+
+.. function:: cpp.address_union(address, union): -> list
+
+      :param address: address in bit format
+      :type address: string
+      :param union: union in bit format
+      :type union: string
+      :return: addresses possible after given address and union
+      :rtype: list
+
+      .. code-block:: python
+
+         >>> cpp.address_union('011000', '111000')
+         ['110000', '101000']
+
+.. function:: cpp.hamiltonian_path_AU(size, point, t, unions, path=None): -> list
+
+      .. note:: This function is recursive. It is intrinsic function for :func:`cpp.address_rearrangement_AU`, though it can work globally.
+
+      :param size: length of the required path
+      :type size: int
+      :param point: union or address that is added currently at this step
+      :type point: string
+      :param t: type of added point (union or address)
+      :type t: 'a' or 'u'
+      :param unions: unions used in the path
+      :type unions: list
+      :param path: addresses used in the path
+      :type path: list
+      :return: arrangement of addresses in bit format
+      :rtype: list
+
+      .. code-block:: python
+
+         >>> cpp.hamiltonian_path_AU(size=10, point = '110000', t = 'a', unions = ['111000'])
+         ['110000', '100100', '000110', '000011', '001001', '010001', '010010', '011000', '001100', '101000']
+
+.. function:: cpp.variance_score(bit_sums, s): -> float
+
+      :param bit_sums: current distribution of peptides across pools
+      :type bit_sums: list
+      :param s: union or address that is added currently at this step
+      :type s: string
+      :return: penalty for balance distortion upon this point addition to the path
+      :rtype: float
+
+      .. code-block:: python
+
+         >>> cpp.variance_score([2, 4, 4, 3, 3, 4], '110001')
+         0.25
+
+.. function:: cpp.return_address_message(code, mode): -> string or list
+
+      :param code: address (for example, [0, 1, 2]) or address in bit format (for example, '111000')
+      :type code: list of string
+      :param mode: indicates whether code is address or address in bit format, if latter, than second letter (N) indicates number of pools
+      :type mode: 'a' or 'mN'
+      :return: corresponding address in bit format ('111000') or address ([0, 1, 2])
+      :rtype: string or list
+
+      .. code-block:: python
+
+         >>> cpp.return_address_message([1, 2, 4], 'm7')
+         '0110100'
+         >>> cpp.return_address_message('0111100', 'a')
+         [1, 2, 3, 4]
+
+.. function:: cpp.binary_union(bin_list): -> list
+
+      :param bin_list: list of addresses
+      :type bin_list: list
+      :return: list of their unions
+      :rtype: list
+
+      .. code-block:: python
+
+         >>> cpp.binary_union(['110000', '100001', '000101', '000110', '001010', '010010', '010100', '100100', '101000', '001001'])
+         ['110001', '100101', '000111', '001110', '011010', '010110', '110100', '101100', '101001']
+
+.. function:: cpp.hamming_distance(s1, s2): -> int
+
+      :param s1: address in bit format
+      :type s1: string
+      :param s2: address in bit format
+      :type s2: string
+      :return: hamming distance between two addresses
+      :rtype: int
+
+      .. code-block:: python
+
+         >>> cpp.hamming_distance('110000', '100001')
+         2
+
+.. function:: cpp.sum_bits(arr): -> list
+
+      :param arr: current address arrangement in bit format
+      :type arr: list
+      :return: peptide distribution across pools given this arrangement
+      :rtype: list
+
+      .. code-block:: python
+
+         >>> cpp.sum_bits(['110001', '100101', '000111', '001110', '011010', '010110', '110100', '101100', '101001'])
+         [5, 4, 4, 6, 4, 4]
+
+
+.. function:: cpp.hamiltonian_path_A(G, size, pt, path=None): -> list
+
+      .. note:: This function is recursive. It is intrinsic function for :func:`cpp.address_rearrangement_A`, though it can work globally.
+
+      :param size: graph representing peptide space
+      :type size: dictionary
+      :param size: length of the required path
+      :type size: int
+      :param pt: union or address that is added currently at this step
+      :type pt: string
+      :param path: addresses used in the path
+      :type path: list
+      :return: arrangement of addresses in bit format
+      :rtype: list
+
+      .. code-block:: python
+
+         >>> cpp.hamiltonian_path_A(G = G, size = 10, pt = '11000', path=None)
+         ['11000', '01100', '00101', '00011', '10010', '00110', '01010', '01001', '10001', '10100']
 
 .. function:: cpp.address_rearrangement_AU (n_pools, iters, len_lst) -> list, list
+
+      .. note:: Search for arrangement may take some time, especially with large parameters. Though this function is **faster** than :func:`cpp.address_rearrangement_A`, since it considers both vertices and edges as it traverses the graph.
 
       :param n_pools: number of pools
       :type n_pools: int
@@ -539,7 +769,7 @@ hamiltonian_path_A(G, size, pt, path=None):
       :type len_lst: int
       :return:
          1) list with number of peptides in each pool;
-         2) list with address arrangement
+         2) list with address arrangement, uses both unions and addresses for its construction
       :rtype: list, list
 
       .. code-block:: python
@@ -550,26 +780,47 @@ hamiltonian_path_A(G, size, pt, path=None):
          >>> lines
          [[0, 1, 2, 3],[0, 1, 3, 6],[0, 1, 6, 8],[1, 6, 8, 9],[6, 8, 9, 11], ... ]
 
-address_rearrangement_A(n_pools, iters, len_lst):
+.. function:: cpp.address_rearrangement_A(n_pools, iters, len_lst): -> list, list
+
+      .. note:: Search for arrangement may take some time, especially with large parameters. This function is **slower** than :func:`cpp.address_rearrangement_AU`, since it considers only vertices as it traverses the graph.
+
+      :param n_pools: number of pools
+      :type n_pools: int
+      :param iters: peptide occurrence
+      :type iters: int
+      :param len_lst: number of peptides
+      :type len_lst: int
+      :return:
+         1) list with number of peptides in each pool;
+         2) list with address arrangement, uses both unions and addresses for its construction
+      :rtype: list, list
+
+      .. code-block:: python
+
+         >>> cpp.address_rearrangement_A(n_pools=12, iters=4, len_lst=250)
+         >>> b
+         [82, 83, 85, 85, 83, 83, 84, 81, 83, 83, 84, 84]
+         >>> lines
+         [[0, 1, 2, 3],[0, 2, 3, 7],[0, 3, 7, 11],[0, 7, 10, 11],[7, 8, 10, 11], ... ]
 
 .. _overlap-section:
 
 Peptide overlap
 --------------------
 
-string_overlap(str1, str2):
+.. function:: cpp.string_overlap(str1, str2): -> int
 
-.. function:: cpp.all_overlaps (lst) -> Counter object
-
-      :param lst: ordered list of peptides
-      :type lst: list
-      :return: Counter object with the dictionary, where the key is the overlap length and the value is the number of pairs with such overlap.
-      :rtype: Counter object
+      :param str1: peptide
+      :type str1: string
+      :param str2: peptide
+      :type str2: string
+      :return: overlap length between two peptides
+      :rtype: int
 
       .. code-block:: python
 
-         >>> cpp.all_overlaps(lst)
-         Counter({12: 251, 16: 1})
+         >>> cpp.string_overlap('ASDFGHJKTYUIO', 'GHJKTYUIOTYUI')
+         9
 
 .. function:: cpp.find_pair_with_overlap (lst, target_overlap) -> list
 
@@ -609,7 +860,19 @@ string_overlap(str1, str2):
 Pooling and simulation
 ------------------------------
 
-bad_address_predictor(all_ns):
+.. function:: cpp.bad_address_predictor(all_ns): -> list
+
+      .. note:: Initially it is designed for address arrangement produced by :func:`cpp.gc_to_address`. But keep in mind that produced arrangement might be imbalanced.
+
+      :param all_ns: address arrangement
+      :type all_ns: list
+      :return: address arrangement without addresses with the same unions. The function searches for three consecutive addresses with the same union and removes the middle one.
+      :rtype: list
+
+      .. code-block:: python
+
+         >>> cpp.bad_address_predictor([[0, 1, 2, 3], [0, 1, 2, 4], [0, 1, 2, 5], [0, 1, 2, 6], [0, 1, 3, 6], [0, 1, 3, 5], [0, 1, 3, 4]])
+         [[0, 1, 2, 3], [0, 1, 2, 4], [0, 1, 2, 5], [0, 1, 2, 6], [0, 1, 3, 6], [0, 1, 3, 5], [0, 1, 3, 4]]
 
 .. function:: cpp.pooling (lst, addresses, n_pools) -> dictionary, dictionary
 
@@ -632,13 +895,63 @@ bad_address_predictor(all_ns):
          >>> peptide_address
          {'MFVFLVLLPLVSSQCVN': [0, 1, 2, 3], 'VLLPLVSSQCVNLTTRT': [0, 1, 2, 10], ... }
 
-pools_activation(pools, epitope):
+.. function:: cpp.pools_activation(pools, epitope): -> list
 
-epitope_pools_activation(peptide_address, lst, ep_length):
+      :param pools: pools, produced by :func:`cpp.pooling`
+      :type pools: dictionary
+      :param epitope: epitope present in one or several tested peptides
+      :type epitope: string
+      :return: pool indices where the epitope is present
+      :rtype: list
 
-peptide_search(lst, act_profile, act_pools, iters, n_pools, regime):
+      .. code-block:: python
+
+         >>> cpp.pools_activation(pools, 'LGVYYHKN')
+         [0, 3, 8, 9, 11]
+
+.. function:: cpp.epitope_pools_activation(peptide_address, lst, ep_length): -> dictionary
+
+      :param peptide_address: peptide addresses, produced by :func:`cpp.pooling`
+      :type peptide_address: dictionary
+      :param lst: ordered list of peptides
+      :type lst: list
+      :param ep_length: expected epitope length
+      :type ep_length: ep
+      :return: activated pools for every possible epitope of expected length from entered peptides
+      :rtype: dictionary
+
+      .. code-block:: python
+
+         >>> cpp.epitope_pools_activation(peptide_address, lst, 8)
+         {'[0, 1, 2, 3]': ['MFVFLVLL', 'FVFLVLLP', 'VFLVLLPL', 'FLVLLPLV', 'LVLLPLVS'], '[0, 1, 2, 3, 9]': ['VLLPLVSS', 'LLPLVSSQ', 'LPLVSSQC', 'PLVSSQCV', 'LVSSQCVN'], '[0, 1, 3, 9, 11]': ['VSSQCVNL', 'SSQCVNLT', ...], ... }
+
+.. function:: cpp.peptide_search(lst, act_profile, act_pools, iters, n_pools, regime): -> list, list
+
+      :param lst: ordered list of peptides
+      :type lst: list
+      :param act_profile: activated pools for every possible epitope of expected length from entered peptides, produced by :func:`cpp.epitope_pools_activation`
+      :type act_profile: dictionary
+      :param act_pools: activated pools
+      :type act_pools: list
+      :param iters: peptide occurrence
+      :type iters: int
+      :param n_pools: number of pools
+      :type n_pools: int
+      :param regime: regime of simulation, with or without drop-outs
+      :type regime: "with dropouts" or "without dropouts"
+      :return: possible peptides and possible epitopes given such activated pools
+      :rtype: list, list
+
+      .. code-block:: python
+
+         >>> cpp.peptide_search(lst, act_profile, [0, 3, 8, 9, 11], 4, 12, 'without dropouts')
+         (['CNDPFLGVYYHKNNKSW', 'LGVYYHKNNKSWMESEF'], ['LGVYYHKN', 'GVYYHKNN', 'VYYHKNNK', 'YYHKNNKS', 'YHKNNKSW'])
+         >>> cpp.peptide_search(lst, act_profile, [0, 3, 8, 11], iters, n_pools, 'with dropouts')
+         (['CNDPFLGVYYHKNNKSW', 'LLKYNENGTITDAVDCA', 'LGVYYHKNNKSWMESEF', 'QPRTFLLKYNENGTITD'], ['YNENGTIT', 'LKYNENGT', 'YHKNNKSW', 'KYNENGTI', 'YYHKNNKS', 'LGVYYHKN', 'VYYHKNNK', 'NENGTITD', 'LLKYNENG', 'GVYYHKNN'])
 
 .. function:: cpp.run_experiment(lst, peptide_address, ep_length, pools, iters, n_pools, regime) -> pandas DataFrame
+
+      .. note:: Simulation may take several minutes, especially upon "with drop-outs" regime.
 
       :param lst: ordered list with peptides
       :type lst: list
@@ -668,10 +981,39 @@ peptide_search(lst, act_profile, act_pools, iters, n_pools, regime):
 3D models
 ----------
 
-stl_generator(rows, cols, length, width, thickness, hole_radius,
-x_offset, y_offset, well_spacing, coordinates):
+.. function:: cpp.stl_generator(rows, cols, length, width, thickness, hole_radius, x_offset, y_offset, well_spacing, coordinates): -> Mesh object
+
+      :param rows: int
+      :type rows: int
+      :param cols: number of columns in your plate with peptides
+      :type cols: int
+      :param length: length of the plate in mm
+      :type length: float
+      :param width: width of the plate in mm
+      :type width: float
+      :param thickness: desired thickness of the punch card, in mm
+      :type thickness: float
+      :param hole_radius: the radius of the holes, in mm, should be adjusted to fit your tip
+      :type hole_radius: float
+      :param x_offset: the margin along the X axis for the A1 hole, in mm
+      :type x_offset: float
+      :param y_offset: the margin along the Y axis for the A1 hole, in mm
+      :type y_offset: float
+      :param well_spacing: the distance between wells, in mm
+      :type well_spacing: float
+      :param coordinates: coordinates of holes, in tuples in list
+      :type coordinates: list
+      :return: punch cards with holes based in entered coordinates
+      :rtype: Mesh object
+
+      .. code-block:: python
+
+         >>> cpp.stl_generator(rows = 16, cols = 24, length = 122.10, width = 79.97, thickness = 1.5, hole_radius = 4.0 / 2, x_offset = 9.05, y_offset = 6.20, well_spacing = 4.5, [(1, 1), (2, 2), (1, 2)])
+         Mesh object
 
 .. function:: cpp.pools_stl(peptides_table, pools, rows = 16, cols = 24, length = 122.10, width = 79.97, thickness = 1.5, hole_radius = 4.0 / 2, x_offset = 9.05, y_offset = 6.20, well_spacing = 4.5) -> dictionary
+
+      .. note:: Rendeting of 3D models will take some time.
 
       :param peptides_table: table representing the arrangement of peptides in a plate, is not produced by any function in the package
       :type peptides_table: pandas DataFrame
@@ -702,9 +1044,15 @@ x_offset, y_offset, well_spacing, coordinates):
 
          >>> meshes_list = cpp.pools_stl(peptides_table, pools, rows = 16, cols = 24, length = 122.10, width = 79.97, thickness = 1.5, hole_radius = 2.0, x_offset = 9.05, y_offset = 6.20, well_spacing = 4.5)
 
+         Generated STL file you can check using OpenSCAD:
+      
+      .. image:: pools_stl.png
+         :width: 400px
+         :height: 200px
+
 .. function:: cpp.zip_meshes_export(meshes_list) -> None
 
-      :param meshes_list: dictionary with Mesh objects, generated in previous step
+      :param meshes_list: dictionary with Mesh objects, generated by :func:`cpp.pools_stl`
       :type meshes_list: dictionary
       :return: export Mesh objects as STL files in .zip archive.
       :rtype: None
@@ -713,4 +1061,16 @@ x_offset, y_offset, well_spacing, coordinates):
 
          >>> cpp.zip_meshes_export(meshes_list)
 
-zip_meshes(meshes_list):
+
+
+.. function:: cpp.zip_meshes(meshes_list): -> BytesIO object
+
+      :param meshes_list: dictionary with Mesh objects, generated by :func:`cpp.pools_stl`
+      :type meshes_list: dictionary
+      :return: zip archive with generated STL files in BytesIO format (suitable for emails)
+      :rtype: BytesIO
+
+      .. code-block:: python
+
+         >>> cpp.zip_meshes(meshes_list)
+         <_io.BytesIO at 0x1d42a1440>
