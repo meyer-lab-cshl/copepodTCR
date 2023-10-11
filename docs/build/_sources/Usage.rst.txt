@@ -1046,9 +1046,9 @@ Pooling and simulation
 
          Generated STL file you can check using OpenSCAD:
       
-      .. image:: pools_stl.png
-         :width: 400px
-         :height: 200px
+         .. image:: pools_stl.png
+            :width: 400px
+            :height: 200px
 
 .. function:: cpp.zip_meshes_export(meshes_list) -> None
 
