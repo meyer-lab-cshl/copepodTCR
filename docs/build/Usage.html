@@ -47,7 +47,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Combinatorial peptide pooling</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="Introduction.html">Intro</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#quickstart">Quickstart</a></li>
@@ -60,7 +60,6 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ShinyApp.html">Shiny App</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Recommended_parameters.html">Recommended parameters</a></li>
 </ul>
 
         </div>
@@ -966,7 +965,11 @@ all tips are already arranged to take only the required peptides.</p>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">cpp.gc_to_address(s_2,</span> <span class="pre">iters,</span> <span class="pre">n):</span> <span class="pre">-&gt;</span> <span class="pre">list</span></span></dt>
-<dd><dl class="field-list simple">
+<dd><div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>We do not recommend to use this function for address arrangement since the result might be imbalanced and with other features hindering the interpretation of the experiment.</p>
+</div>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>s_2</strong> (<em>list</em>) – transition sequence for Gray code</p></li>
@@ -1208,7 +1211,7 @@ all tips are already arranged to take only the required peptides.</p>
 <span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">address_rearrangement_AU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">len_lst</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span></span></span><a class="headerlink" href="#cpp.address_rearrangement_AU" title="Permalink to this definition"></a></dt>
 <dd><div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Search for arrangement may take some time, especially with large parameters. Though this function is <strong>faster</strong> than <code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.address_rearrangement_A()</span></code>, since it considers both vertices and edges as it traverses the graph.</p>
+<p>Search for arrangement may take some time, especially with large parameters. Although, this function is <strong>faster</strong> than <code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.address_rearrangement_A()</span></code>, since it considers both vertices and edges as it traverses the graph.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1358,8 +1361,8 @@ all tips are already arranged to take only the required peptides.</p>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">cpp.bad_address_predictor(all_ns):</span> <span class="pre">-&gt;</span> <span class="pre">list</span></span></dt>
-<dd><div class="admonition note">
-<p class="admonition-title">Note</p>
+<dd><div class="admonition tip">
+<p class="admonition-title">Tip</p>
 <p>Initially it is designed for address arrangement produced by <code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.gc_to_address()</span></code>. But keep in mind that produced arrangement might be imbalanced.</p>
 </div>
 <dl class="field-list simple">
@@ -1560,7 +1563,7 @@ all tips are already arranged to take only the required peptides.</p>
 <span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">pools_stl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">peptides_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">24</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">122.10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">79.97</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thickness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hole_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.0</span> <span class="pre">/</span> <span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">9.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6.20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">well_spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dictionary</span></span></span><a class="headerlink" href="#cpp.pools_stl" title="Permalink to this definition"></a></dt>
 <dd><div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Rendeting of 3D models will take some time.</p>
+<p>Rendering of 3D models will take some time.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>

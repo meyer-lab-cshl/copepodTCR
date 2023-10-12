@@ -54,7 +54,12 @@
 <li class="toctree-l3"><a class="reference internal" href="#design-and-constraints">Design and Constraints</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#algorithm">Algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#algorithm">Algorithm</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hamiltonian-search-advanced-version">Hamiltonian search (advanced version)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hamiltonian-search-trivial-version">Hamiltonian search (trivial version)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gray-codes">Gray codes</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
@@ -152,6 +157,22 @@
 </section>
 <section id="algorithm">
 <h2>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this heading"></a></h2>
+<p>We designed an algorithm that navigates the peptide space by seeking a Hamiltonian path in its corresponding graph to meet the given constraints. The package offers two versions of this algorithm:</p>
+<ol class="arabic simple">
+<li><p>A basic search for a Hamiltonian path of a given length, simultaneously checking for union and address uniqueness.</p></li>
+<li><p>A faster version based on the same principle, but it condensec the path by considering both vertices and edges.</p></li>
+</ol>
+<p>Our initial inspiration came from the reflective binary code by Frank Gray. Thus, we have incorporated functions in the package for producing balanced Gray code and its flexible-length option. However, we currently advise against using these for address arrangement due to potential imbalances and non-unique unions.</p>
+<p>[Here the picture about three features of the algorithm that we want to see: balance, uniqueness of unions, hamming distance of 1?]</p>
+<section id="hamiltonian-search-advanced-version">
+<h3>Hamiltonian search (advanced version)<a class="headerlink" href="#hamiltonian-search-advanced-version" title="Permalink to this heading"></a></h3>
+</section>
+<section id="hamiltonian-search-trivial-version">
+<h3>Hamiltonian search (trivial version)<a class="headerlink" href="#hamiltonian-search-trivial-version" title="Permalink to this heading"></a></h3>
+</section>
+<section id="gray-codes">
+<h3>Gray codes<a class="headerlink" href="#gray-codes" title="Permalink to this heading"></a></h3>
+</section>
 </section>
 </section>
 

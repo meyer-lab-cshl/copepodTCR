@@ -604,6 +604,8 @@ Address arrangement
 
 .. function:: cpp.gc_to_address(s_2, iters, n): -> list
 
+      .. tip:: We do not recommend to use this function for address arrangement since the result might be imbalanced and with other features hindering the interpretation of the experiment.
+
       :param s_2: transition sequence for Gray code
       :type s_2: list
       :param iters: peptide occurrence
@@ -759,7 +761,7 @@ Address arrangement
 
 .. function:: cpp.address_rearrangement_AU (n_pools, iters, len_lst) -> list, list
 
-      .. note:: Search for arrangement may take some time, especially with large parameters. Though this function is **faster** than :func:`cpp.address_rearrangement_A`, since it considers both vertices and edges as it traverses the graph.
+      .. note:: Search for arrangement may take some time, especially with large parameters. Although, this function is **faster** than :func:`cpp.address_rearrangement_A`, since it considers both vertices and edges as it traverses the graph.
 
       :param n_pools: number of pools
       :type n_pools: int
@@ -862,7 +864,7 @@ Pooling and simulation
 
 .. function:: cpp.bad_address_predictor(all_ns): -> list
 
-      .. note:: Initially it is designed for address arrangement produced by :func:`cpp.gc_to_address`. But keep in mind that produced arrangement might be imbalanced.
+      .. tip:: Initially it is designed for address arrangement produced by :func:`cpp.gc_to_address`. But keep in mind that produced arrangement might be imbalanced.
 
       :param all_ns: address arrangement
       :type all_ns: list
@@ -1013,7 +1015,7 @@ Pooling and simulation
 
 .. function:: cpp.pools_stl(peptides_table, pools, rows = 16, cols = 24, length = 122.10, width = 79.97, thickness = 1.5, hole_radius = 4.0 / 2, x_offset = 9.05, y_offset = 6.20, well_spacing = 4.5) -> dictionary
 
-      .. note:: Rendeting of 3D models will take some time.
+      .. note:: Rendering of 3D models will take some time.
 
       :param peptides_table: table representing the arrangement of peptides in a plate, is not produced by any function in the package
       :type peptides_table: pandas DataFrame

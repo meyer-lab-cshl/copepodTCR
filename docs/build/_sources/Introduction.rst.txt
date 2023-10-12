@@ -93,3 +93,24 @@ The construction of the pools is limited by the following constraints:
 
 Algorithm
 ----------
+
+
+We designed an algorithm that navigates the peptide space by seeking a Hamiltonian path in its corresponding graph to meet the given constraints. The package offers two versions of this algorithm:
+
+1. A basic search for a Hamiltonian path of a given length, simultaneously checking for union and address uniqueness.
+
+2. A faster version based on the same principle, but it condensec the path by considering both vertices and edges.
+
+Our initial inspiration came from the reflective binary code by Frank Gray. Thus, we have incorporated functions in the package for producing balanced Gray code and its flexible-length option. However, we currently advise against using these for address arrangement due to potential imbalances and non-unique unions.
+
+[Here the picture about three features of the algorithm that we want to see: balance, uniqueness of unions, hamming distance of 1?]
+
+Hamiltonian search (advanced version)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Hamiltonian search (trivial version)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Gray codes
+~~~~~~~~~~~
+
