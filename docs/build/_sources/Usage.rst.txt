@@ -1044,11 +1044,11 @@ Pooling and simulation
 
          >>> meshes_list = cpp.pools_stl(peptides_table, pools, rows = 16, cols = 24, length = 122.10, width = 79.97, thickness = 1.5, hole_radius = 2.0, x_offset = 9.05, y_offset = 6.20, well_spacing = 4.5)
 
-         Generated STL file you can check using OpenSCAD:
+      Generated STL file you can check using OpenSCAD:
       
-         .. image:: pools_stl.png
-            :width: 400px
-            :height: 200px
+      .. image:: pools_stl.png
+         :width: 400px
+         :height: 200px
 
 .. function:: cpp.zip_meshes_export(meshes_list) -> None
 
@@ -1060,8 +1060,6 @@ Pooling and simulation
       .. code-block:: python
 
          >>> cpp.zip_meshes_export(meshes_list)
-
-
 
 .. function:: cpp.zip_meshes(meshes_list): -> BytesIO object
 
