@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation &mdash; Combinatorial peptide pooling 0.0.31 documentation</title>
+  <title>Installation &mdash; copepodTCR 0.0.9 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -20,7 +20,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Usage" href="Usage.html" />
-    <link rel="prev" title="Intro" href="Introduction.html" /> 
+    <link rel="prev" title="Introduction" href="Introduction.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -32,10 +32,10 @@
           
           
           <a href="index.html" class="icon icon-home">
-            Combinatorial peptide pooling
+            copepodTCR
           </a>
               <div class="version">
-                0.0.31
+                0.0.9
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -45,16 +45,15 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Combinatorial peptide pooling</span></p>
+              <p class="caption" role="heading"><span class="caption-text">CopepodTCR</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="Introduction.html">Intro</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ShinyApp.html">Shiny App</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Recommended_parameters.html">Recommended parameters</a></li>
 </ul>
 
         </div>
@@ -63,7 +62,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">Combinatorial peptide pooling</a>
+          <a href="index.html">copepodTCR</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -84,16 +83,16 @@
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
 <p>You can install the package with pip:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">combinatorial_peptide_pooling</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">copepodTCR</span>
 </pre></div>
 </div>
 <p>Or with conda:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">vasilisa</span><span class="o">.</span><span class="n">kovaleva</span> <span class="n">combinatorial_peptide_pooling</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">vasilisa</span><span class="o">.</span><span class="n">kovaleva</span> <span class="n">copepodTCR</span>
 </pre></div>
 </div>
 <section id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this heading"></a></h2>
-<p>Required packages should be installed simulataneously with the combinatorial_peptide_pooling packages.</p>
+<p>Required packages should be installed simulataneously with the copepodTCR packages.</p>
 <p>But if they were not, here is the list of requirements:</p>
 <ul>
 <li><p>pandas&gt;=1.5.3</p>
@@ -124,6 +123,20 @@
 </div>
 </div></blockquote>
 </li>
+<li><p>PyMC&gt;=5.9.2</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;pymc&gt;=5.9.2&quot;</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Arviz&gt;=5.9.2</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;arviz&gt;=0.16.1&quot;</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
 </ul>
 </section>
 </section>
@@ -132,7 +145,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="Introduction.html" class="btn btn-neutral float-left" title="Intro" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Introduction.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="Usage.html" class="btn btn-neutral float-right" title="Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

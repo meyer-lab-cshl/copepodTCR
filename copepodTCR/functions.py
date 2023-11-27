@@ -12,6 +12,8 @@ import sys
 from io import StringIO
 import zipfile
 from io import BytesIO
+import pymc as pm
+import arviz as az
 
 
 # # Functions for ITERS search
@@ -1218,3 +1220,61 @@ def zip_meshes(meshes_list):
             zipf.writestr(f'{key}.stl', stl_buffer.read())
     zip_buffer.seek(0)
     return zip_buffer
+
+
+# # Bayesian Model
+
+
+### Activation model
+def activation_model(obs, n_pools, inds):
+
+    """
+    Takes a list with observed data (obs), number of pools (n_pools), and indices for the observed data if there were mutiple replicas.
+    Returns model fit and a dataframe with probabilities of each pool being drawn from negative or positive distributions.
+    """
+
+    coords = dict(pool=range(n_pools), component=("positive", "negative"))
+
+    with pm.Model(coords=coords) as alternative_model:
+        # 2 normal 'source' distributions for the positive and negative pools
+        source = pm.TruncatedNormal(
+            "source",
+            mu=np.array([10, 0.5]),
+            sigma=np.array([0.5, 0.1]),
+            dims="component",
+            lower=0,
+        )
+
+        # Each pool is assigned a 0/1 (could adjust the prior probability here given that we
+        # know negatives are more likely a priori)
+        component = pm.Bernoulli("assign", 0.5, dims="pool")
+
+        # Each pool has a normally distributed response whose mu comes from either the
+        # postive or negative source distribution
+        pool_dist = pm.TruncatedNormal(
+            "pool_dist",
+            mu=source[component],
+            sigma=pm.Exponential("sigma", 1),
+            lower=0,
+            dims="pool",
+        )
+
+        # Likelihood, where the data indices pick out the relevant pool from pool
+        pm.TruncatedNormal(
+            "lik",
+            mu=pool_dist[inds],
+            sigma=pm.Exponential("sigma_data", 1),
+            observed=obs,
+            lower=0,
+        )
+
+        idata_alt = pm.sample()
+    
+    with alternative_model:
+        posterior_predictive = pm.sample_posterior_predictive(idata_alt)
+
+    ax = az.plot_ppc(posterior_predictive, num_pp_samples=100)
+    
+    posterior = az.extract(idata_alt)
+    print(posterior["assign"].mean(dim="sample").to_dataframe())
+    return posterior["assign"].mean(dim="sample").to_dataframe()

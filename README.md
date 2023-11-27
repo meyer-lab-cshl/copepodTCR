@@ -10,15 +10,15 @@
 
 You can install the package with pip:
 
-`pip install combinatorial_peptide_pooling`
+`pip install copepodTCR`
 
 Or with conda:
 
-`conda install -c vasilisa.kovaleva combinatorial_peptide_pooling`
+`conda install -c vasilisa.kovaleva copepodTCR`
 
 ## Usage
 
-`import combinatorial_peptide_pooling as cpp`
+`import copepodTCR as cpp`
 
 To use the package for basic tasks, the **Quickstart** section is enough. To read more about used functions, check other sections.
 
@@ -408,6 +408,10 @@ numpy>=1.23.5
 cvxpy>=1.3.2
 
 trimesh>=3.23.5
+
+PyMC >= 5.9.2
+
+Arviz >= 0.16.1
 
 ### Shiny App
 

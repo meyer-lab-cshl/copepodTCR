@@ -5,18 +5,18 @@ You can install the package with pip:
 
 .. code-block:: python
 
-	pip install combinatorial_peptide_pooling
+	pip install copepodTCR
 
 Or with conda:
 
 .. code-block:: python
 
-	conda install -c vasilisa.kovaleva combinatorial_peptide_pooling
+	conda install -c vasilisa.kovaleva copepodTCR
 
 Requirements
 --------------------
 
-Required packages should be installed simulataneously with the combinatorial_peptide_pooling packages.
+Required packages should be installed simulataneously with the copepodTCR packages.
 
 But if they were not, here is the list of requirements:
 
@@ -43,3 +43,15 @@ But if they were not, here is the list of requirements:
 	.. code-block:: python
 
 		pip install "trimesh>=3.23.5"
+
+* PyMC>=5.9.2
+
+	.. code-block:: python
+
+		pip install "pymc>=5.9.2"
+
+* Arviz>=5.9.2
+
+	.. code-block:: python
+
+		pip install "arviz>=0.16.1"

@@ -3,7 +3,7 @@ Usage
 
 .. code-block:: python
 
-   import combinatorial_peptide_pooling as cpp
+   import copepodTCR as cpp
 
 
 To use the package for basic tasks, the **Quickstart** section is
@@ -16,7 +16,7 @@ Quickstart
 
 .. code-block:: python
 
-   import combinatorial_peptide_pooling as cpp
+   import copepodTCR as cpp
 
    # number of pools
    n_pools = 12

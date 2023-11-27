@@ -17,13 +17,13 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Combinatorial peptide pooling'
+project = 'copepodTCR'
 copyright = '2023, Vasilisa Kovaleva'
 author = 'Vasilisa Kovaleva'
 
 # The full version, including alpha/beta/rc tags
-version = '0.0.31'
-release = '0.0.31'
+version = '0.0.9'
+release = '0.0.9'
 
 # -- General configuration ---------------------------------------------------
 
