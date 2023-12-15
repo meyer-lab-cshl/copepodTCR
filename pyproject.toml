@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "copepodTCR"
-version = "0.0.9"
+version = "0.1.0"
 authors = [
   { name="Vasilisa Kovaleva", email="vasilisa.kovaliova@gmail.com" },
 ]
@@ -13,7 +13,7 @@ readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "License :: OSI Approved :: BSD License",
     "Operating System :: OS Independent",
 ]
 dependencies = [
@@ -26,5 +26,5 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/meyer-lab-cshl/combinatorial_pooling"
-"Bug Tracker" = "https://github.com/meyer-lab-cshl/combinatorial_pooling/issues"
+"Homepage" = "https://copepodtcr.readthedocs.io/en/latest/index.html"
+"Bug Tracker" = "https://github.com/meyer-lab-cshl/copepodTCR/issues"

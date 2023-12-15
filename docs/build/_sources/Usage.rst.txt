@@ -45,6 +45,19 @@ Quickstart
               thickness = 1.5, hole_radius = 2, x_offset = 9.05, y_offset = 6.20, well_spacing = 4.5)
    cpp.zip_meshes_export(meshes_list)
 
+   # Results of the experiment as a table with two columns, Pool and Percentage. Activation signal is expressed in percentaged of activated T cells.
+   exp_results = pd.read_csv('path/to/your/file')
+   cells = list(exp_results['Percentage'])
+   inds = list(exp_results['Pool'])
+
+   # Model
+   fig, probs = cpp.activation_model(cells, n_pools, inds)
+   peptide_probs = cpp.peptide_probabilities(sim, probs)
+   message, most, possible = cpp.results_analysis(peptide_probs, probs, check_results)
+   print(message)
+   print(most)
+   print(possible)
+
 .. _quickstartf-section:
 
 More detailed quickstart
@@ -236,9 +249,8 @@ More detailed quickstart
       :param regime: regime of simulation, with or without drop-outs
       :type regime: “with dropouts” or “without dropouts”
       :return:
-         1) pools -- dictionary with keys as pools indices and values as peptides that should be added to this pools;
-         2) peptide address -- dictionary with peptides as keys and corresponding addresses as values.
-      :rtype: dictionary, dictionary
+         pandas DataFrame with all possible epitopes of given length and the resulting activated pools
+      :rtype: pandas DataFrame
 
       .. code-block:: python
 
@@ -484,6 +496,143 @@ More detailed quickstart
          >>> cpp.zip_meshes_export(meshes_list)
 
    => You will get a .zip archive with generated STL files. Then, you can send these STL files directly to a 3D printer. We recommend writing the index of the pool on the punch card. Also, you can check the generated STL files using OpenSCAD.
+
+7. **To interpret the results, you can use the Bayesian mixture model of activation signal.**
+
+   .. function:: cpp.activation_model(obs, n_pools, inds) -> fig, pandas DataFrame
+      :noindex:
+
+      .. note:: Fitting might take several minutes.
+
+      :param obs: list with observed values
+      :type obs: list
+      :param n_pools: number of pools
+      :type n_pools: int
+      :param inds: list with indices for observed values
+      :type inds: int
+      :return:
+         1) fig -- posterior predictive KDE and observed data KDE
+         2) probs -- probabilitity for each pool of being drawn from a distribution of activated or non-activated pools
+      :rtype: figure, pandas DataFrame
+
+      .. code-block:: python
+
+         >>> fig, probs = cpp.activation_model(obs, 12, inds)
+         
+      .. image:: model_fit.png
+
+      .. code-block:: python
+
+         >>> probs
+
+      .. table::
+         :widths: 10 10
+
+         +------+---------+
+         | Pool | assign  |
+         +======+=========+
+         | 0    | 0.99900 |
+         +------+---------+
+         | 1    | 1.00000 |
+         +------+---------+
+         | 2    | 0.00025 |
+         +------+---------+
+         | 3    | 0.36475 |
+         +------+---------+
+         | 4    | 0.00025 |
+         +------+---------+
+         | 5    | 0.00000 |
+         +------+---------+
+         | 6    | 1.00000 |
+         +------+---------+
+         | 7    | 1.00000 |
+         +------+---------+
+         | 8    | 0.99975 |
+         +------+---------+
+         | 9    | 0.99975 |
+         +------+---------+
+         | 10   | 0.00000 |
+         +------+---------+
+         | 11   | 0.99975 |
+         +------+---------+
+
+   The **Pool** column contains pool index, and column **assign** the probability of the pools to be drawn from the distribution of non-activated pool. The pool is considered to be activated if assign <= 0.5.
+
+   Using this table, you can assess which pools were activated and which were not, and then check the result in check_results table with simulation. However, also you can use the following functions:
+
+   .. function:: cpp.peptide_probabilities(sim, probs) -> pandas DataFrame
+      :noindex:
+
+      :param sim: check_results table with simulation with or without drop-outs
+      :type sim: pandas DataFrame
+      :param probs: DataFrame with probabilities produced by :func:`cpp.activation_model`
+      :type probs: pandas DataFrame
+      :return: peptide_probs -- probabilitity for each peptide to cause such a pattern of activation
+      :rtype: pandas DataFrame
+
+      .. code-block:: python
+
+         >>> peptide_probs = cpp.peptide_probabilities(sim, probs)
+
+      .. code-block:: python
+
+         >>> peptide_probs
+
+      .. table::
+         :widths: 10 10 10 10 10 10
+
+         +-------------------+---------------+--------------------+--------------+-----------+---------------+
+         | Peptide           | Address       | Act Pools          | Probability  | Activated | Non-Activated |
+         +===================+===============+====================+==============+===========+===============+
+         | MFVFLVLLPLVSSQCVN | [0, 1, 2, 3]  | [0, 1, 2, 3]       | 1.172135e-07 | 2         | 2             |
+         +-------------------+---------------+--------------------+--------------+-----------+---------------+
+         | MFVFLVLLPLVSSQCVN | [0, 1, 2, 3]  | [0, 1, 2, 3, 7]    | 8.262788e-10 | 2         | 2             |
+         +-------------------+---------------+--------------------+--------------+-----------+---------------+
+         | VLLPLVSSQCVNLTTRT | [1, 2, 3, 7]  | [0, 1, 2, 3, 7]    | 8.262788e-10 | 2         | 2             |
+         +-------------------+---------------+--------------------+--------------+-----------+---------------+
+         | VLLPLVSSQCVNLTTRT | [1, 2, 3, 7]  | [1, 2, 3, 7, 11]   | 2.119434e-05 | 3         | 3             |
+         +-------------------+---------------+--------------------+--------------+-----------+---------------+
+         | VSSQCVNLTTRTQLPPA | [2, 3, 7, 11] | [1, 2, 3, 7, 11]   | 2.119434e-05 | 3         | 3             |
+         +-------------------+---------------+--------------------+--------------+-----------+---------------+
+         | ...               | ...           | ...                | ...          | ...       | ...           |
+         +-------------------+---------------+--------------------+--------------+-----------+---------------+
+         | FDEDDSEPVLKGVKLHY | [0, 1, 3, 5]  | [0, 1, 2, 3, 4, 5] | 3.259596e-08 | 3         | 3             |
+         +-------------------+---------------+--------------------+--------------+-----------+---------------+
+         | FDEDDSEPVLKGVKLHY | [0, 1, 3, 5]  | [0, 1, 2, 3, 5]    | 2.104844e-06 | 3         | 2             |
+         +-------------------+---------------+--------------------+--------------+-----------+---------------+
+         | DEDDSEPVLKGVKLHYT | [0, 1, 2, 5]  | [0, 1, 2, 3, 4, 5] | 3.259596e-08 | 3         | 3             |
+         +-------------------+---------------+--------------------+--------------+-----------+---------------+
+         | DEDDSEPVLKGVKLHYT | [0, 1, 2, 5]  | [0, 1, 2, 3, 5]    | 2.104844e-06 | 3         | 2             |
+         +-------------------+---------------+--------------------+--------------+-----------+---------------+
+         | DEDDSEPVLKGVKLHYT | [0, 1, 2, 5]  | [0, 1, 2, 5]       | 7.922877e-09 | 2         | 2             |
+         +-------------------+---------------+--------------------+--------------+-----------+---------------+
+
+   And then this table can be used to find cognate peptides:
+
+   .. function:: cpp.results_analysis(peptide_probs, probs, sim) -> list, list, list
+      :noindex:
+
+      :param peptide_probs: DataFrame with probabilities for each peptide produced by :func:`cpp.peptide_probabilities`
+      :type peptide_probs: pandas DataFrame
+      :param probs: DataFrame with probabilities produced by :func:`cpp.activation_model`
+      :type probs: pandas DataFrame
+      :param sim: check_results table with simulation with or without drop-outs
+      :type sim: pandas DataFrame
+      :return:
+         1) note about detected drop-outs (erroneously non-activated pools);
+         2) list of the most possible peptides;
+         3) list of all possible peptides given this pattern of pools activation.
+      :rtype: list, list, list
+
+      .. code-block:: python
+
+         >>> note, most, possible = cpp.peptide_probabilities(sim, probs)
+         >>> note
+         No drop-outs were detected
+         >>> most
+         ['SSANNCTFEYVSQPFLM', 'CTFEYVSQPFLMDLEGK']
+         >>> possible
+         ['SSANNCTFEYVSQPFLM', 'CTFEYVSQPFLMDLEGK']
 
 .. _occurrence-section:
 
@@ -1074,3 +1223,64 @@ Pooling and simulation
 
          >>> cpp.zip_meshes(meshes_list)
          <_io.BytesIO at 0x1d42a1440>
+
+.. _interpretation:
+
+Results interpretation with a Bayesian mixture model
+------------------------------------------------------------
+
+.. function:: cpp.activation_model(obs, n_pools, inds) -> fig, pandas DataFrame
+
+      .. note:: Fitting might take several minutes.
+
+      :param obs: list with observed values
+      :type obs: list
+      :param n_pools: number of pools
+      :type n_pools: int
+      :param inds: list with indices for observed values
+      :type inds: int
+      :return:
+         1) fig -- posterior predictive KDE and observed data KDE
+         2) probs -- probabilitity for each pool of being drawn from a distribution of activated or non-activated pools
+      :rtype: figure, pandas DataFrame
+
+      .. code-block:: python
+
+         >>> fig, probs = cpp.activation_model(obs, 12, inds)
+
+   .. function:: cpp.peptide_probabilities(sim, probs) -> pandas DataFrame
+
+      :param sim: check_results table with simulation with or without drop-outs
+      :type sim: pandas DataFrame
+      :param probs: DataFrame with probabilities produced by :func:`cpp.activation_model`
+      :type probs: pandas DataFrame
+      :return: peptide_probs -- probabilitity for each peptide to cause such a pattern of activation
+      :rtype: pandas DataFrame
+
+      .. code-block:: python
+
+         >>> peptide_probs = cpp.peptide_probabilities(sim, probs)
+
+   .. function:: cpp.results_analysis(peptide_probs, probs, sim) -> list, list, list
+
+      :param peptide_probs: DataFrame with probabilities for each peptide produced by :func:`cpp.peptide_probabilities`
+      :type peptide_probs: pandas DataFrame
+      :param probs: DataFrame with probabilities produced by :func:`cpp.activation_model`
+      :type probs: pandas DataFrame
+      :param sim: check_results table with simulation with or without drop-outs
+      :type sim: pandas DataFrame
+      :return:
+         1) note about detected drop-outs (erroneously non-activated pools);
+         2) list of the most possible peptides;
+         3) list of all possible peptides given this pattern of pools activation.
+      :rtype: list, list, list
+
+      .. code-block:: python
+
+         >>> note, most, possible = cpp.peptide_probabilities(sim, probs)
+         >>> note
+         No drop-outs were detected
+         >>> most
+         ['SSANNCTFEYVSQPFLM', 'CTFEYVSQPFLMDLEGK']
+         >>> possible
+         ['SSANNCTFEYVSQPFLM', 'CTFEYVSQPFLMDLEGK']
