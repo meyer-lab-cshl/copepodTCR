@@ -1328,7 +1328,7 @@ def results_analysis(peptide_probs, probs, sim):
     
     ep_length = len(sim['Epitope'].iloc[0])
     all_lst = list(peptide_probs['Peptide'].drop_duplicates())
-    c, _ = cpp.how_many_peptides(all_lst, ep_length)
+    c, _ = how_many_peptides(all_lst, ep_length)
     normal = max(c, key=c.get)
     
     act_pools = []
@@ -1369,13 +1369,13 @@ def results_analysis(peptide_probs, probs, sim):
     ## If epitope_check is held, but drop_check is not
     elif epitope_check == True and drop_check != True:
         ## Calculation of possible peptides
-        act_profile = cpp.epitope_pools_activation(peptide_address, all_lst, ep_length)
+        act_profile = epitope_pools_activation(peptide_address, all_lst, ep_length)
         iters = len(peptide_probs['Address'].iloc[0])
         n_pools = len(probs)
         act_number = iters + normal -1
         if act_number > len(act_pools):
             notification = 'Drop-out was detected'
-            peptides, epitopes = cpp.peptide_search(all_lst, act_profile, act_pools, iters, n_pools, 'with dropouts')
+            peptides, epitopes = peptide_search(all_lst, act_profile, act_pools, iters, n_pools, 'with dropouts')
             return notification, lst, peptides
         else:
             notification = 'False positive was detected'
@@ -1383,11 +1383,11 @@ def results_analysis(peptide_probs, probs, sim):
             
     elif epitope_check != True and drop_check != True:
         ## More drop-outs happened, calculation of possible peptides
-        act_profile = cpp.epitope_pools_activation(peptide_address, all_lst, ep_length)
+        act_profile = epitope_pools_activation(peptide_address, all_lst, ep_length)
         iters = len(peptide_probs['Address'].iloc[0])
         n_pools = len(probs)
         act_number = iters + normal -1
-        peptides, epitopes = cpp.peptide_search(all_lst, act_profile, act_pools, iters, n_pools, 'with dropouts')
+        peptides, epitopes = peptide_search(all_lst, act_profile, act_pools, iters, n_pools, 'with dropouts')
         if len(peptides) == 0:
             notification = 'Not found'
             return notification, [], peptides
