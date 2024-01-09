@@ -3,6 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
    
+CopepodTCR
+------------
+
 .. image:: ./logo.svg
 
 CopepodTCR (COmbinatorial PEptide POoling Design for TCR specificity) is a Python tool developed for providing peptide pooling schemes for T cell specificity assays. You can access the tool via Python, the command line, or a web application.

@@ -1237,14 +1237,22 @@ def activation_model(obs, n_pools, inds):
     obs = obs/np.max(obs)
 
     with pm.Model(coords=coords) as alternative_model:
-        # 2 normal 'source' distributions for the positive and negative pools
-        source = pm.TruncatedNormal(
-            "source",
-            mu=np.array([0.8, 0]),
-            sigma=np.array([0.1, 0.01]),
-            dims="component",
+        # Define the offset
+        offset = pm.Normal("offset", mu=0.6, sigma=0.1)
+
+        # Negative component remains the same
+        source_negative = pm.TruncatedNormal(
+            "negative",
+            mu=0,
+            sigma=0.01,
             lower=0,
-        )
+            upper=1,
+            )
+        # Adjusted positive distribution with offset
+        source_positive = pm.Deterministic("positive", source_negative + offset)
+
+        # Combine the source components
+        source = pm.math.stack([source_positive, source_negative], axis=0)
 
         # Each pool is assigned a 0/1 (could adjust the prior probability here given that we
         # know negatives are more likely a priori)
@@ -1257,8 +1265,9 @@ def activation_model(obs, n_pools, inds):
             mu=source[component],
             sigma=pm.Exponential("sigma", 1),
             lower=0,
+            upper=1,
             dims="pool",
-        )
+            )
 
         # Likelihood, where the data indices pick out the relevant pool from pool
         pm.TruncatedNormal(
@@ -1267,7 +1276,8 @@ def activation_model(obs, n_pools, inds):
             sigma=pm.Exponential("sigma_data", 1),
             observed=obs,
             lower=0,
-        )
+            upper=1,
+            )
 
         idata_alt = pm.sample()
         
@@ -1275,7 +1285,7 @@ def activation_model(obs, n_pools, inds):
         posterior_predictive = pm.sample_posterior_predictive(idata_alt)
 
     ax = az.plot_ppc(posterior_predictive, num_pp_samples=100, colors = ['#015396', '#FFA500', '#000000'])
-    
+
     posterior = az.extract(idata_alt)
     #print(posterior["assign"].mean(dim="sample").to_dataframe())
     return ax, posterior["assign"].mean(dim="sample").to_dataframe()
@@ -1361,9 +1371,17 @@ def results_analysis(peptide_probs, probs, sim):
         address = peptide_probs['Address'][peptide_probs['Peptide'] == p].iloc[0]
         peptide_address[p] = address
 
+    ## If all pools are marked as activated, then the results are compromised
+    if len(act_pools) == len(probs):
+        notification = 'Zero pools were activated'
+        return notification, [], []
+
     ## If both are True, then the epitope is found:
     if all([drop_check, epitope_check]) == True:
         notification = 'No drop-outs were detected'
+        act_number = iters + normal -1
+        if act_number < len(act_pools):
+            notification = 'Number of activated pools is suspicious'
         return notification, lst, lst
         
     ## If epitope_check is held, but drop_check is not
@@ -1394,3 +1412,54 @@ def results_analysis(peptide_probs, probs, sim):
         else:
             notification = 'Drop-out was detected'
             return notification, [], peptides
+
+# # Simulated data
+
+###Peptides generation
+def random_amino_acid_sequence(length):
+    '''
+    Takes the length (integer).
+    Returns random amino acid sequence of desired length.
+    '''
+    amino_acids = 'ACDEFGHIKLMNPQRSTVWY'
+    return ''.join(random.choice(amino_acids) for _ in range(length))
+
+### Simulation
+def simulation(mu_off, sigma_off, mu_n, sigma_n, r, n_pools, iters, normal):
+    '''
+    Takes parameters for the model, returns simulated data.
+    mu_off - mu of the Normal distribution for the offset.
+    sigma_off - sigma of the Normal distribution for the offset.
+    mu_n - mu of the Truncated Normal distribution for the negative source (non-activated pools).
+    sigma_n - sigma of the Truncated Normal distribution for the negative source (non-activated pools).
+    r - number of replicas.
+    n_pools - number of pools in the experiment.
+    iters - peptide occurrence in the pooling scheme, i.e. to how many pools a single peptide is added.
+    normal - the most common number of peptides sharing an epitope in the pooling scheme.
+    '''
+    p_shape = iters+normal-1
+    n_shape = n_pools-(iters+normal-1)
+    with pm.Model() as simulation:
+        # offset
+        offset = pm.Normal("offset", mu=mu_off, sigma=sigma_off)
+    
+        # Negative
+        n = pm.TruncatedNormal('n', mu=mu_n, sigma=sigma_n, lower=0, upper=100, shape=n_shape)
+        inds_n = list(range(n_shape))*r
+        n_shape_r = n_shape*r
+
+        # Positive with offset
+        p = pm.Deterministic("positive", n + offset)
+        inds_p = list(range(p_shape))*r
+        p_shape_r = p_shape*r
+
+        # Activated pools
+        pools_p = pm.TruncatedNormal('pools_p', mu=p[inds_p], sigma=sigma_off, lower=0, upper=100, shape=p_shape_r)
+        pools_n = pm.TruncatedNormal('pools_n', mu=n[inds_n], sigma=sigma_n, lower=0, upper=100, shape=n_shape_r)
+
+        trace = pm.sample(draws=1)
+        
+    p_results = trace.posterior.pools_p.mean(dim="chain").values.tolist()[0]
+    n_results = trace.posterior.pools_n.mean(dim="chain").values.tolist()[0]
+
+    return p_results, n_results

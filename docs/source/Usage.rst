@@ -498,6 +498,10 @@ More detailed quickstart
    => You will get a .zip archive with generated STL files. Then, you can send these STL files directly to a 3D printer. We recommend writing the index of the pool on the punch card. Also, you can check the generated STL files using OpenSCAD.
 
 7. **To interpret the results, you can use the Bayesian mixture model of activation signal.**
+   
+   Plate notation for the model (for 12 pools and 3 replicas).
+
+   .. image:: model_scheme.png
 
    .. function:: cpp.activation_model(obs, n_pools, inds) -> fig, pandas DataFrame
       :noindex:
@@ -633,6 +637,181 @@ More detailed quickstart
          ['SSANNCTFEYVSQPFLM', 'CTFEYVSQPFLMDLEGK']
          >>> possible
          ['SSANNCTFEYVSQPFLM', 'CTFEYVSQPFLMDLEGK']
+
+.. _simulation-section:
+
+Play with the approach using simulated data (Optional)
+-------------------------------------------------------
+
+If you want to play with the approach with the generated data, you can use the following pipeline.
+
+1. First, you need to determine the parameters for pooling scheme.
+
+   * how many peptides? (len_lst)
+
+   * how many pools? (n_pools)
+
+   * what is peptide occurrence, i.e. to how many pools one peptide would be added? (iters)
+
+   * what would be the length of the peptide? (pep_length)
+
+   * what is the length of the shift between two overlapping peptides? (shift)
+
+   * what is the length of the expected epitope (ep_length, we recommend 8)
+
+2. Then, you can use these parameters to generate peptides. First, you would need to generate a random sequence, and then you could generate peptides using sliding window approach.
+   
+   .. code-block:: python
+
+      >>> len_lst = 100
+      >>> n_pools = 12
+      >>> iters = 4
+      >>> pep_length = 17
+      >>> shift = 5
+      >>> ep_length = 8
+
+      >>> sequence = cpp.random_amino_acid_sequence(shift*len_lst + (100-shift*len_lst%100))
+      >>> sequence
+         'EMKFLDQSQLGYVHPKWHHGTEMDEWSRSNSAYGKHQEATRLCSQWWVKTYMPTDPCWMLRYTNCCAMVPRYADFCMRDYRYAYIYFVNWNHECSDVIMETCCFALGKKLSTPTCTPGCVTVIYECKSEFEVGWPPHIIEGSAEFYAVACFVTRFMCPQTKANLLKIIISFHLHHYGQAEQICYKNEIPCCAMKFFDHREGLESNCLTCMQWPCNKSLFDPFPVMYRFSMAGNQGEPPCGYAVTMNARCTMGRWQKFRCEFKGCFYHNINVYTGCETMHECQIPVPMVHQTTLLYPCNVRSKDIDPCDWSYLEDDKERGWCGKFQMGSQIFRKFTPPPWTNRGWNHMDDTEARHRWCLTWKFTLDEPAEDTCILWIHSVYLWVVCMQGTAMSMRMVSFTLLCFMRAPPCEVMHYCDPQQTRDEELPMVGYITEELKSMFTSSSWPGSQSPGWGTWDLSIKRHSVKVPDMINPTHVVKPTKCICNQSLGWTFSEIDMYARHDIQKRWKCPIWNGQFRYEVIHSKQNPFQNSDEQPT'
+
+      ## Then with this sequence you can generate peptides
+      >>> lst_all = []
+      >>> for i in range(0, len(sequence), overlap):
+            ps = sequence[i:i+pep_length]
+            if len(ps) == pep_length:
+               lst_all.append(ps)
+      >>> lst = lst_all[:len_lst]
+
+3. For further analysis, you will need to know what is the most common number of peptides sharing an epitope, so you need to calculate that as well:
+
+   .. code-block:: python
+
+      >>> t, r_all = cpp.how_many_peptides(lst, ep_length)
+      >>> normal = t.most_common(1)[0][0]
+      >>> normal
+      2
+
+4. Then you can finally generate the pooling scheme.
+
+   .. code-block:: python
+
+      >>> b, lines = cpp.address_rearrangement_AU(n_pools=n_pools, iters=iters, len_lst=len_lst)
+      >>> pools, peptide_address = cpp.pooling(lst=lst, addresses=lines, n_pools=n_pools)
+      >>> check_results = cpp.run_experiment(lst=lst, peptide_address=peptide_address, ep_length=ep_length, pools=pools, iters=iters, n_pools=n_pools, regime='without dropouts')
+
+5. Then you need to select a cognate epitope to later check whether the model can recover it. You can do it manually if you particularly like some of them. But also you can do that randomly.
+
+   .. code-block:: python
+
+      >>> cognate = check_results.sample(1)['Epitope'][0]
+      >>> check_results['Cognate'] = False
+      >>> check_results.loc[check_results['Epitope'] == cognate, 'Cognate'] = True   
+      >>> print(list(set(check_results['Peptide'][check_results['Epitope'] == cognate])))
+      ['YCNQNWDWDMCEVVCGR', 'WDWDMCEVVCGRDFCHC']
+
+   Also, you would need to find the pools which would be activated given this epitope is cognate.
+
+   .. code-block:: python
+
+      >>> inds_p_check = check_results[check_results['Cognate'] == True]['Act Pools'].values[0]
+
+      >>> inds_p_check = [int(x) for x in inds_p_check[1:-1].split(', ')]
+      >>> inds_n_check = []
+      >>> for item in range(n_pools):
+            if item not in inds_p_check:
+               inds_n_check.append(item)
+      >>> inds_p_check
+      [5, 6, 9, 10, 11]
+      >>> inds_n_check
+      [0, 1, 2, 3, 4, 7, 8]
+
+6. Then you can simulate activation signal. For that, you would need to determine paratemers of the model.
+
+   * mu_n - mu of the negative distribution (distribution of signal of non-activated pools)
+
+   * sigma_n - sigma of the negative distribution
+
+   * mu_off - mu of the offset which will be used to obtain positive distribution (distribution of signal of activated pools) from the negative distribution
+
+   * sigma_off - sigma of the offset which will be used to obtain positive distribution
+
+   * r - number of replicas in the experiment
+
+   .. code-block:: python
+
+      >>> mu_off = 10
+      >>> sigma_off = 0.01
+      >>> mu_n = 5
+      >>> sigma_n = 1
+      >>> r = 1   
+
+   .. code-block:: python
+
+      p_shape = iters+normal-1
+      n_shape = n_pools-(iters+normal-1)
+
+      >>> p_results, n_results = cpp.simulation(mu_off, sigma_off, mu_n, sigma_n, n_pools, r, iters, normal)
+      >>> cells = pd.DataFrame(columns = ['Pool', 'Percentage'])
+      >>> cells['Percentage'] = p_results + n_results
+      >>> cells['Pool'] = inds_p_check*r + inds_n_check*r
+
+   Cells is a DataFrame with the simulated data:
+
+   .. code-block:: python
+
+      >>> cells
+
+   .. table::
+      :widths: 10 10
+
+      +------+------------+
+      | Pool | Percentage |
+      +======+============+
+      | 5    | 14.554757  |
+      +------+------------+
+      | 6    | 14.818329  |
+      +------+------------+
+      | 9    | 14.846125  |
+      +------+------------+
+      | 10   | 14.536968  |
+      +------+------------+
+      | 11   | 15.311202  |
+      +------+------------+
+      | 0    | 4.544784   |
+      +------+------------+
+      | 1    | 4.422958   |
+      +------+------------+
+      | 2    | 4.514103   |
+      +------+------------+
+      | 3    | 4.458392   |
+      +------+------------+
+      | 4    | 4.575509   |
+      +------+------------+
+      | 7    | 5.791510   |
+      +------+------------+
+      | 8    | 5.334201   |
+      +------+------------+
+
+7. Then you can use this table to check the algorithm.
+
+   .. code-block:: python
+
+      >>> inds = list(cells['Pool'])
+      >>> obs = list(cells['Percentage'])
+      >>> fig, probs = cpp.activation_model(obs, n_pools, inds)
+      >>> peptide_probs = cpp.peptide_probabilities(check_results, probs)
+      >>> cpp.results_analysis(peptide_probs, probs, check_results)
+      ('No drop-outs were detected',
+      ['YCNQNWDWDMCEVVCGR', 'WDWDMCEVVCGRDFCHC'],
+      ['YCNQNWDWDMCEVVCGR', 'WDWDMCEVVCGRDFCHC'])
+
+   Now you can compare recovered cognate peptides with ones you chose:
+
+   * ['YCNQNWDWDMCEVVCGR', 'WDWDMCEVVCGRDFCHC'] - you chose
+   
+   * ['YCNQNWDWDMCEVVCGR', 'WDWDMCEVVCGRDFCHC'] - were recovered by the model from the simulated activation data
+
+8. You can play with different parameters to check how well the approach works. For example, you can decrease the offset for the positive distribution, to check how different should be activated and non-activated pools to yield correct results.
 
 .. _occurrence-section:
 
@@ -1248,7 +1427,7 @@ Results interpretation with a Bayesian mixture model
 
          >>> fig, probs = cpp.activation_model(obs, 12, inds)
 
-   .. function:: cpp.peptide_probabilities(sim, probs) -> pandas DataFrame
+.. function:: cpp.peptide_probabilities(sim, probs) -> pandas DataFrame
 
       :param sim: check_results table with simulation with or without drop-outs
       :type sim: pandas DataFrame
@@ -1261,7 +1440,7 @@ Results interpretation with a Bayesian mixture model
 
          >>> peptide_probs = cpp.peptide_probabilities(sim, probs)
 
-   .. function:: cpp.results_analysis(peptide_probs, probs, sim) -> list, list, list
+.. function:: cpp.results_analysis(peptide_probs, probs, sim) -> list, list, list
 
       :param peptide_probs: DataFrame with probabilities for each peptide produced by :func:`cpp.peptide_probabilities`
       :type peptide_probs: pandas DataFrame
@@ -1284,3 +1463,54 @@ Results interpretation with a Bayesian mixture model
          ['SSANNCTFEYVSQPFLM', 'CTFEYVSQPFLMDLEGK']
          >>> possible
          ['SSANNCTFEYVSQPFLM', 'CTFEYVSQPFLMDLEGK']
+
+Data simulation with Bayesian mixture model
+-----------------------------------------------
+
+.. function:: cpp.random_amino_acid_sequence(length) -> str
+
+      :param length: length of the random amino acid sequence from which peptides would be generated, calculate how long it should be for your number of peptides
+      :type length: int
+      :return: generated amino acid sequence of determined length
+      :rtype: str
+
+      .. code-block:: python
+
+         >>> sequence = cpp.random_amino_acid_sequence(shift*len_lst + (100-shift*len_lst%100))
+         >>> sequence
+         'EMKFLDQSQLGYVHPKWHHGTEMDEWSRSNSAYGKHQEATRLCSQWWVKTYMPTDPCWMLRYTNCCAMVPRYADFCMRDYRYAYIYFVNWNHECSDVIMETCCFALGKKLSTPTCTPGCVTVIYECKSEFEVGWPPHIIEGSAEFYAVACFVTRFMCPQTKANLLKIIISFHLHHYGQAEQICYKNEIPCCAMKFFDHREGLESNCLTCMQWPCNKSLFDPFPVMYRFSMAGNQGEPPCGYAVTMNARCTMGRWQKFRCEFKGCFYHNINVYTGCETMHECQIPVPMVHQTTLLYPCNVRSKDIDPCDWSYLEDDKERGWCGKFQMGSQIFRKFTPPPWTNRGWNHMDDTEARHRWCLTWKFTLDEPAEDTCILWIHSVYLWVVCMQGTAMSMRMVSFTLLCFMRAPPCEVMHYCDPQQTRDEELPMVGYITEELKSMFTSSSWPGSQSPGWGTWDLSIKRHSVKVPDMINPTHVVKPTKCICNQSLGWTFSEIDMYARHDIQKRWKCPIWNGQFRYEVIHSKQNPFQNSDEQPT'
+
+.. function:: cpp.simulation(mu_off, sigma_off, mu_n, sigma_n, n_pools, r, iters, normal) -> list, list
+
+      .. note:: Generation might take several minutes.
+
+      :param mu_off: mu of the Normal distribution for the offset.
+      :type mu_off: float, from 0 to 100
+      :param sigma_off: sigma of the Normal distribution for the offset.
+      :type sigma_off: float, from 0 to 100
+      :param mu_n: mu of the Truncated Normal distribution for the negative source (non-activated pools).
+      :type mu_n: float, from 0 to 100
+      :param sigma_n: sigma of the Truncated Normal distribution for the negative source.
+      :type sigma_n: float, from 0 to 100
+      :param r: number of replicas for each pool
+      :type r: int
+      :param iters: number of pools the experiment
+      :type iters: int
+      :param iters: peptide occurrence in the pooling scheme, less than n_pools
+      :type iters: int
+      :param normal: the most common number of peptides sharing an epitope in the pooling scheme.
+      :type normal: int
+
+      :return:
+         1) p_results - averaged across 4 chains data for activated pools;
+         2) n_results - averaged across 4 chains data for non-activated pools.
+      :rtype: list, list
+
+      .. code-block:: python
+
+         >>> p_results, n_results = cpp.simulation(10, 0.01, 5, 1, 1, 12, 4, 2)
+         >>> p_results
+         [14.554757492774076, 14.818328502490942, 14.846124806885513, 14.53696797679254, 15.311202071456592]
+         >>> n_results
+         [4.544784388034261, 4.422957960260396, 4.514103073799207, 4.458391656911868, 4.575509389904373, 5.791510168841456, 5.334200680346714]
+
