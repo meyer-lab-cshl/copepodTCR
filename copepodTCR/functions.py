@@ -1379,9 +1379,6 @@ def results_analysis(peptide_probs, probs, sim):
     ## If both are True, then the epitope is found:
     if all([drop_check, epitope_check]) == True:
         notification = 'No drop-outs were detected'
-        act_number = iters + normal -1
-        if act_number < len(act_pools):
-            notification = 'Number of activated pools is suspicious'
         return notification, lst, lst
         
     ## If epitope_check is held, but drop_check is not
