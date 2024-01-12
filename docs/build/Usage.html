@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Usage &mdash; copepodTCR 0.1.4 documentation</title>
+  <title>Usage &mdash; copepodTCR 0.1.5 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -13,7 +13,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=fd825880"></script>
+        <script src="_static/documentation_options.js?v=59fadc99"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
               <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                0.1.4
+                0.1.5
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -1135,6 +1135,8 @@ all tips are already arranged to take only the required peptides.</p>
 </div>
 </li>
 <li><p>Then you can simulate activation signal. For that, you would need to determine paratemers of the model.</p>
+<p>Plate notation for the simulation model (for 10 pools and 1 replica).</p>
+<img alt="_images/model_simulation.png" src="_images/model_simulation.png" />
 <ul class="simple">
 <li><p>mu_n - mu of the negative distribution (distribution of signal of non-activated pools)</p></li>
 <li><p>sigma_n - sigma of the negative distribution</p></li>
@@ -1151,12 +1153,10 @@ all tips are already arranged to take only the required peptides.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">p_shape</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">inds_p_check</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">n_shape</span> <span class="o">=</span> <span class="n">n_pools</span><span class="o">-</span><span class="n">p_shape</span>
-
-<span class="o">&gt;&gt;&gt;</span> <span class="n">p_results</span><span class="p">,</span> <span class="n">n_results</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">simulation</span><span class="p">(</span><span class="n">mu_off</span><span class="p">,</span> <span class="n">sigma_off</span><span class="p">,</span> <span class="n">mu_n</span><span class="p">,</span> <span class="n">sigma_n</span><span class="p">,</span> <span class="n">n_pools</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">iters</span><span class="p">,</span> <span class="n">p_shape</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">cells</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Pool&#39;</span><span class="p">,</span> <span class="s1">&#39;Percentage&#39;</span><span class="p">])</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">cells</span><span class="p">[</span><span class="s1">&#39;Percentage&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_results</span> <span class="o">+</span> <span class="n">n_results</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">cells</span><span class="p">[</span><span class="s1">&#39;Pool&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inds_p_check</span><span class="o">*</span><span class="n">r</span> <span class="o">+</span> <span class="n">inds_n_check</span><span class="o">*</span><span class="n">r</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p_results</span><span class="p">,</span> <span class="n">n_results</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">simulation</span><span class="p">(</span><span class="n">mu_off</span><span class="p">,</span> <span class="n">sigma_off</span><span class="p">,</span> <span class="n">mu_n</span><span class="p">,</span> <span class="n">sigma_n</span><span class="p">,</span> <span class="n">n_pools</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p_shape</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cells</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Pool&#39;</span><span class="p">,</span> <span class="s1">&#39;Percentage&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cells</span><span class="p">[</span><span class="s1">&#39;Percentage&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_results</span> <span class="o">+</span> <span class="n">n_results</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cells</span><span class="p">[</span><span class="s1">&#39;Pool&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inds_p_check</span><span class="o">*</span><span class="n">r</span> <span class="o">+</span> <span class="n">inds_n_check</span><span class="o">*</span><span class="n">r</span>
 </pre></div>
 </div>
 <p>Cells is a DataFrame with the simulated data:</p>
@@ -2221,8 +2221,7 @@ all tips are already arranged to take only the required peptides.</p>
 <li><p><strong>mu_n</strong> (<em>float</em><em>, </em><em>from 0 to 100</em>) – mu of the Truncated Normal distribution for the negative source (non-activated pools).</p></li>
 <li><p><strong>sigma_n</strong> (<em>float</em><em>, </em><em>from 0 to 100</em>) – sigma of the Truncated Normal distribution for the negative source.</p></li>
 <li><p><strong>r</strong> (<em>int</em>) – number of replicas for each pool</p></li>
-<li><p><strong>iters</strong> (<em>int</em>) – number of pools the experiment</p></li>
-<li><p><strong>iters</strong> – peptide occurrence in the pooling scheme, less than n_pools</p></li>
+<li><p><strong>n_pools</strong> (<em>int</em>) – number of pools the experiment</p></li>
 <li><p><strong>p_shape</strong> (<em>int</em>) – number of activated pools</p></li>
 <li><p><strong>cores</strong> (<em>1</em><em>, </em><em>int</em>) – number of cores</p></li>
 </ul>

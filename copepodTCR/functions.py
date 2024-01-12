@@ -1422,7 +1422,7 @@ def random_amino_acid_sequence(length):
     return ''.join(random.choice(amino_acids) for _ in range(length))
 
 ### Simulation
-def simulation(mu_off, sigma_off, mu_n, sigma_n, r, n_pools, iters, p_shape, cores=1):
+def simulation(mu_off, sigma_off, mu_n, sigma_n, r, n_pools, p_shape, cores=1):
     '''
     Takes parameters for the model, returns simulated data.
     mu_off - mu of the Normal distribution for the offset.
@@ -1440,22 +1440,27 @@ def simulation(mu_off, sigma_off, mu_n, sigma_n, r, n_pools, iters, p_shape, cor
         offset = pm.Normal("offset", mu=mu_off, sigma=sigma_off)
     
         # Negative
-        n = pm.TruncatedNormal('n', mu=mu_n, sigma=sigma_n, lower=0, upper=100, shape=n_shape)
+        n = pm.TruncatedNormal('n', mu=mu_n, sigma=sigma_n, lower=0, upper=100)
+        # Positive
+        p = pm.Deterministic("positive", n + offset)
+
+        # Negative pools
+        n_pools = pm.TruncatedNormal('n_pools', mu=n, sigma=sigma_n, lower=0, upper=100, shape = n_shape)
         inds_n = list(range(n_shape))*r
         n_shape_r = n_shape*r
 
-        # Positive with offset
-        p = pm.Deterministic("positive", n + offset)
+        # Positive pools
+        p_pools = pm.TruncatedNormal('p_pools', mu=p, sigma=sigma_off, lower=0, upper=100, shape = p_shape)
         inds_p = list(range(p_shape))*r
         p_shape_r = p_shape*r
 
-        # Activated pools
-        pools_p = pm.TruncatedNormal('pools_p', mu=p[inds_p], sigma=sigma_off, lower=0, upper=100, shape=p_shape_r)
-        pools_n = pm.TruncatedNormal('pools_n', mu=n[inds_n], sigma=sigma_n, lower=0, upper=100, shape=n_shape_r)
+        # With replicas
+        p_pools_r = pm.TruncatedNormal('p_pools_r', mu=p_pools[inds_p], sigma=sigma_off, lower=0, upper=100, shape=p_shape_r)
+        n_pools_r = pm.TruncatedNormal('n_pools_r', mu=n_pools[inds_n], sigma=sigma_n, lower=0, upper=100, shape=n_shape_r)
 
         trace = pm.sample(draws=1, cores = cores)
         
-    p_results = trace.posterior.pools_p.mean(dim="chain").values.tolist()[0]
-    n_results = trace.posterior.pools_n.mean(dim="chain").values.tolist()[0]
+    p_results = trace.posterior.p_pools_r.mean(dim="chain").values.tolist()[0]
+    n_results = trace.posterior.n_pools_r.mean(dim="chain").values.tolist()[0]
 
     return p_results, n_results

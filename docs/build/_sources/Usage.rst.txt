@@ -718,6 +718,10 @@ If you want to play with the approach with the generated data, you can use the f
 
 5. Then you can simulate activation signal. For that, you would need to determine paratemers of the model.
 
+   Plate notation for the simulation model (for 10 pools and 1 replica).
+
+   .. image:: model_simulation.png
+
    * mu_n - mu of the negative distribution (distribution of signal of non-activated pools)
 
    * sigma_n - sigma of the negative distribution
@@ -741,9 +745,7 @@ If you want to play with the approach with the generated data, you can use the f
 
    .. code-block:: python
 
-      n_shape = n_pools-p_shape
-
-      >>> p_results, n_results = cpp.simulation(mu_off, sigma_off, mu_n, sigma_n, n_pools, r, iters, p_shape)
+      >>> p_results, n_results = cpp.simulation(mu_off, sigma_off, mu_n, sigma_n, n_pools, r, p_shape)
       >>> cells = pd.DataFrame(columns = ['Pool', 'Percentage'])
       >>> cells['Percentage'] = p_results + n_results
       >>> cells['Pool'] = inds_p_check*r + inds_n_check*r
@@ -1489,10 +1491,8 @@ Data simulation with Bayesian mixture model
       :type sigma_n: float, from 0 to 100
       :param r: number of replicas for each pool
       :type r: int
-      :param iters: number of pools the experiment
-      :type iters: int
-      :param iters: peptide occurrence in the pooling scheme, less than n_pools
-      :type iters: int
+      :param n_pools: number of pools the experiment
+      :type n_pools: int
       :param p_shape: number of activated pools
       :type p_shape: int
       :param cores: number of cores
