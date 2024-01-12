@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Usage &mdash; copepodTCR 0.1.2 documentation</title>
+  <title>Usage &mdash; copepodTCR 0.1.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -13,7 +13,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=92734c54"></script>
+        <script src="_static/documentation_options.js?v=fd825880"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -36,7 +36,7 @@
               <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                0.1.2
+                0.1.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -1104,14 +1104,6 @@ all tips are already arranged to take only the required peptides.</p>
 </pre></div>
 </div>
 </li>
-<li><p>For further analysis, you will need to know what is the most common number of peptides sharing an epitope, so you need to calculate that as well:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="p">,</span> <span class="n">r_all</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">how_many_peptides</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">ep_length</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">normal</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">most_common</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">normal</span>
-<span class="go">2</span>
-</pre></div>
-</div>
-</li>
 <li><p>Then you can finally generate the pooling scheme.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="p">,</span> <span class="n">lines</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">address_rearrangement_AU</span><span class="p">(</span><span class="n">n_pools</span><span class="o">=</span><span class="n">n_pools</span><span class="p">,</span> <span class="n">iters</span><span class="o">=</span><span class="n">iters</span><span class="p">,</span> <span class="n">len_lst</span><span class="o">=</span><span class="n">len_lst</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pools</span><span class="p">,</span> <span class="n">peptide_address</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">pooling</span><span class="p">(</span><span class="n">lst</span><span class="o">=</span><span class="n">lst</span><span class="p">,</span> <span class="n">addresses</span><span class="o">=</span><span class="n">lines</span><span class="p">,</span> <span class="n">n_pools</span><span class="o">=</span><span class="n">n_pools</span><span class="p">)</span>
@@ -1149,18 +1141,19 @@ all tips are already arranged to take only the required peptides.</p>
 <li><p>mu_off - mu of the offset which will be used to obtain positive distribution (distribution of signal of activated pools) from the negative distribution</p></li>
 <li><p>sigma_off - sigma of the offset which will be used to obtain positive distribution</p></li>
 <li><p>r - number of replicas in the experiment</p></li>
+<li><p>p_shape - number of activated pools in simulation, you can make it equal to the number of pools where cognate epitope is present, or you can make more / less to see how the algorithm responds to mistakes.</p></li>
 </ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mu_off</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sigma_off</span> <span class="o">=</span> <span class="mf">0.01</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mu_n</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sigma_n</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p_shape</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">inds_p_check</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">p_shape</span> <span class="o">=</span> <span class="n">iters</span><span class="o">+</span><span class="n">normal</span><span class="o">-</span><span class="mi">1</span>
-<span class="n">n_shape</span> <span class="o">=</span> <span class="n">n_pools</span><span class="o">-</span><span class="p">(</span><span class="n">iters</span><span class="o">+</span><span class="n">normal</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">n_shape</span> <span class="o">=</span> <span class="n">n_pools</span><span class="o">-</span><span class="n">p_shape</span>
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">p_results</span><span class="p">,</span> <span class="n">n_results</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">simulation</span><span class="p">(</span><span class="n">mu_off</span><span class="p">,</span> <span class="n">sigma_off</span><span class="p">,</span> <span class="n">mu_n</span><span class="p">,</span> <span class="n">sigma_n</span><span class="p">,</span> <span class="n">n_pools</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">iters</span><span class="p">,</span> <span class="n">normal</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">p_results</span><span class="p">,</span> <span class="n">n_results</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">simulation</span><span class="p">(</span><span class="n">mu_off</span><span class="p">,</span> <span class="n">sigma_off</span><span class="p">,</span> <span class="n">mu_n</span><span class="p">,</span> <span class="n">sigma_n</span><span class="p">,</span> <span class="n">n_pools</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">iters</span><span class="p">,</span> <span class="n">p_shape</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cells</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Pool&#39;</span><span class="p">,</span> <span class="s1">&#39;Percentage&#39;</span><span class="p">])</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cells</span><span class="p">[</span><span class="s1">&#39;Percentage&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_results</span> <span class="o">+</span> <span class="n">n_results</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cells</span><span class="p">[</span><span class="s1">&#39;Pool&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inds_p_check</span><span class="o">*</span><span class="n">r</span> <span class="o">+</span> <span class="n">inds_n_check</span><span class="o">*</span><span class="n">r</span>
@@ -2103,7 +2096,7 @@ all tips are already arranged to take only the required peptides.</p>
 <span id="interpretation"></span><h2>Results interpretation with a Bayesian mixture model<a class="headerlink" href="#results-interpretation-with-a-bayesian-mixture-model" title="Link to this heading"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="cpp.activation_model">
-<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">activation_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inds</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">fig,</span> <span class="pre">pandas</span> <span class="pre">DataFrame</span></span></span><a class="headerlink" href="#cpp.activation_model" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">activation_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cores</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">fig,</span> <span class="pre">pandas</span> <span class="pre">DataFrame</span></span></span><a class="headerlink" href="#cpp.activation_model" title="Link to this definition"></a></dt>
 <dd><div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Fitting might take several minutes.</p>
@@ -2113,7 +2106,8 @@ all tips are already arranged to take only the required peptides.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>obs</strong> (<em>list</em>) – list with observed values</p></li>
 <li><p><strong>n_pools</strong> (<em>int</em>) – number of pools</p></li>
-<li><p><strong>inds</strong> (<em>int</em>) – list with indices for observed values</p></li>
+<li><p><strong>inds</strong> (<em>1</em><em>, </em><em>int</em>) – list with indices for observed values</p></li>
+<li><p><strong>cores</strong> – number of cores</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2214,7 +2208,7 @@ all tips are already arranged to take only the required peptides.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cpp.simulation">
-<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">simulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu_off</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_off</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normal</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span></span></span><a class="headerlink" href="#cpp.simulation" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">simulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu_off</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_off</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span></span></span><a class="headerlink" href="#cpp.simulation" title="Link to this definition"></a></dt>
 <dd><div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Generation might take several minutes.</p>
@@ -2229,7 +2223,8 @@ all tips are already arranged to take only the required peptides.</p>
 <li><p><strong>r</strong> (<em>int</em>) – number of replicas for each pool</p></li>
 <li><p><strong>iters</strong> (<em>int</em>) – number of pools the experiment</p></li>
 <li><p><strong>iters</strong> – peptide occurrence in the pooling scheme, less than n_pools</p></li>
-<li><p><strong>normal</strong> (<em>int</em>) – the most common number of peptides sharing an epitope in the pooling scheme.</p></li>
+<li><p><strong>p_shape</strong> (<em>int</em>) – number of activated pools</p></li>
+<li><p><strong>cores</strong> (<em>1</em><em>, </em><em>int</em>) – number of cores</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -2243,7 +2238,7 @@ all tips are already arranged to take only the required peptides.</p>
 <dd class="field-odd"><p>list, list</p>
 </dd>
 </dl>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p_results</span><span class="p">,</span> <span class="n">n_results</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">simulation</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p_results</span><span class="p">,</span> <span class="n">n_results</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">simulation</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">p_results</span>
 <span class="go">[14.554757492774076, 14.818328502490942, 14.846124806885513, 14.53696797679254, 15.311202071456592]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">n_results</span>

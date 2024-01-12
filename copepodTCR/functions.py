@@ -1225,7 +1225,7 @@ def zip_meshes(meshes_list):
 # # Bayesian Model
 
 ### Activation model
-def activation_model(obs, n_pools, inds):
+def activation_model(obs, n_pools, inds, cores=1):
 
     """
     Takes a list with observed data (obs), number of pools (n_pools), and indices for the observed data if there were mutiple replicas.
@@ -1279,7 +1279,7 @@ def activation_model(obs, n_pools, inds):
             upper=1,
             )
 
-        idata_alt = pm.sample()
+        idata_alt = pm.sample(cores = cores)
         
     with alternative_model:
         posterior_predictive = pm.sample_posterior_predictive(idata_alt)
@@ -1422,7 +1422,7 @@ def random_amino_acid_sequence(length):
     return ''.join(random.choice(amino_acids) for _ in range(length))
 
 ### Simulation
-def simulation(mu_off, sigma_off, mu_n, sigma_n, r, n_pools, iters, normal):
+def simulation(mu_off, sigma_off, mu_n, sigma_n, r, n_pools, iters, p_shape, cores=1):
     '''
     Takes parameters for the model, returns simulated data.
     mu_off - mu of the Normal distribution for the offset.
@@ -1434,8 +1434,7 @@ def simulation(mu_off, sigma_off, mu_n, sigma_n, r, n_pools, iters, normal):
     iters - peptide occurrence in the pooling scheme, i.e. to how many pools a single peptide is added.
     normal - the most common number of peptides sharing an epitope in the pooling scheme.
     '''
-    p_shape = iters+normal-1
-    n_shape = n_pools-(iters+normal-1)
+    n_shape = n_pools-p_shape
     with pm.Model() as simulation:
         # offset
         offset = pm.Normal("offset", mu=mu_off, sigma=sigma_off)
@@ -1454,7 +1453,7 @@ def simulation(mu_off, sigma_off, mu_n, sigma_n, r, n_pools, iters, normal):
         pools_p = pm.TruncatedNormal('pools_p', mu=p[inds_p], sigma=sigma_off, lower=0, upper=100, shape=p_shape_r)
         pools_n = pm.TruncatedNormal('pools_n', mu=n[inds_n], sigma=sigma_n, lower=0, upper=100, shape=n_shape_r)
 
-        trace = pm.sample(draws=1)
+        trace = pm.sample(draws=1, cores = cores)
         
     p_results = trace.posterior.pools_p.mean(dim="chain").values.tolist()[0]
     n_results = trace.posterior.pools_n.mean(dim="chain").values.tolist()[0]

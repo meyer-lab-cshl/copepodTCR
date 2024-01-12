@@ -682,16 +682,7 @@ If you want to play with the approach with the generated data, you can use the f
                lst_all.append(ps)
       >>> lst = lst_all[:len_lst]
 
-3. For further analysis, you will need to know what is the most common number of peptides sharing an epitope, so you need to calculate that as well:
-
-   .. code-block:: python
-
-      >>> t, r_all = cpp.how_many_peptides(lst, ep_length)
-      >>> normal = t.most_common(1)[0][0]
-      >>> normal
-      2
-
-4. Then you can finally generate the pooling scheme.
+3. Then you can finally generate the pooling scheme.
 
    .. code-block:: python
 
@@ -699,7 +690,7 @@ If you want to play with the approach with the generated data, you can use the f
       >>> pools, peptide_address = cpp.pooling(lst=lst, addresses=lines, n_pools=n_pools)
       >>> check_results = cpp.run_experiment(lst=lst, peptide_address=peptide_address, ep_length=ep_length, pools=pools, iters=iters, n_pools=n_pools, regime='without dropouts')
 
-5. Then you need to select a cognate epitope to later check whether the model can recover it. You can do it manually if you particularly like some of them. But also you can do that randomly.
+4. Then you need to select a cognate epitope to later check whether the model can recover it. You can do it manually if you particularly like some of them. But also you can do that randomly.
 
    .. code-block:: python
 
@@ -725,7 +716,7 @@ If you want to play with the approach with the generated data, you can use the f
       >>> inds_n_check
       [0, 1, 2, 3, 4, 7, 8]
 
-6. Then you can simulate activation signal. For that, you would need to determine paratemers of the model.
+5. Then you can simulate activation signal. For that, you would need to determine paratemers of the model.
 
    * mu_n - mu of the negative distribution (distribution of signal of non-activated pools)
 
@@ -737,20 +728,22 @@ If you want to play with the approach with the generated data, you can use the f
 
    * r - number of replicas in the experiment
 
+   * p_shape - number of activated pools in simulation, you can make it equal to the number of pools where cognate epitope is present, or you can make more / less to see how the algorithm responds to mistakes.
+
    .. code-block:: python
 
       >>> mu_off = 10
       >>> sigma_off = 0.01
       >>> mu_n = 5
       >>> sigma_n = 1
-      >>> r = 1   
+      >>> r = 1
+      >>> p_shape = len(inds_p_check)  
 
    .. code-block:: python
 
-      p_shape = iters+normal-1
-      n_shape = n_pools-(iters+normal-1)
+      n_shape = n_pools-p_shape
 
-      >>> p_results, n_results = cpp.simulation(mu_off, sigma_off, mu_n, sigma_n, n_pools, r, iters, normal)
+      >>> p_results, n_results = cpp.simulation(mu_off, sigma_off, mu_n, sigma_n, n_pools, r, iters, p_shape)
       >>> cells = pd.DataFrame(columns = ['Pool', 'Percentage'])
       >>> cells['Percentage'] = p_results + n_results
       >>> cells['Pool'] = inds_p_check*r + inds_n_check*r
@@ -792,7 +785,7 @@ If you want to play with the approach with the generated data, you can use the f
       | 8    | 5.334201   |
       +------+------------+
 
-7. Then you can use this table to check the algorithm.
+6. Then you can use this table to check the algorithm.
 
    .. code-block:: python
 
@@ -811,7 +804,7 @@ If you want to play with the approach with the generated data, you can use the f
    
    * ['YCNQNWDWDMCEVVCGR', 'WDWDMCEVVCGRDFCHC'] - were recovered by the model from the simulated activation data
 
-8. You can play with different parameters to check how well the approach works. For example, you can decrease the offset for the positive distribution, to check how different should be activated and non-activated pools to yield correct results.
+7. You can play with different parameters to check how well the approach works. For example, you can decrease the offset for the positive distribution, to check how different should be activated and non-activated pools to yield correct results.
 
 .. _occurrence-section:
 
@@ -1408,7 +1401,7 @@ Pooling and simulation
 Results interpretation with a Bayesian mixture model
 ------------------------------------------------------------
 
-.. function:: cpp.activation_model(obs, n_pools, inds) -> fig, pandas DataFrame
+.. function:: cpp.activation_model(obs, n_pools, inds, cores) -> fig, pandas DataFrame
 
       .. note:: Fitting might take several minutes.
 
@@ -1418,6 +1411,8 @@ Results interpretation with a Bayesian mixture model
       :type n_pools: int
       :param inds: list with indices for observed values
       :type inds: int
+      :param cores: number of cores
+      :type inds: 1, int
       :return:
          1) fig -- posterior predictive KDE and observed data KDE
          2) probs -- probabilitity for each pool of being drawn from a distribution of activated or non-activated pools
@@ -1480,7 +1475,7 @@ Data simulation with Bayesian mixture model
          >>> sequence
          'EMKFLDQSQLGYVHPKWHHGTEMDEWSRSNSAYGKHQEATRLCSQWWVKTYMPTDPCWMLRYTNCCAMVPRYADFCMRDYRYAYIYFVNWNHECSDVIMETCCFALGKKLSTPTCTPGCVTVIYECKSEFEVGWPPHIIEGSAEFYAVACFVTRFMCPQTKANLLKIIISFHLHHYGQAEQICYKNEIPCCAMKFFDHREGLESNCLTCMQWPCNKSLFDPFPVMYRFSMAGNQGEPPCGYAVTMNARCTMGRWQKFRCEFKGCFYHNINVYTGCETMHECQIPVPMVHQTTLLYPCNVRSKDIDPCDWSYLEDDKERGWCGKFQMGSQIFRKFTPPPWTNRGWNHMDDTEARHRWCLTWKFTLDEPAEDTCILWIHSVYLWVVCMQGTAMSMRMVSFTLLCFMRAPPCEVMHYCDPQQTRDEELPMVGYITEELKSMFTSSSWPGSQSPGWGTWDLSIKRHSVKVPDMINPTHVVKPTKCICNQSLGWTFSEIDMYARHDIQKRWKCPIWNGQFRYEVIHSKQNPFQNSDEQPT'
 
-.. function:: cpp.simulation(mu_off, sigma_off, mu_n, sigma_n, n_pools, r, iters, normal) -> list, list
+.. function:: cpp.simulation(mu_off, sigma_off, mu_n, sigma_n, n_pools, r, iters, p_shape, cores=1) -> list, list
 
       .. note:: Generation might take several minutes.
 
@@ -1498,8 +1493,10 @@ Data simulation with Bayesian mixture model
       :type iters: int
       :param iters: peptide occurrence in the pooling scheme, less than n_pools
       :type iters: int
-      :param normal: the most common number of peptides sharing an epitope in the pooling scheme.
-      :type normal: int
+      :param p_shape: number of activated pools
+      :type p_shape: int
+      :param cores: number of cores
+      :type cores: 1, int
 
       :return:
          1) p_results - averaged across 4 chains data for activated pools;
@@ -1508,7 +1505,7 @@ Data simulation with Bayesian mixture model
 
       .. code-block:: python
 
-         >>> p_results, n_results = cpp.simulation(10, 0.01, 5, 1, 1, 12, 4, 2)
+         >>> p_results, n_results = cpp.simulation(10, 0.01, 5, 1, 12, 1, 4, 5)
          >>> p_results
          [14.554757492774076, 14.818328502490942, 14.846124806885513, 14.53696797679254, 15.311202071456592]
          >>> n_results
