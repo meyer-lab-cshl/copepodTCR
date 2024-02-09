@@ -16,6 +16,18 @@ import pymc as pm
 import arviz as az
 
 
+
+
+import math
+import os
+from fnmatch import fnmatch
+import itertools
+import time
+
+
+
+
+
 # # Functions for ITERS search
 
 def factorial(num):
@@ -1464,3 +1476,495 @@ def simulation(mu_off, sigma_off, mu_n, sigma_n, r, n_pools, p_shape, cores=1):
     n_results = trace.posterior.n_pools_r.mean(dim="chain").values.tolist()[0]
 
     return p_results, n_results
+
+
+
+
+
+
+def item_per_pool(addresses, n):
+    
+    """
+    Takes matrix of addresses and number of pools.
+    Returns the balance.
+    """
+
+    s = np.zeros((n,), dtype='int')
+    #s=[0 for i in range(n)]
+    for line in addresses:
+        for i in line:
+            s[i]+=1
+    return s
+
+
+
+
+def find_path(n, X, directory):
+    
+    """
+    For original RCA.
+    Takes number of pools, pool per item and the directory of the elementary sequences.
+    Returns the path of the elementary short sequence.
+    """
+    
+    fileList = [f for f in os.listdir(directory) if fnmatch(f,f'{n}n_{X}X*.txt')]
+    l = len(fileList)
+    filepath = os.path.join(directory, fileList[l - 1])
+    return filepath
+
+
+
+# def read_txt(filename, delimiter=' '):
+    
+#     """
+#     For recursive combining algorithm.
+#     Takes a .txt file and return the parameters and sequence matrix.
+#     Used in function(address_rearrangement_RC).
+#     """
+
+#     with open(filename,"r") as f:
+#         line_1=f.readline()
+#         split_list=line_1.split()
+#         n,X,M=[int(num) for num in split_list]
+        
+#         line_mat=f.read()
+#         row_list = line_mat.splitlines()  # splitlines默认参数是‘\n’
+#         mat = [[int(i) for i in row.strip().split(delimiter)] for row in row_list]
+#     return n,X,M,mat
+
+
+
+
+def union_adjacent_sets(test_matrix):
+    
+    """
+    Takes matrix of addresses and returns the union matrix.
+    Used in function(find_distance_1).
+    """
+    
+    r, c = test_matrix.shape
+    union_matrix = np.zeros((r - 1, c + 1), dtype='int')
+    for i in range(r - 1):
+        a_i = np.union1d(test_matrix[i, :], test_matrix[i + 1, :])
+        a_i = np.sort(a_i)
+        union_matrix[i, :] = a_i
+    return union_matrix
+
+
+
+def set_distance(set1, set2):
+    
+    """
+    Takes two address vectors and returns their Hamming distance.
+    Used in function(find_distance_1).
+    """
+    
+    a = np.setdiff1d(set1, set2)
+    b = np.setdiff1d(set2, set1)
+    if a.size == b.size:
+        return a.size
+    else:
+        return -1
+
+
+def find_vector_distance_1(test_matrix, n, X, nums):
+    
+    """
+    For RCA.
+    Find a set of addresses bs for which each address in it takes values from nums,
+    and has Hamming distance 1 with the first address of test_matrix.
+    Takes matrix of addresses, the cardinality of nums n, address cardinality X,
+    and the set where bs takes values from.
+    Return the set of addresses bs.
+    """ 
+    
+    union_matrix=union_adjacent_sets(test_matrix)    
+    A = np.array(list(itertools.combinations(nums, X)))   
+    bs = np.empty((0,X),dtype='int')   
+    
+    for j in range(A.shape[0]):
+        b = A[j, :]
+        if set_distance(b, test_matrix[0, :]) == 1:
+            union_row = np.union1d(b, test_matrix[0, :])
+            if not any(np.array_equal(union_row, row) for row in union_matrix):
+                b = np.reshape(b, (1,X))
+                bs=np.concatenate((bs,b), axis=0)    
+    return bs
+
+
+
+
+
+def change_row(test_matrix, k, b, n, nums, p=None):
+    
+    """
+    For RCA, used in address_arrangement_RC and gen_elementary_sequence.
+    Find a permutation map such that the k-th address of
+    test_matrix is mapped one-by-one to b, and n is mapped to p
+    Takes test_matrix, the row index k, the target address b, the cardinality of
+    the set nums and the vector nums.
+    Returns the permuted matrix for combining.
+    """
+    
+    r, X = test_matrix.shape
+    test_matrix_out=np.zeros((r,X),dtype='int')
+    if p is None:
+        p = X-1
+
+    a = test_matrix[k, :]
+    perm_vec = np.zeros(n)
+
+    len_a = len(a)
+    q = len_a - 1
+    perm_vec[a[q]] = b[p]
+
+    a1 = np.setdiff1d(a, a[q])
+    b1 = np.setdiff1d(b, b[p])
+    len_a -= 1
+
+    for l in range(len_a):
+        perm_vec[a1[l]] = b1[l]
+
+    nums1 = np.setdiff1d(np.arange(0, n), a)
+    nums2 = np.setdiff1d(nums, b)
+    len_nums1 = len(nums1)
+
+    for l in range(len_nums1):
+        perm_vec[nums1[l]] = nums2[l]
+
+    for l in range(r):
+        for j in range(X):
+            test_matrix_out[l, j] = perm_vec[test_matrix[l, j]]
+        test_matrix_out[l, :] = np.sort(test_matrix_out[l, :])
+    return test_matrix_out
+
+
+
+
+
+
+
+def isGrayUnionDisjoint(S):
+    
+    """
+    Verify whether S satisfy the first two constraints.
+    """
+    r, _ = S.shape
+    U=union_adjacent_sets(S)
+    flag = True
+    for i in range(r-1):
+        if set_distance(S[i], S[i+1]) != 1:
+            flag = False
+    
+    for i in range(r-2):
+        for j in range(i+1,r-1):
+            if sum(abs(U[i]-U[j])) == 0:
+                flag = False
+    
+    return flag
+    
+
+
+
+
+
+
+
+
+
+
+
+
+def address_rearrangement_RC(n_pools, iters, len_lst):
+    
+    """
+    The exposure function original recursive combining algorithm (RCA).
+    Takes number of pools, iters, and length of the sequence.
+    Returns array of addresses.
+    Is dependent on function(change_row) and find_vector_distance_1, 
+    Is dependent on pre-determined sequences in folder short_sequences_txt2.
+    """
+    
+    n_0 = [8,8,8,9,10,12,14,16]
+    n0=n_0[iters-1]
+    deviation_now=999
+    
+    w=math.floor(iters*len_lst/n_pools)
+    weights0 = w * np.ones((n_pools,), dtype='int')
+    delta = len_lst * iters - w * n_pools
+    weights0[:delta] += 1  # Initialize items per pool vector
+    
+    weights = weights0
+    n = n_pools
+        
+    
+    
+    
+    # directory='C:\\Users\\HEGUANCHEN\\MyWorkDirectory\\TCR_peptides_pooling\\functionsRCA\\short_sequences_txt2'
+    directory='short_sequences_txt2'
+    filepath=find_path(n - 1, iters-1, directory)
+    S1_0 = np.loadtxt(filepath, dtype='int')
+    M1, _ = S1_0.shape  
+    B = (n-1) * np.ones((M1, 1), dtype='int')
+    S1_0 = np.concatenate([S1_0, B], axis=1)
+    filepath=find_path(n - 2, iters-1, directory)
+    S2_0 = np.loadtxt(filepath, dtype='int')
+    M2, _ = S2_0.shape
+    B = (n-2) * np.ones((M2, 1), dtype='int')
+    S2_0 = np.concatenate([S2_0, B], axis=1)
+    
+    for ite1 in range(M1-w+1):
+        # S_out = np.zeros((0,iters),dtype='int')
+        S1 = S1_0[ite1:ite1+w]
+        S_out = S1
+        weights_n = item_per_pool(S1, n_pools)
+        weights = weights0 - weights_n
+        nums = np.setdiff1d(np.arange(0, n_pools), n-1)
+        nums0=nums
+        S_out0 = S_out
+        
+        
+        # ite = n-2 level traverse 
+        bs = find_vector_distance_1(S_out, n-1, iters, nums) 
+        bs_diff = np.setdiff1d(bs, S_out[0, :]) 
+        weights_selected=weights[bs_diff]
+        row2 = np.argmax(weights_selected)
+        b2 = bs[row2, :]
+        w_is, p2 = np.sort(weights[b2]), np.argsort(weights[b2])
+        pos2 = np.searchsorted(w_is, M2, side='right') - 1
+        
+        if pos2 == -1:
+            pos2 = 0
+            w2 = M2
+        else:
+            w2 = weights[b2[p2[pos2]]]
+            
+        weights1 = weights
+            
+        for ite2 in range(M2-w2+1):
+            nums = nums0
+            mat_level2 = change_row(S2_0, ite2+w2-1, b2, n - 1, nums, p2[pos2])
+            S2 = mat_level2[ite2:ite2+w2]
+            S_out = np.concatenate([S2, S_out0], axis=0)
+            w_i_diff = item_per_pool(S2, n_pools)
+            weights = weights1 - w_i_diff
+            nums = np.setdiff1d(nums0, b2[p2[pos2]])
+            
+            
+            # (n-i)-th level concatenation
+            for i in range(n - 3, n0 - 1, -1):
+                filepath=find_path(i, iters-1, directory)
+                Si_0 = np.loadtxt(filepath, dtype='int')
+                Mi, _ = Si_0.shape
+                B = i * np.ones((Mi, 1), dtype='int')
+                Si_0 = np.concatenate([Si_0, B], axis=1)
+                bs = find_vector_distance_1(S_out, i + 1, iters, nums)
+                r, _ = bs.shape
+                if r == 0:
+                    break
+
+                # Find the maximum number in w_i(b) that is smaller than Mi
+                bs_diff = np.setdiff1d(bs, S_out[0, :])
+                p = np.argmax(weights[bs_diff])
+                bi = bs[p, :]
+                w_is, p = np.sort(weights[bi]), np.argsort(weights[bi])
+                pos = np.searchsorted(w_is, Mi, side='right') - 1
+                # if pos == -1:
+                #     pos = 0
+                #     wi = Mi
+                # else:
+                #     wi = weights[bi[p[pos]]]
+                    
+                    
+                    
+
+
+                # Concatenate the (n-i)-th level subsequence
+                if pos == -1:
+                    Si = change_row(Si_0, Mi-1, bi, i+1, nums, p[-1])
+                    S_out = np.concatenate([Si, S_out], axis=0)
+                    # print(f"i={i}, M2<w_i(b(X)), does not clear w_i(b(X))")
+                    w_i_diff = item_per_pool(Si, n)
+                    weights = weights - w_i_diff
+                    nums = np.setdiff1d(nums, bi[p[-1]])
+                elif weights[bi[p[pos]]] > 0:
+                    Si = change_row(Si_0, Mi-1, bi, i+1, nums, p[pos])
+                    S_out = np.concatenate(
+                        [Si[Mi - weights[bi[p[pos]]]:Mi, :], S_out], axis=0)
+                    w_i_diff = item_per_pool(Si[Mi - weights[bi[p[pos]]]:Mi, :], n_pools)
+                    weights = weights- w_i_diff
+                    nums = np.setdiff1d(nums, bi[p[pos]])
+                else:
+                    nums = np.setdiff1d(nums,bi[p[0]])
+                  
+                    
+            M_last = int(np.sum(weights) / iters)
+            filepath=find_path(n0, iters, directory)
+            S0_0 = np.loadtxt(filepath, dtype='int')
+            M0, _ = S0_0.shape
+            bs = find_vector_distance_1(S_out, n0, iters, nums)
+            r, _ = bs.shape
+
+
+            if r > 0:
+                if M_last <= 0:
+                    S_out = S_out[-len_lst:]
+                elif M0 < M_last:
+                    b = bs[0, :]
+                    S0 = change_row(S0_0, M0-1, b, n0, nums)
+                    S_out = np.concatenate([S0, S_out], axis=0)
+                    w_i_diff = item_per_pool(S0, n_pools)
+                    weights = weights - w_i_diff
+                    print("M0<M_last, does not achieve length.")
+                else:
+                    deviation = 999
+                    flag = False
+                    for j in range(r):
+                        b = bs[j, :]
+                        for k in range(M0, M_last - 1, -1):
+                            mat_last_0 = change_row(S0_0, k-1, b, n0, nums)
+                            S0 = mat_last_0[k - M_last:k]
+                            w_i_diff = item_per_pool(S0, n)
+                            w_i_verify = weights - w_i_diff
+                            deviation_k = np.max(w_i_verify) - np.min(w_i_verify)
+                            if deviation_k < deviation:
+                                flag = True
+                                deviation = deviation_k
+                                S_out1 = np.concatenate([S0, S_out], axis=0)   
+                    if flag:
+                        S_out = S_out1
+
+
+
+            if isGrayUnionDisjoint(S_out) and len(S_out) == len_lst:
+            # if len(S_out) == len_lst:
+                item_nums = item_per_pool(S_out, n)
+                deviation = np.max(item_nums) - np.min(item_nums)
+                # print(f"ite1={ite1}, ite2={ite2}, isGrayUnionDisjoint, deviation={deviation}")
+                if deviation_now > deviation:
+                    deviation_now = deviation
+                    S_out_out = S_out
+            elif len(S_out) < len_lst:
+                print(f"ite1={ite1}, ite2={ite2}, len(S_out)={len(S_out)}<M")
+            else:
+                print("not GrayUnionDisjoint.")
+    
+    return S_out_out
+
+
+
+
+def gen_elementary_sequence(n, iters, nums, size, b = None):
+    
+    """
+    For RCA+BBA, used in recursive_combining.
+    Find a balanced sequence via BBA, and apply augmentation to generate the AES.
+    Takes n_pools, iters, numbers that AES takes values from, the sequence length
+    and the last address b.
+    Returns the AES.
+    """
+    
+    _, A = address_rearrangement_A(n - 1, iters - 1, size)
+    B = (n - 1) * np.ones((size, 1), dtype='int')
+    S = np.concatenate([A, B], axis=1)
+    if b is None:
+        cleared_nums = [n - 1]
+        nums = np.setdiff1d(nums, cleared_nums)
+        return  S, nums
+    else:
+        S = change_row(S, -1, b, n, nums)
+        cleared_nums = b[-1]
+        nums = np.setdiff1d(nums, cleared_nums) 
+        return  S, nums
+
+
+
+
+
+def recursive_combining(n, iters, nums, weights, size_res, size_last, bs, n0, S = None):
+    
+    """
+    Combining function of RCA+BBA, used in address_arrangement_RC2.
+    Combine the AES recursively to the base sequence, with loop counter n 
+    starting from n and terminates at n0.
+    Returns the combined long sequence.
+    """
+    
+    if S is None:
+        S = np.empty((0,iters), dtype='int')
+    #     bs = np.array(list(itertools.combinations(nums, iters)))
+    # else:
+    #     bs = find_vector_distance_1(S, n, iters, nums)
+    #     r, _ =bs.shape
+    #     if r==0:
+    #         return None
+    
+    if n == n0:
+        _ , A = address_rearrangement_A(n, iters, size_res)
+        A = np.array(A, dtype = 'int')
+        b = bs[0,:]
+        A = change_row(A, -1, b, n, nums)
+        S = np.concatenate([A, S], axis=0)
+        return S
+
+
+    nums0 = nums
+    weights0 = weights
+    size_res0 = size_res
+    
+    for b in bs:
+        # combine
+        size_0 = weights0[b[-1]]
+        S_n, nums = gen_elementary_sequence(n, iters, nums0, size_0, b)
+        S_ver = np.concatenate([S_n, S], axis=0)
+
+        # back-reduction
+        weights_n = item_per_pool(S_n, len(weights0))
+        weights = weights0 - weights_n
+        n = n - 1
+        size_res = size_res0 - size_0
+        
+        
+        bs1 = find_vector_distance_1(S_ver, n, iters, nums) 
+        r, _ =bs1.shape
+        if r:
+            S_new = recursive_combining(n, iters, nums, weights, size_res, size_0, bs1, n0, S_ver)            
+            if S_new is not None:
+                return S_new
+        
+        
+
+    return None
+
+
+
+
+
+
+
+
+def address_rearrangement_RC2(n_pools, iters, len_lst):
+    
+    """
+    The exposure function of advanced recursive combining (RCA+BBA).
+    Takes number of pools, iters, and length of the path.
+    Returns balance of the sequence and list of addresses.
+    Is dependent on function(recursive_combining).
+    """
+    
+    n_0 = [8,8,8,9,10,12,14,16]
+
+    
+    # back-reduction
+    w=math.floor(iters*len_lst/n_pools)
+    weights_0 = w * np.ones((n_pools,), dtype='int')
+    delta = len_lst * iters - w * n_pools
+    weights_0[:delta] += 1  # Initialize items per pool vector
+    weights = weights_0
+    n = n_pools
+    nums = np.arange(0, n)
+    bs0 =  np.array(list(itertools.combinations(nums, iters)))
+    
+    S = recursive_combining(n, iters, nums, weights, len_lst, 0, bs0, n_0[iters-1], S = None)
+    
+    return S
