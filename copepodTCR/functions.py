@@ -1696,22 +1696,32 @@ def address_rearrangement_RC(n_pools, iters, len_lst):
     
     weights = weights0
     n = n_pools
-        
-    
     
     
     # directory='C:\\Users\\HEGUANCHEN\\MyWorkDirectory\\TCR_peptides_pooling\\functionsRCA\\short_sequences_txt2'
     directory='short_sequences_txt'
     filepath=find_path(n - 1, iters-1, directory)
     S1_0 = np.loadtxt(filepath, dtype='int')
-    M1, _ = S1_0.shape  
+    
+    shape_i = S1_0.shape
+    if len(shape_i) == 1:
+        S1_0 = S1_0.reshape((shape_i[0],1))
+        
+    M1, _ = S1_0.shape
     B = (n-1) * np.ones((M1, 1), dtype='int')
     S1_0 = np.concatenate([S1_0, B], axis=1)
     filepath=find_path(n - 2, iters-1, directory)
     S2_0 = np.loadtxt(filepath, dtype='int')
+    
+    shape_i = S2_0.shape
+    if len(shape_i) == 1:
+        S2_0 = S2_0.reshape((shape_i[0],1))
+        
     M2, _ = S2_0.shape
     B = (n-2) * np.ones((M2, 1), dtype='int')
     S2_0 = np.concatenate([S2_0, B], axis=1)
+    
+    S_out_out = None
     
     for ite1 in range(M1-w+1):
         # S_out = np.zeros((0,iters),dtype='int')
@@ -1755,6 +1765,11 @@ def address_rearrangement_RC(n_pools, iters, len_lst):
             for i in range(n - 3, n0 - 1, -1):
                 filepath=find_path(i, iters-1, directory)
                 Si_0 = np.loadtxt(filepath, dtype='int')
+                
+                shape_i = Si_0.shape
+                if len(shape_i) == 1:
+                    Si_0 = Si_0.reshape((shape_i[0],1))
+                
                 Mi, _ = Si_0.shape
                 B = i * np.ones((Mi, 1), dtype='int')
                 Si_0 = np.concatenate([Si_0, B], axis=1)
@@ -1769,13 +1784,6 @@ def address_rearrangement_RC(n_pools, iters, len_lst):
                 bi = bs[p, :]
                 w_is, p = np.sort(weights[bi]), np.argsort(weights[bi])
                 pos = np.searchsorted(w_is, Mi, side='right') - 1
-                # if pos == -1:
-                #     pos = 0
-                #     wi = Mi
-                # else:
-                #     wi = weights[bi[p[pos]]]
-                    
-                    
                     
 
 
@@ -1801,6 +1809,11 @@ def address_rearrangement_RC(n_pools, iters, len_lst):
             M_last = int(np.sum(weights) / iters)
             filepath=find_path(n0, iters, directory)
             S0_0 = np.loadtxt(filepath, dtype='int')
+            
+            shape_i = S0_0.shape
+            if len(shape_i) == 1:
+                S0_0 = S0_0.reshape((shape_i[0],1))
+                
             M0, _ = S0_0.shape
             bs = find_vector_distance_1(S_out, n0, iters, nums)
             r, _ = bs.shape
@@ -1840,7 +1853,7 @@ def address_rearrangement_RC(n_pools, iters, len_lst):
             # if len(S_out) == len_lst:
                 item_nums = item_per_pool(S_out, n)
                 deviation = np.max(item_nums) - np.min(item_nums)
-                # print(f"ite1={ite1}, ite2={ite2}, isGrayUnionDisjoint, deviation={deviation}")
+                print(f"ite1={ite1}, ite2={ite2}, isGrayUnionDisjoint, deviation={deviation}")
                 if deviation_now > deviation:
                     deviation_now = deviation
                     S_out_out = S_out

@@ -10,9 +10,9 @@ Created on Fri Feb  2 10:47:05 2024
 
 import functions as func
 
-n_pools=14
-iters=3
-len_lst=364
+n_pools=20
+iters=2
+len_lst=190
 
 deviations_RC = []
 deviations_A = []
@@ -25,7 +25,8 @@ times_A = []
 print(len_lst)
 # S_RC = func.address_rearrangement_RC2(n_pools=n_pools, iters=iters, len_lst=len_lst)
 S_RC = func.address_rearrangement_RC(n_pools=n_pools, iters=iters, len_lst=len_lst)
-balance_RC = func.item_per_pool(S_RC, n_pools)
-deviation_RC= max(balance_RC) - min(balance_RC)
-flag_RC = func.isGrayUnionDisjoint(S_RC)
-deviations_RC.append(deviation_RC)
+if S_RC is not None:
+    balance_RC = func.item_per_pool(S_RC, n_pools)
+    deviation_RC= max(balance_RC) - min(balance_RC)
+    flag_RC = func.isGrayUnionDisjoint(S_RC)
+    deviations_RC.append(deviation_RC)

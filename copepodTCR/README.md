@@ -1,9 +1,12 @@
 ﻿
 # Recursive Combining Algorithm for Combinatorial Peptide Pooling Design of T-cell Receptors
 
-The **Recursive Combining Algorithm (RCA)** is a powerful algorithm that can be employed in constructing sequences for combinatorial peptide pooling design of T-cell receptors (TCR). It proceeds by recursively combining elementary sequences into the base sequence, typically in a bottom-up fashion.
+|         |                                                        |
+| ------- | ------------------------------------------------------ |
+| Authors | Guanchen He, Qin Huang                                 |
+| Date    | 09/02/2024                                             |
 
-A detailed note on RCA is referred to **note_on_RCA.pdf**. 
+The **Recursive Combining Algorithm (RCA)** is a powerful algorithm that can be employed in constructing sequences for combinatorial peptide pooling design of T-cell receptors (TCR). It proceeds by recursively combining elementary sequences into the base sequence, typically in a bottom-up fashion.
 
 
 ## Implementation of RCA in Python
