@@ -1784,7 +1784,6 @@ def address_rearrangement_RC(n_pools, iters, len_lst):
                 bi = bs[p, :]
                 w_is, p = np.sort(weights[bi]), np.argsort(weights[bi])
                 pos = np.searchsorted(w_is, Mi, side='right') - 1
-                    
 
 
                 # Concatenate the (n-i)-th level subsequence
@@ -1894,6 +1893,10 @@ def gen_elementary_sequence(n, iters, nums, size, b = None):
 
 
 
+
+
+
+
 def recursive_combining(n, iters, nums, weights, size_res, size_last, bs, n0, S = None):
     
     """
@@ -1925,29 +1928,39 @@ def recursive_combining(n, iters, nums, weights, size_res, size_last, bs, n0, S 
     weights0 = weights
     size_res0 = size_res
     
-    for b in bs:
+    
+    
+    r, _ = bs.shape
+    max_weights_bs = [max(weights0[b]) for b in bs]
+    bs_sort = bs[np.flip(np.argsort(max_weights_bs))]
+    
+    
+    for b in bs_sort:
         # combine
+        b = b[np.argsort(weights[b])]
         size_0 = weights0[b[-1]]
+        # print("n=%d, r=%d, iters=%d,size_0=%d"%(n,r,iters,size_0))
+        # print("weights=",weights)
         S_n, nums = gen_elementary_sequence(n, iters, nums0, size_0, b)
         S_ver = np.concatenate([S_n, S], axis=0)
 
         # back-reduction
         weights_n = item_per_pool(S_n, len(weights0))
         weights = weights0 - weights_n
-        n = n - 1
         size_res = size_res0 - size_0
         
-        
-        bs1 = find_vector_distance_1(S_ver, n, iters, nums) 
-        r, _ =bs1.shape
-        if r:
-            S_new = recursive_combining(n, iters, nums, weights, size_res, size_0, bs1, n0, S_ver)            
+        bs1 = find_vector_distance_1(S_ver, n-1, iters, nums) 
+        r1, _ = bs1.shape
+        if r1:
+            # print("n=%d, iters=%d, size0=%d, size_res=%d"%(n,iters,size_0,size_res))
+            S_new = recursive_combining(n-1, iters, nums, weights, size_res, size_0, bs1, n0, S_ver)            
             if S_new is not None:
                 return S_new
-        
-        
-
     return None
+
+
+
+
 
 
 
@@ -1978,6 +1991,8 @@ def address_rearrangement_RC2(n_pools, iters, len_lst):
     nums = np.arange(0, n)
     bs0 =  np.array(list(itertools.combinations(nums, iters)))
     
-    S = recursive_combining(n, iters, nums, weights, len_lst, 0, bs0, n_0[iters-1], S = None)
-    
+    if n > n_0[iters-1]:
+        S = recursive_combining(n, iters, nums, weights, len_lst, 0, bs0, n_0[iters-1], S = None)
+    else:
+        _, S = address_rearrangement_A(n, iters, len_lst)
     return S
