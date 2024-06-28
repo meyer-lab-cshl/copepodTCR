@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import os
 import pandas as pd
 import numpy as np
 from itertools import combinations
 import cvxpy as cp
+import math
 import random
 from collections import Counter
 import trimesh
@@ -14,18 +16,6 @@ import zipfile
 from io import BytesIO
 import pymc as pm
 import arviz as az
-
-
-
-
-import math
-import os
-from fnmatch import fnmatch
-import itertools
-import time
-
-
-
 
 
 # # Functions for ITERS search
@@ -437,7 +427,7 @@ def zip_meshes(meshes_list):
 # # Bayesian Model
 
 ### Activation model
-def activation_model(obs, n_pools, inds, cores=1):
+def activation_model(obs, n_pools, inds, neg_control = None, cores=1):
 
     """
     Takes a list with observed data (obs), number of pools (n_pools), and indices for the observed data if there were mutiple replicas.
@@ -447,6 +437,10 @@ def activation_model(obs, n_pools, inds, cores=1):
     coords = dict(pool=range(n_pools), component=("positive", "negative"))
 
     obs = obs/np.max(obs)
+    if neg_control is not None:
+        neg_control = neg_control/np.max(obs)
+    else:
+        neg_control = 0.5/np.max(obs)
 
     with pm.Model(coords=coords) as alternative_model:
         # Define the offset
@@ -466,15 +460,20 @@ def activation_model(obs, n_pools, inds, cores=1):
         # Combine the source components
         source = pm.math.stack([source_positive, source_negative], axis=0)
 
+        # Probability of assigning depends on negative control
+        neg_sigma = np.sqrt(neg_control * (1 - neg_control))/2
+        #prior = pm.TruncatedNormal('prior', mu = neg_control, sigma = neg_sigma, lower=0, upper=1)
+        prior = pm.Beta('prior', mu = neg_control, sigma = neg_sigma)
+
         # Each pool is assigned a 0/1 (could adjust the prior probability here given that we
         # know negatives are more likely a priori)
-        component = pm.Bernoulli("assign", 0.5, dims="pool")
+        component = pm.Bernoulli("assign", 1-prior, dims="pool")
 
         # Each pool has a normally distributed response whose mu comes from either the
         # postive or negative source distribution
         pool_dist = pm.TruncatedNormal(
             "pool_dist",
-            mu=source[component],
+            mu=source[component]+neg_sigma,
             sigma=pm.Exponential("sigma", 1),
             lower=0,
             upper=1,
@@ -499,8 +498,12 @@ def activation_model(obs, n_pools, inds, cores=1):
     ax = az.plot_ppc(posterior_predictive, num_pp_samples=100, colors = ['#015396', '#FFA500', '#000000'])
 
     posterior = az.extract(idata_alt)
+    n_mean = posterior["negative"].mean(dim="sample")
+    p_mean = posterior["positive"].mean(dim="sample")
+
+    #ax2 = pm.model_to_graphviz(alternative_model)
     #print(posterior["assign"].mean(dim="sample").to_dataframe())
-    return ax, posterior["assign"].mean(dim="sample").to_dataframe()
+    return ax, posterior["assign"].mean(dim="sample").to_dataframe(), [p_mean, n_mean]
 
 def peptide_probabilities(sim, probs):
 
@@ -634,19 +637,10 @@ def random_amino_acid_sequence(length):
     return ''.join(random.choice(amino_acids) for _ in range(length))
 
 ### Simulation
-def simulation(mu_off, sigma_off, mu_n, sigma_n, r, n_pools, p_shape, cores=1):
-    '''
-    Takes parameters for the model, returns simulated data.
-    mu_off - mu of the Normal distribution for the offset.
-    sigma_off - sigma of the Normal distribution for the offset.
-    mu_n - mu of the Truncated Normal distribution for the negative source (non-activated pools).
-    sigma_n - sigma of the Truncated Normal distribution for the negative source (non-activated pools).
-    r - number of replicas.
-    n_pools - number of pools in the experiment.
-    iters - peptide occurrence in the pooling scheme, i.e. to how many pools a single peptide is added.
-    normal - the most common number of peptides sharing an epitope in the pooling scheme.
-    '''
-    n_shape = n_pools-p_shape
+def simulation(mu_off, sigma_off, mu_n, sigma_n, r, sigma_p_r, sigma_n_r, n_pools, p_shape,
+               pl_shape, low_offset, cores=1):
+
+    n_shape = n_pools-p_shape-pl_shape
     with pm.Model() as simulation:
         # offset
         offset = pm.Normal("offset", mu=mu_off, sigma=sigma_off)
@@ -654,7 +648,9 @@ def simulation(mu_off, sigma_off, mu_n, sigma_n, r, n_pools, p_shape, cores=1):
         # Negative
         n = pm.TruncatedNormal('n', mu=mu_n, sigma=sigma_n, lower=0, upper=100)
         # Positive
-        p = pm.Deterministic("positive", n + offset)
+        p = pm.Deterministic("p", n + offset)
+        # Low positive
+        p_low = pm.Deterministic("p_low", p*low_offset)
 
         # Negative pools
         n_pools = pm.TruncatedNormal('n_pools', mu=n, sigma=sigma_n, lower=0, upper=100, shape = n_shape)
@@ -666,13 +662,23 @@ def simulation(mu_off, sigma_off, mu_n, sigma_n, r, n_pools, p_shape, cores=1):
         inds_p = list(range(p_shape))*r
         p_shape_r = p_shape*r
 
+        # Low positive pools
+        pl_pools = pm.TruncatedNormal('pl_pools', mu=p_low, sigma=sigma_off, lower=0, upper=100, shape = pl_shape)
+        inds_pl = list(range(pl_shape))*r
+        pl_shape_r = pl_shape*r
+
         # With replicas
-        p_pools_r = pm.TruncatedNormal('p_pools_r', mu=p_pools[inds_p], sigma=sigma_off, lower=0, upper=100, shape=p_shape_r)
-        n_pools_r = pm.TruncatedNormal('n_pools_r', mu=n_pools[inds_n], sigma=sigma_n, lower=0, upper=100, shape=n_shape_r)
+        p_pools_r = pm.TruncatedNormal('p_pools_r', mu=p_pools[inds_p], sigma=sigma_p_r, lower=0, upper=100, shape=p_shape_r)
+        pl_pools_r = pm.TruncatedNormal('pl_pools_r', mu=pl_pools[inds_pl], sigma=sigma_p_r, lower=0, upper=100, shape=pl_shape_r)
+        n_pools_r = pm.TruncatedNormal('n_pools_r', mu=n_pools[inds_n], sigma=sigma_n_r, lower=0, upper=100, shape=n_shape_r)
 
         trace = pm.sample(draws=1, cores = cores)
         
     p_results = trace.posterior.p_pools_r.mean(dim="chain").values.tolist()[0]
+    pl_results = trace.posterior.pl_pools_r.mean(dim="chain").values.tolist()[0]
     n_results = trace.posterior.n_pools_r.mean(dim="chain").values.tolist()[0]
 
-    return p_results, n_results
+    n_mean = float(trace.posterior.n.mean())
+    p_mean = float(trace.posterior.p.mean())
+
+    return p_results, pl_results, n_results, [p_mean, n_mean]
