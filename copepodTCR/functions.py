@@ -672,13 +672,17 @@ def simulation(mu_off, sigma_off, mu_n, sigma_n, r, sigma_p_r, sigma_n_r, n_pool
         pl_pools_r = pm.TruncatedNormal('pl_pools_r', mu=pl_pools[inds_pl], sigma=sigma_p_r, lower=0, upper=100, shape=pl_shape_r)
         n_pools_r = pm.TruncatedNormal('n_pools_r', mu=n_pools[inds_n], sigma=sigma_n_r, lower=0, upper=100, shape=n_shape_r)
 
+        # negative control
+        n_control = pm.TruncatedNormal('n_control', mu=n, sigma=sigma_n, lower=0, upper=100, shape=1)
+
         trace = pm.sample(draws=1, cores = cores)
         
     p_results = trace.posterior.p_pools_r.mean(dim="chain").values.tolist()[0]
     pl_results = trace.posterior.pl_pools_r.mean(dim="chain").values.tolist()[0]
     n_results = trace.posterior.n_pools_r.mean(dim="chain").values.tolist()[0]
+    n_control = trace.posterior.n_control.mean(dim="chain").values.tolist()[0]
 
     n_mean = float(trace.posterior.n.mean())
     p_mean = float(trace.posterior.p.mean())
 
-    return p_results, pl_results, n_results, [p_mean, n_mean]
+    return p_results, pl_results, n_results, n_control, [p_mean, n_mean]

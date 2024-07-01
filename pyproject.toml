@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "copepodTCR"
-version = "0.2.1"
+version = "0.2.2"
 authors = [
   { name="Vasilisa Kovaleva", email="vasilisa.kovaliova@gmail.com" },
 ]
@@ -19,7 +19,7 @@ classifiers = [
 dependencies = [
     "pandas >= 1.5.3",
     "numpy >= 1.23.5",
-    "codepub >= 1.3",
+    "codepub >= 1.4",
     "trimesh >= 3.23.5",
     "pymc >= 5.9.2",
     "arviz >= 0.16.1"
