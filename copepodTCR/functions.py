@@ -427,6 +427,81 @@ def zip_meshes(meshes_list):
 # # Bayesian Model
 
 ### Activation model
+def activation_model(obs, n_pools, inds, neg_control = None, cores=1):
+
+    """
+    Takes a list with observed data (obs), number of pools (n_pools), and indices for the observed data if there were mutiple replicas.
+    Returns model fit and a dataframe with probabilities of each pool being drawn from negative or positive distributions.
+    """
+    
+    coords = dict(pool=range(n_pools), component=("positive", "negative"))
+
+    if neg_control is not None:
+        neg_control = neg_control/np.max(obs)
+    else:
+        neg_control = 0.5/np.max(obs)
+
+    obs = obs/np.max(obs)
+
+    with pm.Model(coords=coords) as alternative_model:
+        # Define the offset
+        offset = pm.Normal("offset", mu=0.6, sigma=0.1)
+
+        # Negative component remains the same
+        source_negative = pm.TruncatedNormal(
+            "negative",
+            mu=0,
+            sigma=0.01,
+            lower=0,
+            upper=1,
+            )
+        # Adjusted positive distribution with offset
+        source_positive = pm.Deterministic("positive", source_negative + offset)
+
+        # Combine the source components
+        source = pm.math.stack([source_positive, source_negative], axis=0)
+
+        # Probability of assigning depends on negative control
+        neg_sigma = np.sqrt(neg_control * (1 - neg_control))/2
+        #prior = pm.TruncatedNormal('prior', mu = neg_control, sigma = neg_sigma, lower=0, upper=1)
+        prior = pm.Beta('prior', mu = neg_control, sigma = neg_sigma)
+
+        # Each pool is assigned a 0/1 (could adjust the prior probability here given that we
+        # know negatives are more likely a priori)
+        component = pm.Bernoulli("assign", 1-prior, dims="pool")
+
+        # Each pool has a normally distributed response whose mu comes from either the
+        # postive or negative source distribution
+        pool_dist = pm.TruncatedNormal(
+            "pool_dist",
+            mu=source[component]+neg_sigma,
+            sigma=pm.Exponential("sigma", 1),
+            lower=0,
+            upper=1,
+            dims="pool",
+            )
+
+        # Likelihood, where the data indices pick out the relevant pool from pool
+        pm.TruncatedNormal(
+            "lik",
+            mu=pool_dist[inds],
+            sigma=pm.Exponential("sigma_data", 1),
+            observed=obs,
+            lower=0,
+            upper=1,
+            )
+
+        idata_alt = pm.sample(cores = cores)
+        
+    with alternative_model:
+        posterior_predictive = pm.sample_posterior_predictive(idata_alt)
+
+    ax = az.plot_ppc(posterior_predictive, num_pp_samples=100, colors = ['#015396', '#FFA500', '#000000'])
+
+    posterior = az.extract(idata_alt)
+    n_mean = float(posterior["negative"].mean(dim="sample"))
+    p_mean = float(posterior["positive"].mean(dim="sample"))
+
     return ax, posterior["assign"].mean(dim="sample").to_dataframe(), [p_mean, n_mean]
 
 
