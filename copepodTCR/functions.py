@@ -327,7 +327,7 @@ def run_experiment(lst, peptide_address, ep_length, pools, iters, n_pools, regim
 ## Functions for .stl files
 
 def stl_generator(rows, cols, length, width, thickness, hole_radius, x_offset, y_offset, well_spacing,
-                  coordinates):
+                  coordinates, marks=False):
 
     """
     Returns mesh object with generated 3D plate with necessary holes in coordinates.
@@ -363,11 +363,23 @@ def stl_generator(rows, cols, length, width, thickness, hole_radius, x_offset, y
 
         # Plate - mesh without cylinders
         plate_mesh = plate_mesh.difference(batch_mesh)
-        
+
+    if marks:
+        mark_space = 0
+        for i in range(marks):
+            y = well_spacing*0.5
+            x = well_spacing*0.5 + i + mark_space
+            mark_space += 1
+            mark_mesh = trimesh.creation.box(extents=[1, 1, hole_height/3])
+            mark_mesh.apply_translation([x, y, thickness/3])
+    
+            if mark_mesh is not None:
+                plate_mesh = plate_mesh.difference(mark_mesh)
+    
     return plate_mesh
 
 def pools_stl(peptides_table, pools, rows = 16, cols = 24, length = 122.10, width = 79.97,
-              thickness = 1.5, hole_radius = 4.0 / 2, x_offset = 9.05, y_offset = 6.20, well_spacing = 4.5):
+              thickness = 1.5, hole_radius = 4.0 / 2, x_offset = 9.05, y_offset = 6.20, well_spacing = 4.5, hole16 = False):
     
     """
     Takes peptide pooling scheme.
@@ -383,12 +395,13 @@ def pools_stl(peptides_table, pools, rows = 16, cols = 24, length = 122.10, widt
             row_value = int([(x, peptides_table.columns[y]) for x, y in zip(*np.where(peptides_table.values == peptide))][0][0]+1)
             column_value = int([(x, peptides_table.columns[y]) for x, y in zip(*np.where(peptides_table.values == peptide))][0][1])
             coordinates.append([row_value, column_value])
-        coordinates = coordinates + [[16, 24]]
+        if hole16:
+            coordinates = coordinates + [[16, 24]]
         
-        name = 'pool' + str(pool_N)
+        name = 'pool' + str(pool_N+1)
         
         m = stl_generator(rows, cols, length, width, thickness, hole_radius, x_offset, y_offset, well_spacing,
-                 coordinates)
+                 coordinates, marks = pool_N+1)
         meshes_list[name] = m
     return meshes_list
 
@@ -437,11 +450,13 @@ def activation_model(obs, n_pools, inds, neg_control = None, cores=1):
     coords = dict(pool=range(n_pools), component=("positive", "negative"))
 
     if neg_control is not None:
-        neg_control = neg_control/np.max(obs)
+        neg_control = np.sum(obs <= neg_control)/len(obs)
+        print(neg_control)
     else:
-        neg_control = 0.5/np.max(obs)
+        neg_control = 0.5
 
     obs = obs/np.max(obs)
+    
 
     with pm.Model(coords=coords) as alternative_model:
         # Define the offset
@@ -461,20 +476,15 @@ def activation_model(obs, n_pools, inds, neg_control = None, cores=1):
         # Combine the source components
         source = pm.math.stack([source_positive, source_negative], axis=0)
 
-        # Probability of assigning depends on negative control
-        neg_sigma = np.sqrt(neg_control * (1 - neg_control))/2
-        #prior = pm.TruncatedNormal('prior', mu = neg_control, sigma = neg_sigma, lower=0, upper=1)
-        prior = pm.Beta('prior', mu = neg_control, sigma = neg_sigma)
-
-        # Each pool is assigned a 0/1 (could adjust the prior probability here given that we
-        # know negatives are more likely a priori)
-        component = pm.Bernoulli("assign", 1-prior, dims="pool")
+        # Each pool is assigned a 0/1
+        # Probability of assigning depends on number of pools with activation signal higher than negative control
+        component = pm.Bernoulli("assign", neg_control, dims="pool")
 
         # Each pool has a normally distributed response whose mu comes from either the
         # postive or negative source distribution
         pool_dist = pm.TruncatedNormal(
             "pool_dist",
-            mu=source[component]+neg_sigma,
+            mu=source[component],
             sigma=pm.Exponential("sigma", 1),
             lower=0,
             upper=1,
@@ -502,7 +512,7 @@ def activation_model(obs, n_pools, inds, neg_control = None, cores=1):
     n_mean = float(posterior["negative"].mean(dim="sample"))
     p_mean = float(posterior["positive"].mean(dim="sample"))
 
-    return ax, posterior["assign"].mean(dim="sample").to_dataframe(), [p_mean, n_mean]
+    return ax, posterior["assign"].mean(dim="sample").to_dataframe(), neg_control, [p_mean, n_mean]
 
 
 def peptide_probabilities(sim, probs):
