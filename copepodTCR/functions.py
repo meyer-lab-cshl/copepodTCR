@@ -451,7 +451,6 @@ def activation_model(obs, n_pools, inds, neg_control = None, cores=1):
 
     if neg_control is not None:
         neg_control = np.sum(obs <= neg_control)/len(obs)
-        print(neg_control)
     else:
         neg_control = 0.5
 
@@ -634,6 +633,11 @@ def results_analysis(peptide_probs, probs, sim):
         else:
             notification = 'Drop-out was detected'
             return notification, [], peptides
+
+    else:
+        notification = 'Analysis error'
+        return notification, [], []
+
 
 # # Simulated data
 
