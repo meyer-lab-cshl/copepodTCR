@@ -569,7 +569,7 @@ def results_analysis(peptide_probs, probs, sim):
     for i in range(len(probs)):
         if probs['assign'].iloc[i] < 0.5:
             act_pools.append(i)
-    
+
     peptide_probs = peptide_probs.sort_values(by = 'Probability', ascending=False)
 
      ## Whether top Normal peptides share an epitope
@@ -597,13 +597,13 @@ def results_analysis(peptide_probs, probs, sim):
 
     ## If all pools are marked as activated, then the results are compromised
     if len(act_pools) == len(probs):
-        notification = 'Zero pools were activated'
-        return notification, [], []
+        notification = 'All pools were activated'
+        return len(act_pools), notification, [], []
 
     ## If both are True, then the epitope is found:
     if all([drop_check, epitope_check]) == True:
         notification = 'No drop-outs were detected'
-        return notification, lst, lst
+        return len(act_pools), notification, lst, lst
         
     ## If epitope_check is held, but drop_check is not
     elif epitope_check == True and drop_check != True:
@@ -615,10 +615,10 @@ def results_analysis(peptide_probs, probs, sim):
         if act_number > len(act_pools):
             notification = 'Drop-out was detected'
             peptides, epitopes = peptide_search(all_lst, act_profile, act_pools, iters, n_pools, 'with dropouts')
-            return notification, lst, peptides
+            return len(act_pools), notification, lst, peptides
         else:
             notification = 'False positive was detected'
-            return notification, [], []
+            return len(act_pools), notification, [], []
             
     elif epitope_check != True and drop_check != True:
         ## More drop-outs happened, calculation of possible peptides
@@ -629,14 +629,14 @@ def results_analysis(peptide_probs, probs, sim):
         peptides, epitopes = peptide_search(all_lst, act_profile, act_pools, iters, n_pools, 'with dropouts')
         if len(peptides) == 0:
             notification = 'Not found'
-            return notification, [], peptides
+            return len(act_pools), notification, [], peptides
         else:
             notification = 'Drop-out was detected'
-            return notification, [], peptides
+            return len(act_pools), notification, [], peptides
 
     else:
         notification = 'Analysis error'
-        return notification, [], []
+        return len(act_pools), notification, [], []
 
 
 # # Simulated data
@@ -657,7 +657,7 @@ def simulation(mu_off, sigma_off, mu_n, sigma_n, r, sigma_p_r, sigma_n_r, n_pool
     n_shape = n_pools-p_shape-pl_shape
     with pm.Model() as simulation:
         # offset
-        offset = pm.Normal("offset", mu=mu_off, sigma=sigma_off)
+        offset = pm.TruncatedNormal("offset", mu=mu_off, sigma=sigma_off, lower=0, upper=100)
     
         # Negative
         n = pm.TruncatedNormal('n', mu=mu_n, sigma=sigma_n, lower=0, upper=100)
