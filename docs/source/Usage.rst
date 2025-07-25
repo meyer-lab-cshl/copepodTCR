@@ -17,6 +17,7 @@ Quickstart
 .. code-block:: python
 
    import copepodTCR as cpp
+   import codepub as cdp
 
    # number of pools
    n_pools = 12
@@ -26,7 +27,10 @@ Quickstart
    len_lst = 253
 
    # address arrangemement
-   b, lines = cpp.address_rearrangement_AU(n_pools=n_pools, iters=iters, len_lst=len_lst)
+   b, lines = cdp.bba(m=n_pools, r=iters, n=len_lst)
+
+   # if you have a lot of peptide, for faster address arrangement we recommend using:
+   ## b, lines = cdp.rcbba(m=n_pools, r=iters, n=len_lst)
 
    # add your peptides to lst
    lst = list(pd.read_csv('peptides.csv', sep = "\t"))
@@ -159,28 +163,35 @@ More detailed quickstart
 3. **Now, you need to find the address arrangement given your number of
    pools, number of peptides, and peptide occurrence.**
 
-   We suggest you use the :func:`cpp.address_rearrangement_AU` function. In the section `Address arrangement <#arrangement-section>`_ you can find other functions that can perform such a task (based on Gray codes and on a trivial Hamiltonian path search).
+   For that, we developed a separate package **codepub**.
+
+   We suggest you use the **codepub.bba** function. If you have a lot of peptides (1000+), we recommend using faster alternative: **codepub.rcbba**. Codepub documentation is available here: `CodePUB readthedocs <https://codepub.readthedocs.io/en/latest/Introduction.html>`_
 
    .. note:: With large parameters, the algorithm needs some time to finish the arrangement. If the arrangement fails, try with other parameters.
 
-   .. function:: cpp.address_rearrangement_AU (n_pools, iters, len_lst) -> list, list
-      :noindex:
+   .. function:: bba(m, r, n, start_a = None, W_des = None) -> list, list
 
-      :param n_pools: number of pools
-      :type n_pools: int
-      :param iters: peptide occurrence
-      :type iters: int
-      :param len_lst: number of peptides
-      :type len_lst: int
+      .. note:: Search for arrangement may take some time, especially with large parameters. This function is **slower** than :func:`cdp.rcbba`, but is more reliable.
+
+      :param m: number of pools
+      :type m: int
+      :param r: address weight, i.e. to how many pools one item is added
+      :type r: int
+      :param n: number of items
+      :type n: int
+      :param start_a: desired first address of the arrangement, optional
+      :type start_a: str
+      :param W_des: desired balance for the resulting arrangement
+      :type W_des: 
       :return:
-         1) list with number of peptides in each pool;
+         1) list with number of item in each pool, i.e. balance;
          2) list with address arrangement
       :rtype: list, list
 
       .. code-block:: python
 
-         >>> cpp.address_rearrangement_AU(n_pools=12, iters=4, len_lst=250)
-         >>> b
+         >>> balance, lines = cdp.bba(n_pools=12, iters=4, len_lst=250)
+         >>> balance
          [81, 85, 85, 85, 81, 82, 87, 81, 85, 81, 84, 83]
          >>> lines
          [[0, 1, 2, 3],[0, 1, 3, 6],[0, 1, 6, 8],[1, 6, 8, 9],[6, 8, 9, 11], ... ]
@@ -503,7 +514,7 @@ More detailed quickstart
 
    .. image:: model_scheme.png
 
-   .. function:: cpp.activation_model(obs, n_pools, inds) -> fig, pandas DataFrame
+   .. function:: cpp.activation_model(obs, n_pools, inds, neg_control=None, neg_share=None, cores=1) -> model, fig, pandas DataFrame, list, InferenceData, list
       :noindex:
 
       .. note:: Fitting might take several minutes.
@@ -513,16 +524,26 @@ More detailed quickstart
       :param n_pools: number of pools
       :type n_pools: int
       :param inds: list with indices for observed values
-      :type inds: int
+      :type inds: list
+      :param neg_control: optional list with negative control values; if not provided, it is estimated from obs
+      :type neg_control: list or None
+      :param neg_share: expected share of negative pools (between 0 and 1); default is 0.5
+      :type neg_share: float or None
+      :param cores: number of CPU cores to use for MCMC sampling
+      :type cores: int
       :return:
-         1) fig -- posterior predictive KDE and observed data KDE
-         2) probs -- probabilitity for each pool of being drawn from a distribution of activated or non-activated pools
-      :rtype: figure, pandas DataFrame
+         1) model -- PyMC model object used for fitting  
+         2) fig -- posterior predictive KDE and observed data KDE (ArviZ)
+         3) probs -- probability for each pool of being drawn from a distribution of activated or non-activated pools
+         4) neg_control -- normalized control values used in model
+         5) idata_alt -- full posterior sampling trace (InferenceData object)
+         6) [p_mean, n_mean] -- posterior mean of the offset and baseline (negative) component
+      :rtype: model, figure, pandas DataFrame, list, arviz.InferenceData, list
 
       .. code-block:: python
 
-         >>> fig, probs = cpp.activation_model(obs, 12, inds)
-         
+         >>> model, fig, probs, neg_control, trace, [p_mean, n_mean] = cpp.activation_model(obs, 12, inds)
+
       .. image:: model_fit.png
 
       .. code-block:: python
@@ -559,6 +580,7 @@ More detailed quickstart
          +------+---------+
          | 11   | 0.99975 |
          +------+---------+
+
 
    The **Pool** column contains pool index, and column **assign** the probability of the pools to be drawn from the distribution of non-activated pool. The pool is considered to be activated if assign <= 0.5.
 
@@ -645,6 +667,8 @@ Play with the approach using simulated data (Optional)
 
 If you want to play with the approach with the generated data, you can use the following pipeline.
 
+.. image:: simulation_pipeline.png
+
 1. First, you need to determine the parameters for pooling scheme.
 
    * how many peptides? (len_lst)
@@ -675,18 +699,14 @@ If you want to play with the approach with the generated data, you can use the f
          'EMKFLDQSQLGYVHPKWHHGTEMDEWSRSNSAYGKHQEATRLCSQWWVKTYMPTDPCWMLRYTNCCAMVPRYADFCMRDYRYAYIYFVNWNHECSDVIMETCCFALGKKLSTPTCTPGCVTVIYECKSEFEVGWPPHIIEGSAEFYAVACFVTRFMCPQTKANLLKIIISFHLHHYGQAEQICYKNEIPCCAMKFFDHREGLESNCLTCMQWPCNKSLFDPFPVMYRFSMAGNQGEPPCGYAVTMNARCTMGRWQKFRCEFKGCFYHNINVYTGCETMHECQIPVPMVHQTTLLYPCNVRSKDIDPCDWSYLEDDKERGWCGKFQMGSQIFRKFTPPPWTNRGWNHMDDTEARHRWCLTWKFTLDEPAEDTCILWIHSVYLWVVCMQGTAMSMRMVSFTLLCFMRAPPCEVMHYCDPQQTRDEELPMVGYITEELKSMFTSSSWPGSQSPGWGTWDLSIKRHSVKVPDMINPTHVVKPTKCICNQSLGWTFSEIDMYARHDIQKRWKCPIWNGQFRYEVIHSKQNPFQNSDEQPT'
 
       ## Then with this sequence you can generate peptides
-      >>> lst_all = []
-      >>> for i in range(0, len(sequence), overlap):
-            ps = sequence[i:i+pep_length]
-            if len(ps) == pep_length:
-               lst_all.append(ps)
+      >>> lst_all = cpp.peptide_generation(sequence, pep_length, shift)
       >>> lst = lst_all[:len_lst]
 
 3. Then you can finally generate the pooling scheme.
 
    .. code-block:: python
 
-      >>> b, lines = cpp.address_rearrangement_AU(n_pools=n_pools, iters=iters, len_lst=len_lst)
+      >>> b, lines = cdp.bba(m=n_pools, r=iters, n=len_lst)
       >>> pools, peptide_address = cpp.pooling(lst=lst, addresses=lines, n_pools=n_pools)
       >>> check_results = cpp.run_experiment(lst=lst, peptide_address=peptide_address, ep_length=ep_length, pools=pools, iters=iters, n_pools=n_pools, regime='without dropouts')
 
@@ -711,41 +731,57 @@ If you want to play with the approach with the generated data, you can use the f
       >>> for item in range(n_pools):
             if item not in inds_p_check:
                inds_n_check.append(item)
-      >>> inds_p_check
+      >>> print(inds_p_check)
       [5, 6, 9, 10, 11]
-      >>> inds_n_check
+      >>> print(inds_n_check)
       [0, 1, 2, 3, 4, 7, 8]
 
 5. Then you can simulate activation signal. For that, you would need to determine paratemers of the model.
 
-   Plate notation for the simulation model (for 10 pools and 1 replica).
+   Plate notation for the simulation model.
 
    .. image:: model_simulation.png
 
-   * mu_n - mu of the negative distribution (distribution of signal of non-activated pools)
+   * mu_n - mu of the negative distribution (distribution of signal of non-activated pools), ranges from 0 to 100.
 
-   * sigma_n - sigma of the negative distribution
+   * sigma_n - sigma of the negative distribution, ranges from 0 to 100.
 
-   * mu_off - mu of the offset which will be used to obtain positive distribution (distribution of signal of activated pools) from the negative distribution
+   * mu_off - mu of the offset which will be used to obtain positive distribution (distribution of signal of activated pools) from the negative distribution, ranges from 0 to 100.
 
-   * sigma_off - sigma of the offset which will be used to obtain positive distribution
+   * sigma_off - sigma of the offset which will be used to obtain positive distribution, ranges from 0 to 100.
 
    * r - number of replicas in the experiment
 
-   * p_shape - number of activated pools in simulation, you can make it equal to the number of pools where cognate epitope is present, or you can make more / less to see how the algorithm responds to mistakes.
+   * sigma_p_r - variance between replicas from positive distribution, ranges between 0 to 100.
+
+   * sigma_n_r - variance between replicas from negative distribution, ranges between 0 to 100.
+
+   * n_pools - number of pools
+
+   * p_shape - number of activated pools in simulation, you can make it equal to the number of pools where cognate epitope is present, or you can make more / fewer to see how the algorithm responds to mistakes.
+
+   * pl_shape - number of slightly activated pools in simulation corresponding to context-dependent activation. For simplicity, we recommend setting it to 0.
+
+   * low_offset - the degree to which activation is decreased in pools from pl_shape, ranges from 0 to 1. We recommend setting it to 1, then it will not be applied.
+
 
    .. code-block:: python
 
-      >>> mu_off = 10
-      >>> sigma_off = 0.01
-      >>> mu_n = 5
-      >>> sigma_n = 1
+      >>> mu_off = 60
+      >>> sigma_off = 3
+      >>> mu_n = 20
+      >>> sigma_n = 3
       >>> r = 1
+      >>> sigma_p_r = 3
+      >>> sigma_n_r = 3
+      >>> n_pools = 12
       >>> p_shape = len(inds_p_check)  
+      >>> pl_shape = 0
+      >>> low_offset = 1
 
    .. code-block:: python
 
-      >>> p_results, n_results = cpp.simulation(mu_off, sigma_off, mu_n, sigma_n, n_pools, r, p_shape)
+      >>> p_results, pl_results, n_results, n_control, parameters = cpp.simulation(mu_off, sigma_off, mu_n, sigma_n, r, sigma_p_r, sigma_n_r, n_pools, p_shape, pl_shape, low_offset)
       >>> cells = pd.DataFrame(columns = ['Pool', 'Percentage'])
       >>> cells['Percentage'] = p_results + n_results
       >>> cells['Pool'] = inds_p_check*r + inds_n_check*r
@@ -851,287 +887,39 @@ Peptide occurrence search
          >>> cpp.find_possible_k_values(12, 250)
          [4, 5, 6, 7, 8]
 
-.. _arrangement-section:
-
-Address arrangement
---------------------
-
-.. note:: Method for n-bit balanced Gray code construction is based on the textbook `Counting sequences, Gray codes and lexicodes <https://repository.tudelft.nl/islandora/object/uuid%3A975a4a47-7935-4f76-9503-6d4e36b674a3>`_. Method for construction of balanced Gray code with flexible length is based on the paper `Balanced Gray Codes With Flexible Lengths <https://ieeexplore.ieee.org/abstract/document/7329924>`_.
-
-.. function:: cpp.find_q_r(n) -> tuple
-
-      :param n: number
-      :type n: int
-      :return: solution for the equation 2**n = n*q + r (q, r)
-      :rtype: (int, int)
-
-      .. code-block:: python
-
-         >>> cpp.find_q_r(5)
-         (6, 2)
-
-.. function:: cpp.bgc(n, s = None) -> list
-
-      .. note:: Works only for n=4 and n=5.
-
-      :param n: number of bits
-      :type n: int
-      :param s: transition sequence for n-2 bit balanced Gray code
-      :type s: list
-      :return: transition sequence for n bit balanced Gray code
-      :rtype: list
-
-      .. code-block:: python
-
-         >>> cpp.bgc(4, s = None)
-         [1, 2, 1, 3, 4, 3, 1, 2, 3, 2, 4, 2, 1, 4, 3, 4]
-
-.. function:: cpp.n_bgc(n): -> list
-
-      :param n: number of bits
-      :type n: int
-      :return: transition sequence for n bit balanced Gray code
-      :rtype: list
-
-      .. code-block:: python
-
-         >>> cpp.n_bgc(6)
-         [1, 2, 1, 3, 4, 3, 1, 2, 3, 2, 4, 2, 1, 4, 3, 5, 3, 4, 1, 2, 4, 6, 4, 2, 1, 4, 3, 5, 3, 4, 1, 2, 4, 2, 5, 6, 3, 6, 5, 2, 5, 6, 1, 6, 5, 3, 5, 6, 4, 6, 5, 3, 5, 6, 1, 6, 5, 2, 5, 6, 1, 6, 5, 6]
-
-.. function:: cpp.computing_ab_i_odd(s_2, l, v): -> list
-
-      .. note:: Intrinsic function for :func:`cpp.m_length_BGC`, can not be used globally.
-
-      :param s_2: transition sequence for balanced Gray code with n bits
-      :type s_2: list
-      :param l: number, correponds to _l_ from the method described by Lu Wang et al., 2016
-      :type l: int
-      :param v: number, correponds to _v_ from the method described by Lu Wang et al., 2016
-      :type v: int
-      :return: [v, a_values, E_v]
-      :rtype: list
-
-.. function:: cpp.m_length_BGC(m, n): -> list
-
-      :param m: required length of the code
-      :type m: int
-      :param n: number of bits
-      :type n: int
-      :return: transition sequence for n bit balanced Gray code of length m
-      :rtype: list
-
-      .. code-block:: python
-
-         >>> cpp.m_length_BGC(m=28, n=5)
-         [0, 1, 2, 3, 2, 1, 0, 4, 0, 1, 2, 3, 2, 1, 0, 1, 3, 4, 2, 4, 3, 1, 3, 4, 0, 4, 3, 4]
-
-.. function:: cpp.gc_to_address(s_2, iters, n): -> list
-
-      .. tip:: We do not recommend to use this function for address arrangement since the result might be imbalanced and with other features hindering the interpretation of the experiment.
-
-      :param s_2: transition sequence for Gray code
-      :type s_2: list
-      :param iters: peptide occurrence
-      :type iters: int
-      :param n: number of pools
-      :type n: int
-      :return: address arrangement based on the produced Gray code
-      :rtype: list
-
-      .. code-block:: python
-
-         >>> cpp.gc_to_address(cpp.m_length_BGC(m=28, n=5), 2, 5)
-         [[0, 4], [2, 4], [2, 3], [3, 4], [0, 3], [0, 2], [1, 3], [1, 2], [1, 4]]
-
-.. function:: cpp.union_address(address, union): -> list
-
-      :param address: address in bit view
-      :type address: string
-      :param union: union in bit view
-      :type union: string
-      :return: unions possible after given union and address
-      :rtype: list
-
-      .. code-block:: python
-
-         >>> cpp.union_address('110000', '111000')
-         ['110100', '110010', '110001']
-
-.. function:: cpp.address_union(address, union): -> list
-
-      :param address: address in bit format
-      :type address: string
-      :param union: union in bit format
-      :type union: string
-      :return: addresses possible after given address and union
-      :rtype: list
-
-      .. code-block:: python
-
-         >>> cpp.address_union('011000', '111000')
-         ['110000', '101000']
-
-.. function:: cpp.hamiltonian_path_AU(size, point, t, unions, path=None): -> list
-
-      .. note:: This function is recursive. It is intrinsic function for :func:`cpp.address_rearrangement_AU`, though it can work globally.
-
-      :param size: length of the required path
-      :type size: int
-      :param point: union or address that is added currently at this step
-      :type point: string
-      :param t: type of added point (union or address)
-      :type t: 'a' or 'u'
-      :param unions: unions used in the path
-      :type unions: list
-      :param path: addresses used in the path
-      :type path: list
-      :return: arrangement of addresses in bit format
-      :rtype: list
-
-      .. code-block:: python
-
-         >>> cpp.hamiltonian_path_AU(size=10, point = '110000', t = 'a', unions = ['111000'])
-         ['110000', '100100', '000110', '000011', '001001', '010001', '010010', '011000', '001100', '101000']
-
-.. function:: cpp.variance_score(bit_sums, s): -> float
-
-      :param bit_sums: current distribution of peptides across pools
-      :type bit_sums: list
-      :param s: union or address that is added currently at this step
-      :type s: string
-      :return: penalty for balance distortion upon this point addition to the path
-      :rtype: float
-
-      .. code-block:: python
-
-         >>> cpp.variance_score([2, 4, 4, 3, 3, 4], '110001')
-         0.25
-
-.. function:: cpp.return_address_message(code, mode): -> string or list
-
-      :param code: address (for example, [0, 1, 2]) or address in bit format (for example, '111000')
-      :type code: list of string
-      :param mode: indicates whether code is address or address in bit format, if latter, than second letter (N) indicates number of pools
-      :type mode: 'a' or 'mN'
-      :return: corresponding address in bit format ('111000') or address ([0, 1, 2])
-      :rtype: string or list
-
-      .. code-block:: python
-
-         >>> cpp.return_address_message([1, 2, 4], 'm7')
-         '0110100'
-         >>> cpp.return_address_message('0111100', 'a')
-         [1, 2, 3, 4]
-
-.. function:: cpp.binary_union(bin_list): -> list
-
-      :param bin_list: list of addresses
-      :type bin_list: list
-      :return: list of their unions
-      :rtype: list
-
-      .. code-block:: python
-
-         >>> cpp.binary_union(['110000', '100001', '000101', '000110', '001010', '010010', '010100', '100100', '101000', '001001'])
-         ['110001', '100101', '000111', '001110', '011010', '010110', '110100', '101100', '101001']
-
-.. function:: cpp.hamming_distance(s1, s2): -> int
-
-      :param s1: address in bit format
-      :type s1: string
-      :param s2: address in bit format
-      :type s2: string
-      :return: hamming distance between two addresses
-      :rtype: int
-
-      .. code-block:: python
-
-         >>> cpp.hamming_distance('110000', '100001')
-         2
-
-.. function:: cpp.sum_bits(arr): -> list
-
-      :param arr: current address arrangement in bit format
-      :type arr: list
-      :return: peptide distribution across pools given this arrangement
-      :rtype: list
-
-      .. code-block:: python
-
-         >>> cpp.sum_bits(['110001', '100101', '000111', '001110', '011010', '010110', '110100', '101100', '101001'])
-         [5, 4, 4, 6, 4, 4]
-
-
-.. function:: cpp.hamiltonian_path_A(G, size, pt, path=None): -> list
-
-      .. note:: This function is recursive. It is intrinsic function for :func:`cpp.address_rearrangement_A`, though it can work globally.
-
-      :param size: graph representing peptide space
-      :type size: dictionary
-      :param size: length of the required path
-      :type size: int
-      :param pt: union or address that is added currently at this step
-      :type pt: string
-      :param path: addresses used in the path
-      :type path: list
-      :return: arrangement of addresses in bit format
-      :rtype: list
-
-      .. code-block:: python
-
-         >>> cpp.hamiltonian_path_A(G = G, size = 10, pt = '11000', path=None)
-         ['11000', '01100', '00101', '00011', '10010', '00110', '01010', '01001', '10001', '10100']
-
-.. function:: cpp.address_rearrangement_AU (n_pools, iters, len_lst) -> list, list
-
-      .. note:: Search for arrangement may take some time, especially with large parameters. Although, this function is **faster** than :func:`cpp.address_rearrangement_A`, since it considers both vertices and edges as it traverses the graph.
-
-      :param n_pools: number of pools
-      :type n_pools: int
-      :param iters: peptide occurrence
-      :type iters: int
-      :param len_lst: number of peptides
-      :type len_lst: int
-      :return:
-         1) list with number of peptides in each pool;
-         2) list with address arrangement, uses both unions and addresses for its construction
-      :rtype: list, list
-
-      .. code-block:: python
-
-         >>> cpp.address_rearrangement_AU(n_pools=12, iters=4, len_lst=250)
-         >>> b
-         [81, 85, 85, 85, 81, 82, 87, 81, 85, 81, 84, 83]
-         >>> lines
-         [[0, 1, 2, 3],[0, 1, 3, 6],[0, 1, 6, 8],[1, 6, 8, 9],[6, 8, 9, 11], ... ]
-
-.. function:: cpp.address_rearrangement_A(n_pools, iters, len_lst): -> list, list
-
-      .. note:: Search for arrangement may take some time, especially with large parameters. This function is **slower** than :func:`cpp.address_rearrangement_AU`, since it considers only vertices as it traverses the graph.
-
-      :param n_pools: number of pools
-      :type n_pools: int
-      :param iters: peptide occurrence
-      :type iters: int
-      :param len_lst: number of peptides
-      :type len_lst: int
-      :return:
-         1) list with number of peptides in each pool;
-         2) list with address arrangement, uses both unions and addresses for its construction
-      :rtype: list, list
-
-      .. code-block:: python
-
-         >>> cpp.address_rearrangement_A(n_pools=12, iters=4, len_lst=250)
-         >>> b
-         [82, 83, 85, 85, 83, 83, 84, 81, 83, 83, 84, 84]
-         >>> lines
-         [[0, 1, 2, 3],[0, 2, 3, 7],[0, 3, 7, 11],[0, 7, 10, 11],[7, 8, 10, 11], ... ]
-
 .. _overlap-section:
 
 Peptide overlap
 --------------------
+
+.. function:: cpp.peptide_generation(protein, peptide_length, peptide_shift, protein_end=False) -> list
+      :noindex:
+
+      :param protein: a single protein sequence (string) or a list of protein sequences
+      :type protein: str or list of str
+
+      :param peptide_length: length of each generated peptide
+      :type peptide_length: int
+
+      :param peptide_shift: number of positions to shift between consecutive peptides (i.e., peptide_length - overlap)
+      :type peptide_shift: int
+
+      :param protein_end: whether to include trailing peptide if protein ends with a short fragment
+      :type protein_end: bool, default is False
+
+      :return: list of generated peptide sequences
+      :rtype: list of str
+
+      .. code-block:: python
+
+         >>> peptides = cpp.peptide_generation("MKWVTFISLLFLFSSAYSRGVFRRDTHKSEIAHRFKDLGE", 9, 4)
+         >>> peptides[:3]
+         ['MKWVTFISL', 'TFISLLFLF', 'LLFLFSSAY']
+
+      .. note::
+         - If the input is a list of proteins, the peptides will be generated for each individually and concatenated.
+         - If protein_end is True, peptides near the C-terminus will be padded by upstream sequence if shorter than expected.
+
 
 .. function:: cpp.string_overlap(str1, str2): -> int
 
@@ -1403,7 +1191,8 @@ Pooling and simulation
 Results interpretation with a Bayesian mixture model
 ------------------------------------------------------------
 
-.. function:: cpp.activation_model(obs, n_pools, inds, cores) -> fig, pandas DataFrame
+.. function:: cpp.activation_model(obs, n_pools, inds, neg_control=None, neg_share=None, cores=1) -> model, fig, pandas DataFrame, list, InferenceData, list
+      :noindex:
 
       .. note:: Fitting might take several minutes.
 
@@ -1412,17 +1201,62 @@ Results interpretation with a Bayesian mixture model
       :param n_pools: number of pools
       :type n_pools: int
       :param inds: list with indices for observed values
-      :type inds: int
-      :param cores: number of cores
-      :type inds: 1, int
+      :type inds: list
+      :param neg_control: optional list with negative control values; if not provided, it is estimated from obs
+      :type neg_control: list or None
+      :param neg_share: expected share of negative pools (between 0 and 1); default is 0.5
+      :type neg_share: float or None
+      :param cores: number of CPU cores to use for MCMC sampling
+      :type cores: int
       :return:
-         1) fig -- posterior predictive KDE and observed data KDE
-         2) probs -- probabilitity for each pool of being drawn from a distribution of activated or non-activated pools
-      :rtype: figure, pandas DataFrame
+         1) model -- PyMC model object used for fitting  
+         2) fig -- posterior predictive KDE and observed data KDE (ArviZ)
+         3) probs -- probability for each pool of being drawn from a distribution of activated or non-activated pools
+         4) neg_control -- normalized control values used in model
+         5) idata_alt -- full posterior sampling trace (InferenceData object)
+         6) [p_mean, n_mean] -- posterior mean of the offset and baseline (negative) component
+      :rtype: model, figure, pandas DataFrame, list, arviz.InferenceData, list
 
       .. code-block:: python
 
-         >>> fig, probs = cpp.activation_model(obs, 12, inds)
+         >>> model, fig, probs, neg_control, trace, [p_mean, n_mean] = cpp.activation_model(obs, 12, inds)
+
+      .. image:: model_fit.png
+
+      .. code-block:: python
+
+         >>> probs
+
+      .. table::
+         :widths: 10 10
+
+         +------+---------+
+         | Pool | assign  |
+         +======+=========+
+         | 0    | 0.99900 |
+         +------+---------+
+         | 1    | 1.00000 |
+         +------+---------+
+         | 2    | 0.00025 |
+         +------+---------+
+         | 3    | 0.36475 |
+         +------+---------+
+         | 4    | 0.00025 |
+         +------+---------+
+         | 5    | 0.00000 |
+         +------+---------+
+         | 6    | 1.00000 |
+         +------+---------+
+         | 7    | 1.00000 |
+         +------+---------+
+         | 8    | 0.99975 |
+         +------+---------+
+         | 9    | 0.99975 |
+         +------+---------+
+         | 10   | 0.00000 |
+         +------+---------+
+         | 11   | 0.99975 |
+         +------+---------+
 
 .. function:: cpp.peptide_probabilities(sim, probs) -> pandas DataFrame
 
@@ -1477,37 +1311,69 @@ Data simulation with Bayesian mixture model
          >>> sequence
          'EMKFLDQSQLGYVHPKWHHGTEMDEWSRSNSAYGKHQEATRLCSQWWVKTYMPTDPCWMLRYTNCCAMVPRYADFCMRDYRYAYIYFVNWNHECSDVIMETCCFALGKKLSTPTCTPGCVTVIYECKSEFEVGWPPHIIEGSAEFYAVACFVTRFMCPQTKANLLKIIISFHLHHYGQAEQICYKNEIPCCAMKFFDHREGLESNCLTCMQWPCNKSLFDPFPVMYRFSMAGNQGEPPCGYAVTMNARCTMGRWQKFRCEFKGCFYHNINVYTGCETMHECQIPVPMVHQTTLLYPCNVRSKDIDPCDWSYLEDDKERGWCGKFQMGSQIFRKFTPPPWTNRGWNHMDDTEARHRWCLTWKFTLDEPAEDTCILWIHSVYLWVVCMQGTAMSMRMVSFTLLCFMRAPPCEVMHYCDPQQTRDEELPMVGYITEELKSMFTSSSWPGSQSPGWGTWDLSIKRHSVKVPDMINPTHVVKPTKCICNQSLGWTFSEIDMYARHDIQKRWKCPIWNGQFRYEVIHSKQNPFQNSDEQPT'
 
-.. function:: cpp.simulation(mu_off, sigma_off, mu_n, sigma_n, n_pools, r, iters, p_shape, cores=1) -> list, list
+.. function:: cpp.simulation(mu_off, sigma_off, mu_n, sigma_n, r, sigma_p_r, sigma_n_r, n_pools, p_shape, pl_shape, low_offset, cores=1) -> list, list, list, list, list
+      :noindex:
 
       .. note:: Generation might take several minutes.
 
-      :param mu_off: mu of the Normal distribution for the offset.
+      :param mu_off: mu of the Truncated Normal distribution for the offset.
       :type mu_off: float, from 0 to 100
-      :param sigma_off: sigma of the Normal distribution for the offset.
+
+      :param sigma_off: sigma of the Truncated Normal distribution for the offset.
       :type sigma_off: float, from 0 to 100
-      :param mu_n: mu of the Truncated Normal distribution for the negative source (non-activated pools).
+
+      :param mu_n: mu of the Truncated Normal distribution for the negative (non-activated) signal source.
       :type mu_n: float, from 0 to 100
-      :param sigma_n: sigma of the Truncated Normal distribution for the negative source.
+
+      :param sigma_n: sigma of the Truncated Normal distribution for the negative signal source.
       :type sigma_n: float, from 0 to 100
+
       :param r: number of replicas for each pool
       :type r: int
-      :param n_pools: number of pools the experiment
+
+      :param sigma_p_r: sigma of measurement error for positive and low-positive pools (replicate variability)
+      :type sigma_p_r: float, from 0 to 100
+
+      :param sigma_n_r: sigma of measurement error for negative pools (replicate variability)
+      :type sigma_n_r: float, from 0 to 100
+
+      :param n_pools: total number of pools in the experiment
       :type n_pools: int
-      :param p_shape: number of activated pools
+
+      :param p_shape: number of strongly activated pools
       :type p_shape: int
-      :param cores: number of cores
-      :type cores: 1, int
+
+      :param pl_shape: number of low-activated (weak signal) pools
+      :type pl_shape: int
+
+      :param low_offset: scalar between 0 and 1 to reduce signal intensity for low-activated pools
+      :type low_offset: float
+
+      :param cores: number of CPU cores to use for MCMC sampling
+      :type cores: int
 
       :return:
-         1) p_results - averaged across 4 chains data for activated pools;
-         2) n_results - averaged across 4 chains data for non-activated pools.
-      :rtype: list, list
+         1) p_results -- simulated signal values (mean) for activated pools  
+         2) pl_results -- simulated signal values for low-activated pools  
+         3) n_results -- simulated signal values for non-activated pools  
+         4) n_control -- simulated values for negative control  
+         5) [p_mean, n_mean] -- posterior means of offset and baseline signal
+      :rtype: list, list, list, list, list
 
       .. code-block:: python
 
-         >>> p_results, n_results = cpp.simulation(10, 0.01, 5, 1, 12, 1, 4, 5)
-         >>> p_results
-         [14.554757492774076, 14.818328502490942, 14.846124806885513, 14.53696797679254, 15.311202071456592]
-         >>> n_results
-         [4.544784388034261, 4.422957960260396, 4.514103073799207, 4.458391656911868, 4.575509389904373, 5.791510168841456, 5.334200680346714]
+         >>> p, pl, n, control, [offset_mean, neg_mean] = cpp.simulation(
+         ...     mu_off=10, sigma_off=0.5, mu_n=5, sigma_n=1, r=1,
+         ...     sigma_p_r=0.2, sigma_n_r=0.3, n_pools=16, p_shape=4, pl_shape=2, low_offset=0.5
+         ... )
+
+         >>> p
+         [15.1, 14.8, 15.0, 15.2]
+         >>> pl
+         [7.2, 7.4]
+         >>> n
+         [5.1, 5.2, 5.0, 5.3, 5.1, 5.0, 5.2, 5.3, 5.0, 5.1]
+         >>> control
+         [4.9, 5.0, 5.1]
+
 
