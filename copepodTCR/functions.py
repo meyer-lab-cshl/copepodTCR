@@ -19,7 +19,7 @@ import arviz as az
 
 # # Functions for ITERS search
 
-def factorial(num: "int") -> "int"
+def factorial(num: "int") -> "int":
 
     """
     Returns factorial of the number.

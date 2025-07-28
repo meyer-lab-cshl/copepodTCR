@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "copepodTCR"
-version = "0.3.2"
+version = "0.3.3"
 authors = [
   { name="Vasilisa Kovaleva", email="vasilisa.kovaliova@gmail.com" },
 ]
