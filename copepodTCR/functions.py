@@ -17,6 +17,16 @@ import pymc as pm
 import arviz as az
 
 
+# # Setting seed
+def set_seed(seed: int):
+    """
+    Sets the seed for both Python's random module and NumPy's random number generator.
+    Call this once before running any stochastic functions for reproducibility.
+    """
+    random.seed(seed)
+    np.random.seed(seed)
+
+
 # # Functions for ITERS search
 
 def factorial(num: "int") -> "int":
@@ -392,6 +402,29 @@ def run_experiment(
 
 ## Functions for .stl files
 
+def pick_engine():
+    import trimesh.boolean
+
+    # default engine is manifold3d
+    try:
+        import manifold3d  # noqa: F401
+        return "manifold"
+    except ImportError:
+        pass
+
+    # Other available engines
+    available = set(trimesh.boolean._engines.keys())
+
+    if "blender" in available:
+        return "blender"
+    if "scad" in available:
+        return "scad"
+
+    raise RuntimeError(
+        f"No boolean backend available. Install manifold3d, Blender, or OpenSCAD. "
+        f"Available engines: {available}"
+    )
+
 
 def stl_generator(
     rows: "int",
@@ -404,61 +437,77 @@ def stl_generator(
     y_offset: "float",
     well_spacing: "float",
     coordinates: "list[tuple[int, int]]",
+    engine: "str",
     marks: "int | bool" = False
 ) -> "Trimesh":
-
     """
-    Returns mesh object with generated 3D plate with necessary holes in coordinates.
-    Is used in function(pools_stl).
+    Returns a Trimesh of a 3D plate with holes at given coordinates.
     """
 
     hole_height = thickness + 2
-    
-    # Plate
+
+    # Base plate
     plate_mesh = trimesh.creation.box(extents=[length, width, thickness])
-    translation = [length / 2, width / 2, thickness / 2]
-    plate_mesh.apply_translation(translation)
-    
-    # Sets of coordinates
-    batch_size = 10
-    coordinate_batches = [coordinates[i:i + batch_size] for i in range(0, len(coordinates), batch_size)]
+    plate_mesh.apply_translation([length / 2, width / 2, thickness / 2])
+
+    # Batch parameters
+    batch_size = 40
+    coordinate_batches = [coordinates[i:i + batch_size]
+                          for i in range(0, len(coordinates), batch_size)]
 
     for batch in coordinate_batches:
-        # Empty mesh
-        batch_mesh = None
-        for coord in batch:
-            i, j = coord[0]-1, coord[1]-1
+        # Build all cylinders for this batch first
+        cylinders = []
+        for r, c in batch:
+            i, j = r - 1, c - 1
             hole_x = x_offset + j * well_spacing
             hole_y = y_offset + i * well_spacing
-            cylinder_mesh = trimesh.creation.cylinder(radius=hole_radius, height=hole_height)
-            cylinder_mesh.apply_translation([hole_x, hole_y, thickness / 2])
-        
-            # Mesh + cylinders from set
-            if batch_mesh is None:
-                batch_mesh = cylinder_mesh
-            else:
-                batch_mesh = batch_mesh.union(cylinder_mesh, engine="scad")
+            cyl = trimesh.creation.cylinder(radius=hole_radius, height=hole_height)
+            cyl.apply_translation([hole_x, hole_y, thickness / 2])
+            cylinders.append(cyl)
 
-        # Plate - mesh without cylinders
-        plate_mesh = plate_mesh.difference(batch_mesh)
+        # Union of cylinders in one call
+        if len(cylinders) == 1:
+            batch_mesh = cylinders[0]
+        else:
+            batch_mesh = trimesh.boolean.union(
+                cylinders, engine=engine, check_volume=False
+            )
 
+        # Subtract the batch from the plate (one call)
+        plate_mesh = plate_mesh.difference(
+            batch_mesh, engine=engine, check_volume=False
+        )
+
+    # Optional marks: build once, subtract once
     if marks:
+        mark_meshes = []
         mark_space = 0
         for i in range(marks):
-            y = well_spacing*0.5
-            x = well_spacing*0.5 + i + mark_space
+            y = well_spacing * 0.5
+            x = well_spacing * 0.5 + i + mark_space
             mark_space += 1
-            mark_mesh = trimesh.creation.box(extents=[1, 1, hole_height/3])
-            mark_mesh.apply_translation([x, y, thickness/3])
-    
-            if mark_mesh is not None:
-                plate_mesh = plate_mesh.difference(mark_mesh)
-    
+            mark = trimesh.creation.box(extents=[1, 1, hole_height / 3])
+            mark.apply_translation([x, y, thickness / 3])
+            mark_meshes.append(mark)
+
+        if mark_meshes:
+            if len(mark_meshes) == 1:
+                marks_union = mark_meshes[0]
+            else:
+                marks_union = trimesh.boolean.union(
+                    mark_meshes, engine=engine, check_volume=False
+                )
+            plate_mesh = plate_mesh.difference(
+                marks_union, engine=engine, check_volume=False
+            )
+
     return plate_mesh
 
 def pools_stl(
     peptides_table: "pd.DataFrame",
     pools: "pd.DataFrame",
+    engine: "str",
     rows: "int" = 16,
     cols: "int" = 24,
     length: "float" = 122.10,
@@ -491,7 +540,7 @@ def pools_stl(
         name = 'pool' + str(pool_N+1)
         
         m = stl_generator(rows, cols, length, width, thickness, hole_radius, x_offset, y_offset, well_spacing,
-                 coordinates, marks = pool_N+1)
+                 coordinates, marks = pool_N+1, engine = engine)
         meshes_list[name] = m
     return meshes_list
 
@@ -652,9 +701,9 @@ def peptide_probabilities(sim: "pd.DataFrame", probs: "pd.DataFrame") -> "pd.Dat
     sim_add = sim[['Peptide', 'Address', 'Act Pools']]
     sim_add = sim_add.drop_duplicates()
     for i in range(len(sim_add)):
-        sim_add['Act Pools'].iloc[i] = [int(i) for i in sim_add['Act Pools'].iloc[i][1:-1].split(',')]
-        sim_add['Address'].iloc[i] = [int(i) for i in sim_add['Address'].iloc[i][1:-1].split(',')]
-    sim_add['Probability'] = 0.1
+        sim_add.loc[i, 'Act Pools'] = [int(i) for i in sim_add['Act Pools'].iloc[i][1:-1].split(',')]
+        sim_add.loc[i, 'Address'] = [int(i) for i in sim_add['Address'].iloc[i][1:-1].split(',')]
+    sim_add['Probability'] = 0
     sim_add['Activated'] = 0
     sim_add['Non-Activated'] = 0
     
@@ -674,9 +723,9 @@ def peptide_probabilities(sim: "pd.DataFrame", probs: "pd.DataFrame") -> "pd.Dat
                 else:
                     non_act.append(y)
         probability = np.prod(mul)
-        sim_add.iloc[i, 3] = probability
-        sim_add.iloc[i, 4] = len(act)
-        sim_add.iloc[i, 5] = len(non_act)
+        sim_add.loc[i, 'Probability'] = probability
+        sim_add.loc[i, 'Activated'] = len(act)
+        sim_add.loc[i, 'Non-Activated'] = len(non_act)
     sim_add['Probability'] = sim_add['Probability']/sum(sim_add['Probability'])
     #sim_add = sim_add.sort_values(by = 'Probability', ascending = False)
     return sim_add

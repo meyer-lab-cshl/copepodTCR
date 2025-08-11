@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Usage &mdash; copepodTCR 0.3.3 documentation</title>
+  <title>Usage &mdash; copepodTCR 0.4.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=d5a15cff"></script>
+      <script src="_static/documentation_options.js?v=c87aa342"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -124,6 +124,7 @@ enough. To read more about used functions, check other sections.</p>
 <span id="quickstart-section"></span><h2>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">copepodTCR</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cpp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">codepub</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cdp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="c1"># number of pools</span>
 <span class="n">n_pools</span> <span class="o">=</span> <span class="mi">12</span>
@@ -1093,21 +1094,24 @@ all tips are already arranged to take only the required peptides.</p>
 <li><p>what is the length of the expected epitope (ep_length, we recommend 8)</p></li>
 </ul>
 </li>
-<li><p>Then, you can use these parameters to generate peptides. First, you would need to generate a random sequence, and then you could generate peptides using sliding window approach.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">len_lst</span> <span class="o">=</span> <span class="mi">100</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">n_pools</span> <span class="o">=</span> <span class="mi">12</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">iters</span> <span class="o">=</span> <span class="mi">4</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pep_length</span> <span class="o">=</span> <span class="mi">17</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">shift</span> <span class="o">=</span> <span class="mi">5</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ep_length</span> <span class="o">=</span> <span class="mi">8</span>
+<li><p>Then, you can use these parameters to generate peptides. First, you would need to generate a random sequence, and then you could generate peptides using a sliding window approach.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">codepub</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cdp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copepodTCR</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cpp</span>
 
-<span class="gp">&gt;&gt;&gt; </span><span class="n">sequence</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">random_amino_acid_sequence</span><span class="p">(</span><span class="n">shift</span><span class="o">*</span><span class="n">len_lst</span> <span class="o">+</span> <span class="p">(</span><span class="mi">100</span><span class="o">-</span><span class="n">shift</span><span class="o">*</span><span class="n">len_lst</span><span class="o">%</span><span class="mi">100</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">sequence</span>
-<span class="go">   &#39;EMKFLDQSQLGYVHPKWHHGTEMDEWSRSNSAYGKHQEATRLCSQWWVKTYMPTDPCWMLRYTNCCAMVPRYADFCMRDYRYAYIYFVNWNHECSDVIMETCCFALGKKLSTPTCTPGCVTVIYECKSEFEVGWPPHIIEGSAEFYAVACFVTRFMCPQTKANLLKIIISFHLHHYGQAEQICYKNEIPCCAMKFFDHREGLESNCLTCMQWPCNKSLFDPFPVMYRFSMAGNQGEPPCGYAVTMNARCTMGRWQKFRCEFKGCFYHNINVYTGCETMHECQIPVPMVHQTTLLYPCNVRSKDIDPCDWSYLEDDKERGWCGKFQMGSQIFRKFTPPPWTNRGWNHMDDTEARHRWCLTWKFTLDEPAEDTCILWIHSVYLWVVCMQGTAMSMRMVSFTLLCFMRAPPCEVMHYCDPQQTRDEELPMVGYITEELKSMFTSSSWPGSQSPGWGTWDLSIKRHSVKVPDMINPTHVVKPTKCICNQSLGWTFSEIDMYARHDIQKRWKCPIWNGQFRYEVIHSKQNPFQNSDEQPT&#39;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">len_lst</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">n_pools</span> <span class="o">=</span> <span class="mi">12</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">iters</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">pep_length</span> <span class="o">=</span> <span class="mi">17</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">shift</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">ep_length</span> <span class="o">=</span> <span class="mi">8</span>
 
-<span class="go">## Then with this sequence you can generate peptides</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">lst_all</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">peptide_generation</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">pep_length</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="n">lst_all</span><span class="p">[:</span><span class="n">len_lst</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">sequence</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">random_amino_acid_sequence</span><span class="p">(</span><span class="n">shift</span><span class="o">*</span><span class="n">len_lst</span> <span class="o">+</span> <span class="p">(</span><span class="mi">100</span><span class="o">-</span><span class="n">shift</span><span class="o">*</span><span class="n">len_lst</span><span class="o">%</span><span class="mi">100</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">sequence</span>
+   <span class="s1">&#39;EMKFLDQSQLGYVHPKWHHGTEMDEWSRSNSAYGKHQEATRLCSQWWVKTYMPTDPCWMLRYTNCCAMVPRYADFCMRDYRYAYIYFVNWNHECSDVIMETCCFALGKKLSTPTCTPGCVTVIYECKSEFEVGWPPHIIEGSAEFYAVACFVTRFMCPQTKANLLKIIISFHLHHYGQAEQICYKNEIPCCAMKFFDHREGLESNCLTCMQWPCNKSLFDPFPVMYRFSMAGNQGEPPCGYAVTMNARCTMGRWQKFRCEFKGCFYHNINVYTGCETMHECQIPVPMVHQTTLLYPCNVRSKDIDPCDWSYLEDDKERGWCGKFQMGSQIFRKFTPPPWTNRGWNHMDDTEARHRWCLTWKFTLDEPAEDTCILWIHSVYLWVVCMQGTAMSMRMVSFTLLCFMRAPPCEVMHYCDPQQTRDEELPMVGYITEELKSMFTSSSWPGSQSPGWGTWDLSIKRHSVKVPDMINPTHVVKPTKCICNQSLGWTFSEIDMYARHDIQKRWKCPIWNGQFRYEVIHSKQNPFQNSDEQPT&#39;</span>
+
+<span class="c1">## Then with this sequence you can generate peptides</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">lst_all</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">peptide_generation</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">pep_length</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">lst</span> <span class="o">=</span> <span class="n">lst_all</span><span class="p">[:</span><span class="n">len_lst</span><span class="p">]</span>
 </pre></div>
 </div>
 </li>
@@ -1142,7 +1146,7 @@ all tips are already arranged to take only the required peptides.</p>
 </div>
 </li>
 <li><p>Then you can simulate activation signal. For that, you would need to determine paratemers of the model.</p>
-<p>Plate notation for the simulation model.</p>
+<p>Plate notation for the simulation model:</p>
 <img alt="_images/model_simulation.png" src="_images/model_simulation.png" />
 <ul class="simple">
 <li><p>mu_n - mu of the negative distribution (distribution of signal of non-activated pools), ranges from 0 to 100.</p></li>

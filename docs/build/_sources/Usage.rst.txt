@@ -18,6 +18,7 @@ Quickstart
 
    import copepodTCR as cpp
    import codepub as cdp
+   import pandas as pd
 
    # number of pools
    n_pools = 12
@@ -74,7 +75,7 @@ More detailed quickstart
    You can check all peptides for their overlap length with the next
    peptide (list of peptides should be ordered):
 
-   .. function:: cpp.all_overlaps (lst) -> Counter object
+   .. function:: cpp.all_overlaps(lst) -> Counter object
       :noindex:
 
       :param lst: ordered list of peptides
@@ -94,7 +95,7 @@ More detailed quickstart
    Also, you can check which peptides have such an overlap with the next
    peptide:
 
-   .. function:: cpp.find_pair_with_overlap (lst, target_overlap) -> list
+   .. function:: cpp.find_pair_with_overlap(lst, target_overlap) -> list
       :noindex:
 
       :param lst: ordered list of peptides
@@ -114,7 +115,7 @@ More detailed quickstart
    Also, you can check what number of peptides share the same epitope.
    It might help to interpret the results later.
 
-   .. function:: cpp.how_many_peptides (lst, ep_length) -> Counter object, dictionary
+   .. function:: cpp.how_many_peptides(lst, ep_length) -> Counter object, dictionary
       :noindex:
 
       :param lst: ordered list of peptides
@@ -141,7 +142,7 @@ More detailed quickstart
 
    .. note:: Peptide occurrence affects number of peptides in one pool, and therefore too high peptide occurrence may lead to higher dilution of a single peptide.
 
-   .. function:: cpp.find_possible_k_values (n, l) -> list
+   .. function:: cpp.find_possible_k_values(n, l) -> list
       :noindex:
 
       :param n: number of pools
@@ -204,7 +205,7 @@ More detailed quickstart
 
    .. note:: Keep in mind that peptides should be ordered as they overlap.
 
-   .. function:: cpp.pooling (lst, addresses, n_pools) -> dictionary, dictionary
+   .. function:: cpp.pooling(lst, addresses, n_pools) -> dictionary, dictionary
       :noindex:
 
       :param lst: ordered list with peptides
@@ -683,9 +684,12 @@ If you want to play with the approach with the generated data, you can use the f
 
    * what is the length of the expected epitope (ep_length, we recommend 8)
 
-2. Then, you can use these parameters to generate peptides. First, you would need to generate a random sequence, and then you could generate peptides using sliding window approach.
+2. Then, you can use these parameters to generate peptides. First, you would need to generate a random sequence, and then you could generate peptides using a sliding window approach.
    
    .. code-block:: python
+
+      import codepub as cdp
+      import copepodTCR as cpp
 
       >>> len_lst = 100
       >>> n_pools = 12
@@ -738,7 +742,7 @@ If you want to play with the approach with the generated data, you can use the f
 
 5. Then you can simulate activation signal. For that, you would need to determine paratemers of the model.
 
-   Plate notation for the simulation model.
+   Plate notation for the simulation model:
 
    .. image:: model_simulation.png
 
@@ -873,7 +877,7 @@ Peptide occurrence search
          >>> cpp.combination(10, 3)
          120
 
-.. function:: cpp.find_possible_k_values (n, l) -> list
+.. function:: cpp.find_possible_k_values(n, l) -> list
 
       :param n: number of pools
       :type n: int
@@ -935,7 +939,7 @@ Peptide overlap
          >>> cpp.string_overlap('ASDFGHJKTYUIO', 'GHJKTYUIOTYUI')
          9
 
-.. function:: cpp.find_pair_with_overlap (lst, target_overlap) -> list
+.. function:: cpp.find_pair_with_overlap(lst, target_overlap) -> list
 
       :param lst: ordered list of peptides
       :type lst: list
@@ -949,7 +953,7 @@ Peptide overlap
          >>> cpp.find_pair_with_overlap(lst, 16)
          [['FDEDDSEPVLKGVKLHY', 'DEDDSEPVLKGVKLHYT']]
 
-.. function:: cpp.how_many_peptides (lst, ep_length) -> Counter object, dictionary
+.. function:: cpp.how_many_peptides(lst, ep_length) -> Counter object, dictionary
 
       :param lst: ordered list of peptides
       :type lst: list
@@ -987,7 +991,7 @@ Pooling and simulation
          >>> cpp.bad_address_predictor([[0, 1, 2, 3], [0, 1, 2, 4], [0, 1, 2, 5], [0, 1, 2, 6], [0, 1, 3, 6], [0, 1, 3, 5], [0, 1, 3, 4]])
          [[0, 1, 2, 3], [0, 1, 2, 4], [0, 1, 2, 5], [0, 1, 2, 6], [0, 1, 3, 6], [0, 1, 3, 5], [0, 1, 3, 4]]
 
-.. function:: cpp.pooling (lst, addresses, n_pools) -> dictionary, dictionary
+.. function:: cpp.pooling(lst, addresses, n_pools) -> dictionary, dictionary
 
       :param lst: ordered list with peptides
       :type lst: list

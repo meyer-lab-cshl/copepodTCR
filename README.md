@@ -1,3 +1,7 @@
+[![Downloads](https://static.pepy.tech/badge/copepodTCR)](https://pepy.tech/project/copepodTCR)
+[![PyPI version](https://img.shields.io/pypi/v/copepodTCR.svg)](https://pypi.org/project/copepodTCR/)
+[![Conda Version](https://img.shields.io/conda/vn/vasilisa.kovaleva/copepodTCR?style=flat-square)](https://anaconda.org/vasilisa-kovaleva/copepodTCR)
+
 <span style="color:white"> </span>
 ## <span style="color:#015396">COmbinatorial PEptide POoling Design for TCR specificity</span>
 <span style="color:#015396">CopepodTCR</span> is a tool for the design of combinatorial peptide pooling schemes for TCR speficity assays.
@@ -85,9 +89,8 @@ But if they were not, here is the list of requirements:
 ```python
     pip install "pandas>=1.5.3"
     pip install "numpy>=1.23.5"
-    pip install "cvxpy>=1.3.2"
     pip install "trimesh>=3.23.5"
-    pip install "trimesh>=3.23.5"
+    pip install "manifold3d>=3.2.1"
     pip install "pymc>=5.9.2"
     pip install "arviz>=0.16.1"
 ```
