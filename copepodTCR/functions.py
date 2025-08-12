@@ -424,11 +424,9 @@ def pick_engine():
 
     if "blender" in available:
         return "blender"
-    if "scad" in available:
-        return "scad"
 
     raise RuntimeError(
-        f"No boolean backend available. Install manifold3d, Blender, or OpenSCAD. "
+        f"No boolean backend available. Install manifold3d or Blender."
         f"Available engines: {available}"
     )
 
