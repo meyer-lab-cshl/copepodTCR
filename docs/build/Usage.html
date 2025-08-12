@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Usage &mdash; copepodTCR 0.4.1 documentation</title>
+  <title>Usage &mdash; copepodTCR 0.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=c87aa342"></script>
+      <script src="_static/documentation_options.js?v=1dd76d02"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -65,7 +65,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#cpp.how_many_peptides"><code class="docutils literal notranslate"><span class="pre">cpp.how_many_peptides()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#pooling-and-simulation">Pooling and simulation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pooling">Pooling</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#cpp.pooling"><code class="docutils literal notranslate"><span class="pre">cpp.pooling()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cpp.run_experiment"><code class="docutils literal notranslate"><span class="pre">cpp.run_experiment()</span></code></a></li>
 </ul>
@@ -82,6 +82,12 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#data-simulation-with-bayesian-mixture-model">Data simulation with Bayesian mixture model</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#cpp.random_amino_acid_sequence"><code class="docutils literal notranslate"><span class="pre">cpp.random_amino_acid_sequence()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#plotting-results">Plotting results</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cpp.poolplot"><code class="docutils literal notranslate"><span class="pre">cpp.poolplot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cpp.bubbleplot"><code class="docutils literal notranslate"><span class="pre">cpp.bubbleplot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cpp.hover_bubbleplot"><code class="docutils literal notranslate"><span class="pre">cpp.hover_bubbleplot()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -122,9 +128,14 @@
 enough. To read more about used functions, check other sections.</p>
 <section id="quickstart">
 <span id="quickstart-section"></span><h2>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading"></a></h2>
+<p>To generate CPP scheme and print masks:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">copepodTCR</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cpp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">codepub</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cdp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="c1"># [Optional] set random seed</span>
+<span class="n">cdp</span><span class="o">.</span><span class="n">set_seed</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
+<span class="n">cpp</span><span class="o">.</span><span class="n">set_seed</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
 
 <span class="c1"># number of pools</span>
 <span class="n">n_pools</span> <span class="o">=</span> <span class="mi">12</span>
@@ -144,30 +155,71 @@ enough. To read more about used functions, check other sections.</p>
 
 <span class="c1"># pooling scheme generation</span>
 <span class="n">pools</span><span class="p">,</span> <span class="n">peptide_address</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">pooling</span><span class="p">(</span><span class="n">lst</span><span class="o">=</span><span class="n">lst</span><span class="p">,</span> <span class="n">addresses</span><span class="o">=</span><span class="n">lines</span><span class="p">,</span> <span class="n">n_pools</span><span class="o">=</span><span class="n">n_pools</span><span class="p">)</span>
+<span class="c1"># save these files</span>
+<span class="n">pools</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;path\pools.tsv&#39;</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+<span class="n">peptide_address</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;path\peptide_addresses.tsv&#39;</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 
 <span class="c1"># simulation</span>
 <span class="n">check_results</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">run_experiment</span><span class="p">(</span><span class="n">lst</span><span class="o">=</span><span class="n">lst</span><span class="p">,</span> <span class="n">peptide_address</span><span class="o">=</span><span class="n">peptide_address</span><span class="p">,</span> <span class="n">ep_length</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">pools</span><span class="o">=</span><span class="n">pools</span><span class="p">,</span> <span class="n">iters</span><span class="o">=</span><span class="n">iters</span><span class="p">,</span> <span class="n">n_pools</span><span class="o">=</span><span class="n">n_pools</span><span class="p">,</span> <span class="n">regime</span><span class="o">=</span><span class="s1">&#39;without dropouts&#39;</span><span class="p">)</span>
+<span class="c1"># save this file</span>
+<span class="n">check_results</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;path\check_results.tsv&#39;</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 
 <span class="c1"># STL files generation</span>
 <span class="c1"># add peptide scheme to peptides_table_stl, with header and index as column and row numbers</span>
 <span class="n">peptides_table_stl</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;peptides_scheme.tsv&#39;</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
 <span class="n">pools_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;Peptides&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">pools</span><span class="o">.</span><span class="n">values</span><span class="p">()]},</span> <span class="n">index</span><span class="o">=</span><span class="n">pools</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-<span class="n">meshes_list</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">pools_stl</span><span class="p">(</span><span class="n">peptides_table</span> <span class="o">=</span> <span class="n">peptides_table_stl</span><span class="p">,</span> <span class="n">pools</span> <span class="o">=</span> <span class="n">pools_df</span><span class="p">,</span> <span class="n">rows</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="mi">24</span><span class="p">,</span> <span class="n">length</span> <span class="o">=</span> <span class="mf">122.10</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="mf">79.97</span><span class="p">,</span>
-           <span class="n">thickness</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">hole_radius</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">x_offset</span> <span class="o">=</span> <span class="mf">9.05</span><span class="p">,</span> <span class="n">y_offset</span> <span class="o">=</span> <span class="mf">6.20</span><span class="p">,</span> <span class="n">well_spacing</span> <span class="o">=</span> <span class="mf">4.5</span><span class="p">)</span>
-<span class="n">cpp</span><span class="o">.</span><span class="n">zip_meshes_export</span><span class="p">(</span><span class="n">meshes_list</span><span class="p">)</span>
 
-<span class="c1"># Results of the experiment as a table with two columns, Pool and Percentage. Activation signal is expressed in percentaged of activated T cells.</span>
+<span class="c1"># now you need to select the engine, pick_engine function should help with that</span>
+<span class="c1"># default engine is manifold3d</span>
+<span class="n">ENGINE</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">pick_engine</span><span class="p">()</span>
+
+<span class="n">meshes_list</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">pools_stl</span><span class="p">(</span><span class="n">peptides_table</span> <span class="o">=</span> <span class="n">peptides_table_stl</span><span class="p">,</span> <span class="n">pools</span> <span class="o">=</span> <span class="n">pools_df</span><span class="p">,</span> <span class="n">rows</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="mi">24</span><span class="p">,</span> <span class="n">length</span> <span class="o">=</span> <span class="mf">122.10</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="mf">79.97</span><span class="p">,</span>
+           <span class="n">thickness</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">hole_radius</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">x_offset</span> <span class="o">=</span> <span class="mf">9.05</span><span class="p">,</span> <span class="n">y_offset</span> <span class="o">=</span> <span class="mf">6.20</span><span class="p">,</span> <span class="n">well_spacing</span> <span class="o">=</span> <span class="mf">4.5</span><span class="p">,</span> <span class="n">engine</span> <span class="o">=</span> <span class="n">ENGINE</span><span class="p">)</span>
+<span class="n">cpp</span><span class="o">.</span><span class="n">zip_meshes_export</span><span class="p">(</span><span class="n">meshes_list</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To analyze results:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># import your CPP scheme</span>
+<span class="n">check_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;path\check_results.tsv&#39;</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># results of the experiment as a table with two columns, Pool and Percentage. Activation signal is expressed in percentaged of activated T cells.</span>
 <span class="n">exp_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;path/to/your/file&#39;</span><span class="p">)</span>
 <span class="n">cells</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">exp_results</span><span class="p">[</span><span class="s1">&#39;Percentage&#39;</span><span class="p">])</span>
 <span class="n">inds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">exp_results</span><span class="p">[</span><span class="s1">&#39;Pool&#39;</span><span class="p">])</span>
 
+<span class="c1"># also here you can enter your negative control values:</span>
+<span class="n">neg_control</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;path/to/your/neg_control&#39;</span><span class="p">))</span>
+
+<span class="c1"># to calculate expected number of negative pools based on the scheme parameters:</span>
+<span class="c1"># neg_share = (n_pools - iters - e + 1)/n_pools, where e is number of peptides sharing the same epitope</span>
+<span class="n">t</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">how_many_peptides</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">ep_length</span><span class="p">)</span>
+<span class="n">e</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">t</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
+<span class="n">neg_share</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_pools</span> <span class="o">-</span> <span class="n">iters</span> <span class="o">-</span> <span class="n">e</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">n_pools</span>
+
 <span class="c1"># Model</span>
-<span class="n">fig</span><span class="p">,</span> <span class="n">probs</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">activation_model</span><span class="p">(</span><span class="n">cells</span><span class="p">,</span> <span class="n">n_pools</span><span class="p">,</span> <span class="n">inds</span><span class="p">)</span>
-<span class="n">peptide_probs</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">peptide_probabilities</span><span class="p">(</span><span class="n">sim</span><span class="p">,</span> <span class="n">probs</span><span class="p">)</span>
-<span class="n">message</span><span class="p">,</span> <span class="n">most</span><span class="p">,</span> <span class="n">possible</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">results_analysis</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">,</span> <span class="n">probs</span><span class="p">,</span> <span class="n">check_results</span><span class="p">)</span>
+<span class="n">model</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">probs</span><span class="p">,</span> <span class="n">n_c</span><span class="p">,</span> <span class="n">pp</span><span class="p">,</span> <span class="n">pn</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">activation_model</span><span class="p">(</span><span class="n">cells</span><span class="p">,</span> <span class="n">n_pools</span><span class="p">,</span> <span class="n">inds</span><span class="p">,</span> <span class="n">neg_control</span><span class="p">,</span> <span class="n">neg_share</span> <span class="o">=</span> <span class="n">neg_share</span><span class="p">)</span>
+<span class="n">peptide_probs</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">peptide_probabilities</span><span class="p">(</span><span class="n">check_results</span><span class="p">,</span> <span class="n">probs</span><span class="p">)</span>
+<span class="n">n_act_pools</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">most</span><span class="p">,</span> <span class="n">possible</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">results_analysis</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">,</span> <span class="n">probs</span><span class="p">,</span> <span class="n">check_results</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">most</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">possible</span><span class="p">)</span>
+
+<span class="c1"># Plotting results</span>
+
+<span class="c1"># log10 of percentage of activated T cells per pool</span>
+<span class="n">poolplot</span><span class="p">(</span><span class="n">probs</span><span class="p">,</span> <span class="n">cells</span><span class="p">,</span> <span class="n">inds</span><span class="p">,</span> <span class="n">most</span><span class="p">)</span>
+
+<span class="c1"># interactive version of the bubbleplot, with each peptide = 1 bubble, its size represents</span>
+<span class="c1"># difference between number of activated and non-activated pools in its address,</span>
+<span class="c1"># X-axis: position of peptide in the protein,</span>
+<span class="c1"># Y-axis: peptide probability</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">plotly.io</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pio</span>
+<span class="n">pio</span><span class="o">.</span><span class="n">renderers</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="s2">&quot;notebook_connected&quot;</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">hover_bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1">## if innteractive version is not displayed, you can check usual bubbleplot:</span>
+<span class="n">bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -763,7 +815,7 @@ holes equal to the number of peptides in a pool. Then, this card
 should be placed on an empty tip box, and a tip should be inserted
 into each hole. This way, if you are using a multichannel pipette,
 all tips are already arranged to take only the required peptides.</p>
-<p>[The process you can look up here.]</p>
+<p>[The process you can look up <a class="reference external" href="https://drive.google.com/file/d/1wtLNnKj8I7iYdlu1owY5Cl4SegYcouei/view?usp=sharing">here</a>.]</p>
 <p>To generate the files with 3D models, you need two functions.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1055,6 +1107,7 @@ all tips are already arranged to take only the required peptides.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ol class="arabic simple">
+<li><p>number of activated pools</p></li>
 <li><p>note about detected drop-outs (erroneously non-activated pools);</p></li>
 <li><p>list of the most possible peptides;</p></li>
 <li><p>list of all possible peptides given this pattern of pools activation.</p></li>
@@ -1062,10 +1115,12 @@ all tips are already arranged to take only the required peptides.</p>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list, list, list</p>
+<dd class="field-odd"><p>int, list, list, list</p>
 </dd>
 </dl>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">note</span><span class="p">,</span> <span class="n">most</span><span class="p">,</span> <span class="n">possible</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">peptide_probabilities</span><span class="p">(</span><span class="n">sim</span><span class="p">,</span> <span class="n">probs</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">n_act_pools</span><span class="p">,</span> <span class="n">note</span><span class="p">,</span> <span class="n">most</span><span class="p">,</span> <span class="n">possible</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">peptide_probabilities</span><span class="p">(</span><span class="n">sim</span><span class="p">,</span> <span class="n">probs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n_act_pools</span>
+<span class="go">5</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">note</span>
 <span class="go">No drop-outs were detected</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">most</span>
@@ -1076,6 +1131,24 @@ all tips are already arranged to take only the required peptides.</p>
 </div>
 </dd></dl>
 
+<p>Also you plot results using copepodTCR built-in functions.</p>
+<p><strong>Bubbleplot</strong>
+Each bubble represents one peptide. Its size represents the difference between activated and non-activated pools in the address of a peptide (it this difference is not positive, such a peptide is not shown). X-axis: position of a peptide in protein. Y-axis: its probability.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/bubble_plot.png" src="_images/bubble_plot.png" />
+<p>Or using interactive version of this bubbleplot (with plotly):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">plotly.io</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pio</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pio</span><span class="o">.</span><span class="n">renderers</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="s2">&quot;notebook_connected&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hover_bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Also you make a scatterplot with pools. Each dot is one replicate, with its pool index on X-axis and its log10 percentage of activated T cells on Y-axis. Pools identified by the activation model as activated are plotted green, others pools are gray.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">poolplot</span><span class="p">(</span><span class="n">probs</span><span class="p">,</span> <span class="n">cells</span><span class="p">,</span> <span class="n">inds</span><span class="p">,</span> <span class="n">most</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/pool_plot.png" src="_images/pool_plot.png" />
 </li>
 </ol>
 </section>
@@ -1239,10 +1312,15 @@ all tips are already arranged to take only the required peptides.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">obs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cells</span><span class="p">[</span><span class="s1">&#39;Percentage&#39;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="p">,</span> <span class="n">probs</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">activation_model</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">n_pools</span><span class="p">,</span> <span class="n">inds</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">peptide_probs</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">peptide_probabilities</span><span class="p">(</span><span class="n">check_results</span><span class="p">,</span> <span class="n">probs</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">results_analysis</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">,</span> <span class="n">probs</span><span class="p">,</span> <span class="n">check_results</span><span class="p">)</span>
-<span class="go">(&#39;No drop-outs were detected&#39;,</span>
-<span class="go">[&#39;YCNQNWDWDMCEVVCGR&#39;, &#39;WDWDMCEVVCGRDFCHC&#39;],</span>
-<span class="go">[&#39;YCNQNWDWDMCEVVCGR&#39;, &#39;WDWDMCEVVCGRDFCHC&#39;])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n_act_pools</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">most</span><span class="p">,</span> <span class="n">possible</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">results_analysis</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">,</span> <span class="n">probs</span><span class="p">,</span> <span class="n">check_results</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n_act_pools</span>
+<span class="go">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">message</span>
+<span class="go">&#39;No drop-outs were detected&#39;,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">most</span>
+<span class="go">[&#39;YCNQNWDWDMCEVVCGR&#39;, &#39;WDWDMCEVVCGRDFCHC&#39;]</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="go">[&#39;YCNQNWDWDMCEVVCGR&#39;, &#39;WDWDMCEVVCGRDFCHC&#39;]</span>
 </pre></div>
 </div>
 <p>Now you can compare recovered cognate peptides with ones you chose:</p>
@@ -1250,6 +1328,21 @@ all tips are already arranged to take only the required peptides.</p>
 <li><p>[‘YCNQNWDWDMCEVVCGR’, ‘WDWDMCEVVCGRDFCHC’] - you chose</p></li>
 <li><p>[‘YCNQNWDWDMCEVVCGR’, ‘WDWDMCEVVCGRDFCHC’] - were recovered by the model from the simulated activation data</p></li>
 </ul>
+</li>
+<li><p>Also you can plot this data using built-in plotting functions.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or using plotly to make interactive bubbleplot:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">plotly.io</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pio</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pio</span><span class="o">.</span><span class="n">renderers</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="s2">&quot;notebook_connected&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hover_bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Also you make a scatterplot with pools:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">poolplot</span><span class="p">(</span><span class="n">probs</span><span class="p">,</span> <span class="n">cells</span><span class="p">,</span> <span class="n">inds</span><span class="p">,</span> <span class="n">most</span><span class="p">)</span>
+</pre></div>
+</div>
 </li>
 <li><p>You can play with different parameters to check how well the approach works. For example, you can decrease the offset for the positive distribution, to check how different should be activated and non-activated pools to yield correct results.</p></li>
 </ol>
@@ -1432,8 +1525,8 @@ all tips are already arranged to take only the required peptides.</p>
 </dd></dl>
 
 </section>
-<section id="pooling-and-simulation">
-<span id="pooling-section"></span><h2>Pooling and simulation<a class="headerlink" href="#pooling-and-simulation" title="Link to this heading"></a></h2>
+<section id="pooling">
+<span id="pooling-section"></span><h2>Pooling<a class="headerlink" href="#pooling" title="Link to this heading"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">cpp.bad_address_predictor(all_ns):</span> <span class="pre">-&gt;</span> <span class="pre">list</span></span></dt>
@@ -1840,6 +1933,7 @@ all tips are already arranged to take only the required peptides.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ol class="arabic simple">
+<li><p>number of activated pools</p></li>
 <li><p>note about detected drop-outs (erroneously non-activated pools);</p></li>
 <li><p>list of the most possible peptides;</p></li>
 <li><p>list of all possible peptides given this pattern of pools activation.</p></li>
@@ -1847,10 +1941,12 @@ all tips are already arranged to take only the required peptides.</p>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list, list, list</p>
+<dd class="field-odd"><p>int, list, list, list</p>
 </dd>
 </dl>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">note</span><span class="p">,</span> <span class="n">most</span><span class="p">,</span> <span class="n">possible</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">peptide_probabilities</span><span class="p">(</span><span class="n">sim</span><span class="p">,</span> <span class="n">probs</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">n_act_pools</span><span class="p">,</span> <span class="n">note</span><span class="p">,</span> <span class="n">most</span><span class="p">,</span> <span class="n">possible</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">peptide_probabilities</span><span class="p">(</span><span class="n">sim</span><span class="p">,</span> <span class="n">probs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n_act_pools</span>
+<span class="go">5</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">note</span>
 <span class="go">No drop-outs were detected</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">most</span>
@@ -1936,6 +2032,74 @@ all tips are already arranged to take only the required peptides.</p>
 <span class="go">[5.1, 5.2, 5.0, 5.3, 5.1, 5.0, 5.2, 5.3, 5.0, 5.1]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">control</span>
 <span class="go">[4.9, 5.0, 5.1]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="plotting-results">
+<h2>Plotting results<a class="headerlink" href="#plotting-results" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="cpp.poolplot">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">poolplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">probs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cells</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">most</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">fig</span></span></span><a class="headerlink" href="#cpp.poolplot" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas DataFrame</em>) – table with pool probabilities generated by <code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.activation_model()</span></code></p></li>
+<li><p><strong>cells</strong> (<em>list</em>) – list with observed values</p></li>
+<li><p><strong>inds</strong> (<em>list</em>) – list with indices for observed values</p></li>
+<li><p><strong>most</strong> (<em>list</em>) – list with most possible peptides generated by <code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.run_analysis()</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bubbleplot</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>fig</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/pool_plot.png" src="_images/pool_plot.png" />
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cpp.bubbleplot">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">bubbleplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">fig</span></span></span><a class="headerlink" href="#cpp.bubbleplot" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>pandas DataFrame</em>) – table with peptide probabilities generated by <a class="reference internal" href="#cpp.peptide_probabilities" title="cpp.peptide_probabilities"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.peptide_probabilities()</span></code></a></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bubbleplot</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>fig</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/bubble_plot.png" src="_images/bubble_plot.png" />
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cpp.hover_bubbleplot">
+<span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">hover_bubbleplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">interactive</span> <span class="pre">fig</span></span></span><a class="headerlink" href="#cpp.hover_bubbleplot" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>pandas DataFrame</em>) – table with peptide probabilities generated by <a class="reference internal" href="#cpp.peptide_probabilities" title="cpp.peptide_probabilities"><code class="xref py py-func docutils literal notranslate"><span class="pre">cpp.peptide_probabilities()</span></code></a></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bubbleplot</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>fig</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span> <span class="o">=</span> <span class="n">hover_bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 </dd></dl>

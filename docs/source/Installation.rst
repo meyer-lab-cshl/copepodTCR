@@ -32,17 +32,19 @@ But if they were not, here is the list of requirements:
 
 		pip install "numpy>=1.23.5"
 
-* cvxpy>=1.3.2
-
-	.. code-block:: python
-
-		pip install "cvxpy>=1.3.2"
-
 * trimesh>=3.23.5
 
 	.. code-block:: python
 
 		pip install "trimesh>=3.23.5"
+
+* manifold3d>=3.2.1
+
+	.. code-block:: python
+
+		pip install "manifold3d>=3.2.1"
+
+Alternative to manifold3d is Blender, it can be installed from `Blender official website <https://www.blender.org/>`_ (version 4.5 and higher).
 
 * PyMC>=5.9.2
 
@@ -55,3 +57,15 @@ But if they were not, here is the list of requirements:
 	.. code-block:: python
 
 		pip install "arviz>=0.16.1"
+
+* matplotlib>=3.10.5
+
+	.. code-block:: python
+
+		pip install "matplotlib>=3.10.5"
+
+* seaborn>=0.13.2
+
+	.. code-block:: python
+
+		pip install "seaborn>=0.13.2"

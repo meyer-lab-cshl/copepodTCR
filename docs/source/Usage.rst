@@ -14,11 +14,17 @@ enough. To read more about used functions, check other sections.
 Quickstart
 ----------
 
+To generate CPP scheme and print masks:
+
 .. code-block:: python
 
    import copepodTCR as cpp
    import codepub as cdp
    import pandas as pd
+
+   # [Optional] set random seed
+   cdp.set_seed(123)
+   cpp.set_seed(123)
 
    # number of pools
    n_pools = 12
@@ -38,30 +44,74 @@ Quickstart
 
    # pooling scheme generation
    pools, peptide_address = cpp.pooling(lst=lst, addresses=lines, n_pools=n_pools)
+   # save these files
+   pools.to_csv('path\pools.tsv', sep = '\t', index = None)
+   peptide_address.to_csv('path\peptide_addresses.tsv', sep = '\t', index = None)
 
    # simulation
    check_results = cpp.run_experiment(lst=lst, peptide_address=peptide_address, ep_length=8, pools=pools, iters=iters, n_pools=n_pools, regime='without dropouts')
+   # save this file
+   check_results.to_csv('path\check_results.tsv', sep = "\t", index = None)
 
    # STL files generation
    # add peptide scheme to peptides_table_stl, with header and index as column and row numbers
    peptides_table_stl = pd.read_csv('peptides_scheme.tsv', sep = "\t", index_col = 0)
    pools_df = pd.DataFrame({'Peptides': [';'.join(val) for val in pools.values()]}, index=pools.keys())
+
+   # now you need to select the engine, pick_engine function should help with that
+   # default engine is manifold3d
+   ENGINE = cpp.pick_engine()
+
    meshes_list = cpp.pools_stl(peptides_table = peptides_table_stl, pools = pools_df, rows = 16, cols = 24, length = 122.10, width = 79.97,
-              thickness = 1.5, hole_radius = 2, x_offset = 9.05, y_offset = 6.20, well_spacing = 4.5)
+              thickness = 1.5, hole_radius = 2, x_offset = 9.05, y_offset = 6.20, well_spacing = 4.5, engine = ENGINE)
    cpp.zip_meshes_export(meshes_list)
 
-   # Results of the experiment as a table with two columns, Pool and Percentage. Activation signal is expressed in percentaged of activated T cells.
+To analyze results:
+
+.. code-block:: python
+
+   # import your CPP scheme
+   check_results = pd.read_csv('path\check_results.tsv', sep = "\t")
+
+   # results of the experiment as a table with two columns, Pool and Percentage. Activation signal is expressed in percentaged of activated T cells.
    exp_results = pd.read_csv('path/to/your/file')
    cells = list(exp_results['Percentage'])
    inds = list(exp_results['Pool'])
 
+   # also here you can enter your negative control values:
+   neg_control = list(pd.read_csv('path/to/your/neg_control'))
+
+   # to calculate expected number of negative pools based on the scheme parameters:
+   # neg_share = (n_pools - iters - e + 1)/n_pools, where e is number of peptides sharing the same epitope
+   t, r = cpp.how_many_peptides(lst, ep_length)
+   e = max(t, key=t.get)
+   neg_share = (n_pools - iters - e + 1)/n_pools
+
    # Model
-   fig, probs = cpp.activation_model(cells, n_pools, inds)
-   peptide_probs = cpp.peptide_probabilities(sim, probs)
-   message, most, possible = cpp.results_analysis(peptide_probs, probs, check_results)
+   model, fig, probs, n_c, pp, pn = cpp.activation_model(cells, n_pools, inds, neg_control, neg_share = neg_share)
+   peptide_probs = cpp.peptide_probabilities(check_results, probs)
+   n_act_pools, message, most, possible = cpp.results_analysis(peptide_probs, probs, check_results)
    print(message)
    print(most)
    print(possible)
+
+   # Plotting results
+
+   # log10 of percentage of activated T cells per pool
+   poolplot(probs, cells, inds, most)
+
+   # interactive version of the bubbleplot, with each peptide = 1 bubble, its size represents
+   # difference between number of activated and non-activated pools in its address,
+   # X-axis: position of peptide in the protein,
+   # Y-axis: peptide probability
+   import plotly.io as pio
+   pio.renderers.default = "notebook_connected"
+   fig = hover_bubbleplot(peptide_probs)
+   fig.show()
+
+   ## if innteractive version is not displayed, you can check usual bubbleplot:
+   bubbleplot(peptide_probs)
+
 
 .. _quickstartf-section:
 
@@ -455,7 +505,7 @@ More detailed quickstart
    into each hole. This way, if you are using a multichannel pipette,
    all tips are already arranged to take only the required peptides.
 
-   [The process you can look up here.]
+   [The process you can look up `here <https://drive.google.com/file/d/1wtLNnKj8I7iYdlu1owY5Cl4SegYcouei/view?usp=sharing>`_.]
 
    To generate the files with 3D models, you need two functions.
 
@@ -646,20 +696,52 @@ More detailed quickstart
       :param sim: check_results table with simulation with or without drop-outs
       :type sim: pandas DataFrame
       :return:
-         1) note about detected drop-outs (erroneously non-activated pools);
-         2) list of the most possible peptides;
-         3) list of all possible peptides given this pattern of pools activation.
-      :rtype: list, list, list
+         1) number of activated pools
+         2) note about detected drop-outs (erroneously non-activated pools);
+         3) list of the most possible peptides;
+         4) list of all possible peptides given this pattern of pools activation.
+      :rtype: int, list, list, list
 
       .. code-block:: python
 
-         >>> note, most, possible = cpp.peptide_probabilities(sim, probs)
+         >>> n_act_pools, note, most, possible = cpp.peptide_probabilities(sim, probs)
+         >>> n_act_pools
+         5
          >>> note
          No drop-outs were detected
          >>> most
          ['SSANNCTFEYVSQPFLM', 'CTFEYVSQPFLMDLEGK']
          >>> possible
          ['SSANNCTFEYVSQPFLM', 'CTFEYVSQPFLMDLEGK']
+
+   Also you plot results using copepodTCR built-in functions.
+
+   **Bubbleplot**
+   Each bubble represents one peptide. Its size represents the difference between activated and non-activated pools in the address of a peptide (it this difference is not positive, such a peptide is not shown). X-axis: position of a peptide in protein. Y-axis: its probability.
+
+   .. code-block:: python
+
+      >>> bubbleplot(peptide_probs)
+
+   .. image:: bubble_plot.png
+
+   Or using interactive version of this bubbleplot (with plotly):
+
+   .. code-block:: python
+
+      >>> import plotly.io as pio
+      >>> pio.renderers.default = "notebook_connected"
+      >>> hover_bubbleplot(peptide_probs)
+
+
+   Also you make a scatterplot with pools. Each dot is one replicate, with its pool index on X-axis and its log10 percentage of activated T cells on Y-axis. Pools identified by the activation model as activated are plotted green, others pools are gray.
+
+   .. code-block:: python
+
+      >>> poolplot(probs, cells, inds, most)
+
+   .. image:: pool_plot.png
+
 
 .. _simulation-section:
 
@@ -835,10 +917,15 @@ If you want to play with the approach with the generated data, you can use the f
       >>> obs = list(cells['Percentage'])
       >>> fig, probs = cpp.activation_model(obs, n_pools, inds)
       >>> peptide_probs = cpp.peptide_probabilities(check_results, probs)
-      >>> cpp.results_analysis(peptide_probs, probs, check_results)
-      ('No drop-outs were detected',
-      ['YCNQNWDWDMCEVVCGR', 'WDWDMCEVVCGRDFCHC'],
-      ['YCNQNWDWDMCEVVCGR', 'WDWDMCEVVCGRDFCHC'])
+      >>> n_act_pools, message, most, possible = cpp.results_analysis(peptide_probs, probs, check_results)
+      >>> n_act_pools
+      5
+      >>> message
+      'No drop-outs were detected',
+      >>> most
+      ['YCNQNWDWDMCEVVCGR', 'WDWDMCEVVCGRDFCHC']
+      >>>
+      ['YCNQNWDWDMCEVVCGR', 'WDWDMCEVVCGRDFCHC']
 
    Now you can compare recovered cognate peptides with ones you chose:
 
@@ -846,7 +933,28 @@ If you want to play with the approach with the generated data, you can use the f
    
    * ['YCNQNWDWDMCEVVCGR', 'WDWDMCEVVCGRDFCHC'] - were recovered by the model from the simulated activation data
 
-7. You can play with different parameters to check how well the approach works. For example, you can decrease the offset for the positive distribution, to check how different should be activated and non-activated pools to yield correct results.
+7. Also you can plot this data using built-in plotting functions.
+
+   .. code-block:: python
+
+      >>> bubbleplot(peptide_probs)
+
+   Or using plotly to make interactive bubbleplot:
+
+   .. code-block:: python
+
+      >>> import plotly.io as pio
+      >>> pio.renderers.default = "notebook_connected"
+      >>> hover_bubbleplot(peptide_probs)
+
+   Also you make a scatterplot with pools:
+
+   .. code-block:: python
+
+      >>> poolplot(probs, cells, inds, most)
+
+
+8. You can play with different parameters to check how well the approach works. For example, you can decrease the offset for the positive distribution, to check how different should be activated and non-activated pools to yield correct results.
 
 .. _occurrence-section:
 
@@ -974,8 +1082,8 @@ Peptide overlap
 
 .. _pooling-section:
 
-Pooling and simulation
-------------------------------
+Pooling
+-------
 
 .. function:: cpp.bad_address_predictor(all_ns): -> list
 
@@ -1193,7 +1301,7 @@ Pooling and simulation
 .. _interpretation:
 
 Results interpretation with a Bayesian mixture model
-------------------------------------------------------------
+-----------------------------------------------------
 
 .. function:: cpp.activation_model(obs, n_pools, inds, neg_control=None, neg_share=None, cores=1) -> model, fig, pandas DataFrame, list, InferenceData, list
       :noindex:
@@ -1284,14 +1392,17 @@ Results interpretation with a Bayesian mixture model
       :param sim: check_results table with simulation with or without drop-outs
       :type sim: pandas DataFrame
       :return:
-         1) note about detected drop-outs (erroneously non-activated pools);
-         2) list of the most possible peptides;
-         3) list of all possible peptides given this pattern of pools activation.
-      :rtype: list, list, list
+         1) number of activated pools
+         2) note about detected drop-outs (erroneously non-activated pools);
+         3) list of the most possible peptides;
+         4) list of all possible peptides given this pattern of pools activation.
+      :rtype: int, list, list, list
 
       .. code-block:: python
 
-         >>> note, most, possible = cpp.peptide_probabilities(sim, probs)
+         >>> n_act_pools, note, most, possible = cpp.peptide_probabilities(sim, probs)
+         >>> n_act_pools
+         5
          >>> note
          No drop-outs were detected
          >>> most
@@ -1379,5 +1490,52 @@ Data simulation with Bayesian mixture model
          [5.1, 5.2, 5.0, 5.3, 5.1, 5.0, 5.2, 5.3, 5.0, 5.1]
          >>> control
          [4.9, 5.0, 5.1]
+
+Plotting results
+----------------
+
+.. function:: cpp.poolplot(probs, cells, inds, most) -> fig
+
+      :param df: table with pool probabilities generated by :func:`cpp.activation_model`
+      :type df: pandas DataFrame
+      :param cells: list with observed values
+      :type cells: list
+      :param inds: list with indices for observed values
+      :type inds: list
+      :param most: list with most possible peptides generated by :func:`cpp.run_analysis`
+      :type most: list
+      :return: bubbleplot
+      :rtype: fig
+
+      .. code-block:: python
+      
+         >>> bubbleplot(peptide_probs)
+      
+      .. image:: pool_plot.png
+
+.. function:: cpp.bubbleplot(df) -> fig
+
+      :param df: table with peptide probabilities generated by :func:`cpp.peptide_probabilities`
+      :type df: pandas DataFrame
+      :return: bubbleplot
+      :rtype: fig
+
+      .. code-block:: python
+
+         >>> bubbleplot(peptide_probs)
+      
+      .. image:: bubble_plot.png
+
+.. function:: cpp.hover_bubbleplot(df) -> interactive fig
+
+      :param df: table with peptide probabilities generated by :func:`cpp.peptide_probabilities`
+      :type df: pandas DataFrame
+      :return: bubbleplot
+      :rtype: fig
+
+      .. code-block:: python
+
+         >>> fig = hover_bubbleplot(peptide_probs)
+         >>> fig.show()
 
 
