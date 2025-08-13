@@ -22,8 +22,8 @@ copyright = '2023, Vasilisa Kovaleva'
 author = 'Vasilisa Kovaleva'
 
 # The full version, including alpha/beta/rc tags
-version = '0.5.0'
-release = '0.5.0'
+version = '0.5.1'
+release = '0.5.1'
 
 # -- General configuration ---------------------------------------------------
 
@@ -50,8 +50,7 @@ exclude_patterns = []
 html_theme = "sphinx_rtd_theme"
 html_logo = "logo.svg"
 html_theme_options = {
-    'logo_only': True,
-    'display_version': True,
+    'logo_only': True
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,

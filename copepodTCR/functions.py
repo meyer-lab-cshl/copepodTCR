@@ -9,7 +9,6 @@ import math
 import random
 from collections import Counter
 import trimesh
-import manifold3d
 import sys
 from io import StringIO
 import zipfile

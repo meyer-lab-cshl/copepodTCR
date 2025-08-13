@@ -1,22 +1,37 @@
 Installation
 =============================
 
-You can install the package with pip:
+1. Install copepodTCR.
 
-.. code-block:: python
+	With pip:
 
-	pip install copepodTCR
+	.. code-block:: python
 
-Or with conda:
+		pip install copepodTCR
 
-.. code-block:: python
+	Or with conda:
 
-	conda install -c vasilisa.kovaleva copepodTCR
+	.. code-block:: python
+
+		conda install -c vasilisa.kovaleva copepodTCR
+
+2. Instal dependencies for 3D modeling of masks. You can skip this step, if you don't plan to use function from **3D model** section.
+	
+	After installing copepodTCR either way, install manifold3d:
+
+	.. code-block:: python
+
+		pip install manifold3d
+
+	Alternative to manifold3d is Blender, it can be installed from `Blender official website <https://www.blender.org/>`_ (version 4.5 and higher).
+
+	You can use :func:`cpp.pick_engine()` to check with engines are available in you environment.
+
 
 Requirements
---------------------
+------------
 
-Required packages should be installed simulataneously with the copepodTCR packages.
+Except for manifold3d, required packages should be installed simulataneously with the copepodTCR packages.
 
 But if they were not, here is the list of requirements:
 
@@ -37,14 +52,6 @@ But if they were not, here is the list of requirements:
 	.. code-block:: python
 
 		pip install "trimesh>=3.23.5"
-
-* manifold3d>=3.2.1
-
-	.. code-block:: python
-
-		pip install "manifold3d>=3.2.1"
-
-Alternative to manifold3d is Blender, it can be installed from `Blender official website <https://www.blender.org/>`_ (version 4.5 and higher).
 
 * PyMC>=5.9.2
 
@@ -69,3 +76,9 @@ Alternative to manifold3d is Blender, it can be installed from `Blender official
 	.. code-block:: python
 
 		pip install "seaborn>=0.13.2"
+
+* plotly>=6.2.0
+
+	.. code-block:: python
+
+		pip install "plotly>=0.13.2"
