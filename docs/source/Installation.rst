@@ -59,7 +59,7 @@ But if they were not, here is the list of requirements:
 
 		pip install "pymc>=5.9.2"
 
-* Arviz>=5.9.2
+* Arviz>=0.16.1
 
 	.. code-block:: python
 
@@ -81,4 +81,4 @@ But if they were not, here is the list of requirements:
 
 	.. code-block:: python
 
-		pip install "plotly>=0.13.2"
+		pip install "plotly>=6.2.0"
