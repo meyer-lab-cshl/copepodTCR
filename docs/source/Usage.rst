@@ -98,7 +98,7 @@ To analyze results:
    # Plotting results
 
    # log10 of percentage of activated T cells per pool
-   poolplot(probs, cells, inds, most)
+   cpp.poolplot(probs, cells, inds, most)
 
    # interactive version of the bubbleplot, with each peptide = 1 bubble, its size represents
    # difference between number of activated and non-activated pools in its address,
@@ -106,11 +106,11 @@ To analyze results:
    # Y-axis: peptide probability
    import plotly.io as pio
    pio.renderers.default = "notebook_connected"
-   fig = hover_bubbleplot(peptide_probs)
+   fig = cpp.hover_bubbleplot(peptide_probs)
    fig.show()
 
    ## if interactive version is not displayed, you can check usual bubbleplot:
-   bubbleplot(peptide_probs)
+   cpp.bubbleplot(peptide_probs)
 
 
 .. _quickstartf-section:
@@ -652,7 +652,7 @@ More detailed quickstart
 
    .. code-block:: python
 
-      >>> bubbleplot(peptide_probs)
+      >>> cpp.bubbleplot(peptide_probs)
 
    .. image:: bubble_plot.png
 
@@ -662,14 +662,14 @@ More detailed quickstart
 
       >>> import plotly.io as pio
       >>> pio.renderers.default = "notebook_connected"
-      >>> hover_bubbleplot(peptide_probs)
+      >>> cpp.hover_bubbleplot(peptide_probs)
 
-
+   **Scatterplot for pools**
    Also you make a scatterplot with pools. Each dot is one replicate, with its pool index on X-axis and its log10 percentage of activated T cells on Y-axis. Pools identified by the activation model as activated are plotted green, others pools are gray.
 
    .. code-block:: python
 
-      >>> poolplot(probs, cells, inds, most)
+      >>> cpp.poolplot(probs, cells, inds, most)
 
    .. image:: pool_plot.png
 
@@ -868,7 +868,7 @@ If you want to play with the approach with the generated data, you can use the f
 
    .. code-block:: python
 
-      >>> bubbleplot(peptide_probs)
+      >>> cpp.bubbleplot(peptide_probs)
 
    Or using plotly to make interactive bubbleplot:
 
@@ -876,13 +876,13 @@ If you want to play with the approach with the generated data, you can use the f
 
       >>> import plotly.io as pio
       >>> pio.renderers.default = "notebook_connected"
-      >>> hover_bubbleplot(peptide_probs)
+      >>> cpp.hover_bubbleplot(peptide_probs)
 
-   Also you make a scatterplot with pools:
+   Also you can make a scatterplot with activation signal from pools:
 
    .. code-block:: python
 
-      >>> poolplot(probs, cells, inds, most)
+      >>> cpp.poolplot(probs, cells, inds, most)
 
 
 8. **You can play with different parameters to check how well the approach works.**
