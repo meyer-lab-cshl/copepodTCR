@@ -22,7 +22,7 @@ Or use the following BibTeX entry:
 @article{
     kovaleva2023copepodtcr,
     title        = {copepodTCR: Identification of Antigen-Specific T Cell Receptors with combinatorial peptide pooling},
-    author       = {Kovaleva, Vasilisa A and Pattinson, David J and Barton, Carl and Chapin, Sarah R and Minervina, Anastasia A and Richards, Katherine A and Sant, Andrea J and Thomas, Paul G and Pogorelyy, Mikhail V and Meyer, Hannah V},
+    author       = {Kovaleva, Vasilisa A and Pattinson, David J and He, Guanchen and Barton, Carl and Chapin, Sarah R and Minervina, Anastasia A and Huang, Qin and Thomas, Paul G and Pogorelyy, Mikhail V and Meyer, Hannah V},
     year         = 2023,
     journal      = {bioRxiv},
     publisher    = {Cold Spring Harbor Laboratory},
