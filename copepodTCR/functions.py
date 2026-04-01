@@ -291,6 +291,7 @@ def epitope_pools_activation(
 
 def peptide_search(
     lst: "list[str]",
+    ep_length: "int",
     act_profile: "dict[str, list[str]]",
     act_pools: "list[int]",
     iters: "int",
@@ -304,6 +305,9 @@ def peptide_search(
     Is used in function(run_experiment).
     """
     
+    c, _ = how_many_peptides(lst, ep_length)
+    normal = max(c, key=c.get)
+
     if regime == 'without dropouts':
         act = str(sorted(list(act_pools)))
         epitopes = act_profile.get(act)
@@ -316,7 +320,7 @@ def peptide_search(
     elif regime == 'with dropouts':
         act = str(sorted(list(act_pools)))
         epitopes = act_profile.get(act)
-        if len(act) == iters +1 and epitopes is not None:
+        if len(act_pools) == iters + normal -1 and epitopes is not None:
             peptides = []
             for peptide in lst:
                 if all(epitope in peptide for epitope in epitopes):
@@ -324,7 +328,7 @@ def peptide_search(
             return peptides, epitopes
         else:
             rest = list(set(range(n_pools)) - set(act_pools))
-            r = iters + 1 - len(act_pools)
+            r = iters + normal - 1 - len(act_pools)
             if r < 0:
                 r = 0
             options = list(combinations(rest, r))
@@ -368,13 +372,14 @@ def run_experiment(
     check_results = pd.DataFrame(columns = ['Peptide', 'Address', 'Epitope', 'Act Pools',
                                         '# of pools', '# of epitopes', '# of peptides', 'Remained', '# of lost',
                                            'Right peptide', 'Right epitope'])
+
     for peptide in lst:
         for i in range(len(peptide)):
             ep = peptide[i:i+ep_length]
             if len(ep) == ep_length:
                 act = pools_activation(pools, ep)
                 if regime == 'without dropouts':
-                    peps, eps = peptide_search(lst=lst, act_profile=act_profile,
+                    peps, eps = peptide_search(lst=lst, ep_length = ep_length, act_profile=act_profile,
                                            act_pools = act,
                                            iters = iters, n_pools = n_pools,
                                            regime = 'without dropouts')
@@ -391,7 +396,7 @@ def run_experiment(
                         lost = len(act) - i
                         lost_combs = list(combinations(act, i))
                         for lost_comb in lost_combs:
-                            peps, eps = peptide_search(lst=lst, act_profile=act_profile,
+                            peps, eps = peptide_search(lst=lst, ep_length = ep_length, act_profile=act_profile,
                                            act_pools = list(lost_comb),
                                            iters = iters, n_pools = n_pools,
                                            regime = 'with dropouts')
@@ -810,7 +815,7 @@ def results_analysis(
         iters = len(peptide_probs['Address'].iloc[0])
         n_pools = len(probs)
         act_number = iters + normal -1
-        peptides, epitopes = peptide_search(all_lst, act_profile, act_pools, iters, n_pools, 'with dropouts')
+        peptides, epitopes = peptide_search(all_lst, ep_length, act_profile, act_pools, iters, n_pools, 'with dropouts')
         if end_check[0] == True:
             notification = 'Cognate peptide is located at one of the ends of the list'
             return len(act_pools), notification, end_check[-1], peptides
@@ -826,7 +831,7 @@ def results_analysis(
         act_number = iters + normal -1
         if act_number > len(act_pools):
             notification = 'Drop-out was detected'
-            peptides, epitopes = peptide_search(all_lst, act_profile, act_pools, iters, n_pools, 'with dropouts')
+            peptides, epitopes = peptide_search(all_lst, ep_length, act_profile, act_pools, iters, n_pools, 'with dropouts')
             return len(act_pools), notification, topNormal, peptides
         else:
             notification = 'False positive was detected'
@@ -838,7 +843,7 @@ def results_analysis(
         iters = len(peptide_probs['Address'].iloc[0])
         n_pools = len(probs)
         act_number = iters + normal -1
-        peptides, epitopes = peptide_search(all_lst, act_profile, act_pools, iters, n_pools, 'with dropouts')
+        peptides, epitopes = peptide_search(all_lst, ep_length, act_profile, act_pools, iters, n_pools, 'with dropouts')
         ## if peptide is first or last one in the list:
         if end_check[0] == True:
             notification = 'Cognate peptide is located at one of the ends of the list'

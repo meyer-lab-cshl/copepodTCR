@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Usage &mdash; copepodTCR 0.5.1 documentation</title>
+  <title>Usage &mdash; copepodTCR 0.5.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=b9afe91b"></script>
+      <script src="_static/documentation_options.js?v=8e576371"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -218,7 +218,7 @@ enough. To read more about used functions, check other sections.</p>
 <span class="c1"># Plotting results</span>
 
 <span class="c1"># log10 of percentage of activated T cells per pool</span>
-<span class="n">poolplot</span><span class="p">(</span><span class="n">probs</span><span class="p">,</span> <span class="n">cells</span><span class="p">,</span> <span class="n">inds</span><span class="p">,</span> <span class="n">most</span><span class="p">)</span>
+<span class="n">cpp</span><span class="o">.</span><span class="n">poolplot</span><span class="p">(</span><span class="n">probs</span><span class="p">,</span> <span class="n">cells</span><span class="p">,</span> <span class="n">inds</span><span class="p">,</span> <span class="n">most</span><span class="p">)</span>
 
 <span class="c1"># interactive version of the bubbleplot, with each peptide = 1 bubble, its size represents</span>
 <span class="c1"># difference between number of activated and non-activated pools in its address,</span>
@@ -226,11 +226,11 @@ enough. To read more about used functions, check other sections.</p>
 <span class="c1"># Y-axis: peptide probability</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">plotly.io</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pio</span>
 <span class="n">pio</span><span class="o">.</span><span class="n">renderers</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="s2">&quot;notebook_connected&quot;</span>
-<span class="n">fig</span> <span class="o">=</span> <span class="n">hover_bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">cpp</span><span class="o">.</span><span class="n">hover_bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
 <span class="c1">## if interactive version is not displayed, you can check usual bubbleplot:</span>
-<span class="n">bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
+<span class="n">cpp</span><span class="o">.</span><span class="n">bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -748,7 +748,7 @@ all tips are already arranged to take only the required peptides.</p>
 </li>
 <li><p><strong>To interpret the results, you can use the Bayesian mixture model of activation signal.</strong></p>
 <p>Plate notation for the model (for 12 pools and 3 replicas).</p>
-<img alt="_images/model_scheme.png" src="_images/model_scheme.png" />
+<img alt="model_scheme.png" src="model_scheme.png" />
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">cpp.</span></span><span class="sig-name descname"><span class="pre">activation_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pools</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neg_control</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neg_share</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">model,</span> <span class="pre">fig,</span> <span class="pre">pandas</span> <span class="pre">DataFrame,</span> <span class="pre">list,</span> <span class="pre">InferenceData,</span> <span class="pre">list</span></span></span></dt>
@@ -1008,18 +1008,19 @@ all tips are already arranged to take only the required peptides.</p>
 <p>Also you plot results using copepodTCR built-in functions.</p>
 <p><strong>Bubbleplot</strong>
 Each bubble represents one peptide. Its size represents the difference between activated and non-activated pools in the address of a peptide (it this difference is not positive, such a peptide is not shown). X-axis: position of a peptide in protein. Y-axis: its probability.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="_images/bubble_plot.png" src="_images/bubble_plot.png" />
 <p>Or using interactive version of this bubbleplot (with plotly):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">plotly.io</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pio</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pio</span><span class="o">.</span><span class="n">renderers</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="s2">&quot;notebook_connected&quot;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">hover_bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">hover_bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Also you make a scatterplot with pools. Each dot is one replicate, with its pool index on X-axis and its log10 percentage of activated T cells on Y-axis. Pools identified by the activation model as activated are plotted green, others pools are gray.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">poolplot</span><span class="p">(</span><span class="n">probs</span><span class="p">,</span> <span class="n">cells</span><span class="p">,</span> <span class="n">inds</span><span class="p">,</span> <span class="n">most</span><span class="p">)</span>
+<p><strong>Scatterplot for pools</strong>
+Also you make a scatterplot with pools. Each dot is one replicate, with its pool index on X-axis and its log10 percentage of activated T cells on Y-axis. Pools identified by the activation model as activated are plotted green, others pools are gray.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">poolplot</span><span class="p">(</span><span class="n">probs</span><span class="p">,</span> <span class="n">cells</span><span class="p">,</span> <span class="n">inds</span><span class="p">,</span> <span class="n">most</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="_images/pool_plot.png" src="_images/pool_plot.png" />
@@ -1029,7 +1030,7 @@ Each bubble represents one peptide. Its size represents the difference between a
 <section id="play-with-the-approach-using-simulated-data-optional">
 <span id="simulation-section"></span><h2>Play with the approach using simulated data (Optional)<a class="headerlink" href="#play-with-the-approach-using-simulated-data-optional" title="Link to this heading"></a></h2>
 <p>If you want to play with the approach with the generated data, you can use the following pipeline.</p>
-<img alt="_images/simulation_pipeline.png" src="_images/simulation_pipeline.png" />
+<img alt="simulation_pipeline.png" src="simulation_pipeline.png" />
 <ol class="arabic">
 <li><p><strong>First, you need to determine the parameters for pooling scheme.</strong></p>
 <ul class="simple">
@@ -1094,7 +1095,7 @@ Each bubble represents one peptide. Its size represents the difference between a
 </li>
 <li><p><strong>Then you can simulate activation signal. For that, you would need to determine paratemers of the model.</strong></p>
 <p>Plate notation for the simulation model:</p>
-<img alt="_images/model_simulation.png" src="_images/model_simulation.png" />
+<img alt="model_simulation.png" src="model_simulation.png" />
 <ul class="simple">
 <li><p>mu_n - mu of the negative distribution (distribution of signal of non-activated pools), ranges from 0 to 100.</p></li>
 <li><p>sigma_n - sigma of the negative distribution, ranges from 0 to 100.</p></li>
@@ -1204,17 +1205,17 @@ Each bubble represents one peptide. Its size represents the difference between a
 </ul>
 </li>
 <li><p><strong>Also you can plot this data using built-in plotting functions.</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Or using plotly to make interactive bubbleplot:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">plotly.io</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pio</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pio</span><span class="o">.</span><span class="n">renderers</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="s2">&quot;notebook_connected&quot;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">hover_bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">hover_bubbleplot</span><span class="p">(</span><span class="n">peptide_probs</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Also you make a scatterplot with pools:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">poolplot</span><span class="p">(</span><span class="n">probs</span><span class="p">,</span> <span class="n">cells</span><span class="p">,</span> <span class="n">inds</span><span class="p">,</span> <span class="n">most</span><span class="p">)</span>
+<p>Also you can make a scatterplot with activation signal from pools:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cpp</span><span class="o">.</span><span class="n">poolplot</span><span class="p">(</span><span class="n">probs</span><span class="p">,</span> <span class="n">cells</span><span class="p">,</span> <span class="n">inds</span><span class="p">,</span> <span class="n">most</span><span class="p">)</span>
 </pre></div>
 </div>
 </li>
