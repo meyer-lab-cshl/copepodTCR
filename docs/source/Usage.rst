@@ -6,15 +6,14 @@ Usage
    import copepodTCR as cpp
 
 
-To use the package for basic tasks, the **Quickstart** section is
-enough. To read more about used functions, check other sections.
+For basic workflows, start with **Quickstart**. For details on individual functions, see the later sections and function reference.
 
 .. _quickstart-section:
 
 Quickstart
 ----------
 
-To generate CPP scheme and print masks:
+To generate a CPP scheme and STL mask files:
 
 .. code-block:: python
 
@@ -32,26 +31,33 @@ To generate CPP scheme and print masks:
    iters = 4
    # number of peptides
    len_lst = 253
+   # expected epitope length
+   ep_length = 8
+   # shift between overlapping peptides
+   peptide_shift = 5
 
-   # address arrangemement
+   # address arrangement
    b, lines = cdp.bba(m=n_pools, r=iters, n=len_lst)
 
-   # if you have a lot of peptide, for faster address arrangement we recommend using:
+   # If you have many peptides, use the faster address-arrangement function:
    ## b, lines = cdp.rcbba(m=n_pools, r=iters, n=len_lst)
 
    # add your peptides to lst
-   lst = list(pd.read_csv('peptides.csv', sep = "\t"))
+   lst = pd.read_csv('peptides.csv', sep = "\t")['Peptide'].tolist()
 
    # pooling scheme generation
    pools, peptide_address = cpp.pooling(lst=lst, addresses=lines, n_pools=n_pools)
+
    # save these files
-   pools.to_csv('path\pools.tsv', sep = '\t', index = None)
-   peptide_address.to_csv('path\peptide_addresses.tsv', sep = '\t', index = None)
+   pools_df = pd.DataFrame({'Pool': list(pools.keys()), 'Peptides': [';'.join(val) for val in pools.values()]})
+   peptide_address_df = pd.DataFrame(list(peptide_address.items()), columns=['Peptide', 'Address'])
+   pools_df.to_csv('path/to/pools.tsv', sep = '\t', index = None)
+   peptide_address_df.to_csv('path/to/peptide_addresses.tsv', sep = '\t', index = None)
 
    # simulation
-   check_results = cpp.run_experiment(lst=lst, peptide_address=peptide_address, ep_length=8, pools=pools, iters=iters, n_pools=n_pools, regime='without dropouts')
+   check_results = cpp.run_experiment(lst=lst, peptide_address=peptide_address, ep_length=ep_length, pools=pools, iters=iters, n_pools=n_pools, regime='without dropouts')
    # save this file
-   check_results.to_csv('path\check_results.tsv', sep = "\t", index = None)
+   check_results.to_csv('path/to/check_results.tsv', sep = "\t", index = None)
 
    # STL files generation
    # add peptide scheme to peptides_table_stl, with header and index as column and row numbers
@@ -68,10 +74,22 @@ To generate CPP scheme and print masks:
 
 To analyze results:
 
+``neg_share`` is the prior expected fraction of non-activated pools. If the pooling design predicts that one epitope activates ``iters + e - 1`` pools, estimate it as ``(n_pools - iters - e + 1) / n_pools``. If unknown, ``activation_model`` uses ``0.5``.
+
 .. code-block:: python
 
-   # import your CPP scheme
-   check_results = pd.read_csv('path\check_results.tsv', sep = "\t")
+   # import your saved CPP simulation table
+   check_results = pd.read_csv('path/to/check_results.tsv', sep = "\t")
+   # peptides
+   lst = pd.read_csv('peptides.csv', sep = "\t")['Peptide'].tolist()
+   # number of pools
+   n_pools = 12
+   # peptide occurrence
+   iters = 4
+   # expected epitope length
+   ep_length = 8
+   # for plotting functions
+   peptide_shift = 5
 
    # results of the experiment as a table with two columns, Pool and Percentage. Activation signal is expressed in percentaged of activated T cells.
    exp_results = pd.read_csv('path/to/your/file')
@@ -79,16 +97,14 @@ To analyze results:
    inds = list(exp_results['Pool'])
 
    # also here you can enter your negative control values:
-   neg_control = list(pd.read_csv('path/to/your/neg_control'))
+   neg_control = pd.read_csv('path/to/your/neg_control')['Percentage'].tolist()
 
-   # to calculate expected number of negative pools based on the scheme parameters:
-   # neg_share = (n_pools - iters - e + 1)/n_pools, where e is number of peptides sharing the same epitope
    t, r = cpp.how_many_peptides(lst, ep_length)
    e = max(t, key=t.get)
    neg_share = (n_pools - iters - e + 1)/n_pools
 
    # Model
-   model, fig, probs, n_c, pp, pn = cpp.activation_model(cells, n_pools, inds, neg_control, neg_share = neg_share)
+   model, ax, probs, n_c, pp, pn = cpp.activation_model(cells, n_pools, inds, neg_control, neg_share = neg_share)
    peptide_probs = cpp.peptide_probabilities(check_results, probs)
    n_act_pools, message, most, possible = cpp.results_analysis(peptide_probs, probs, check_results)
    print(message)
@@ -106,11 +122,11 @@ To analyze results:
    # Y-axis: peptide probability
    import plotly.io as pio
    pio.renderers.default = "notebook_connected"
-   fig = cpp.hover_bubbleplot(peptide_probs)
+   fig = cpp.hover_bubbleplot(peptide_probs, peptide_shift=peptide_shift)
    fig.show()
 
    ## if interactive version is not displayed, you can check usual bubbleplot:
-   cpp.bubbleplot(peptide_probs)
+   cpp.bubbleplot(peptide_probs, peptide_shift=peptide_shift)
 
 
 .. _quickstartf-section:
@@ -162,10 +178,11 @@ More detailed quickstart
       .. note::
          - If the input is a list of proteins, the peptides will be generated for each individually and concatenated.
          - If protein_end is True, peptides near the C-terminus will be padded by upstream sequence if shorter than expected.
+         - If protein_end is True and a protein is shorter than peptide_length, no peptide is generated for this protein and a warning is raised.
 
 3. (Optional) **Check your peptide list for overlap consistency.**
 
-   .. note:: Incosistent overlap length can lead to hindered results interpretation.
+   .. note:: Inconsistent overlap length can make result interpretation harder.
 
    You can check all peptides for their overlap length with the next
    peptide (list of peptides should be ordered):
@@ -175,8 +192,11 @@ More detailed quickstart
 
       :param lst: ordered list of peptides
       :type lst: list
-      :return: Counter object with the dictionary, where the key is the overlap length and the value is the number of pairs with such overlap.
+      :return: Counter with overlap lengths as keys and numbers of consecutive peptide pairs as values
       :rtype: Counter object
+
+      .. note::
+         If more than one overlap length is detected, the function returns the Counter and raises a warning about inconsistent overlap.
 
       .. code-block:: python
 
@@ -184,17 +204,16 @@ More detailed quickstart
          Counter({12: 251, 16: 1})
 
 
-   => 251 pairs of peptides with an overlap of length of 12 amino acids,
-   and 1 pair with an overlap of length 16 amino acids.
+   => 251 consecutive peptide pairs have a 12-aa overlap, and 1 pair has a 16-aa overlap.
 
    Also, you can check which peptides have such an overlap with the next
    peptide:
 
-   .. function:: cpp.find_pair_with_overlap(lst, target_overlap) -> list
+   .. function:: cpp.find_pair_with_overlap(strings, target_overlap) -> list
       :noindex:
 
-      :param lst: ordered list of peptides
-      :type lst: list
+      :param strings: ordered list of peptides
+      :type strings: list
       :param target_overlap: overlap length
       :type target_overlap: int
       :return: list of lists with peptides with specified overlap length.
@@ -209,6 +228,7 @@ More detailed quickstart
 
    Also, you can check what number of peptides share the same epitope.
    It might help to interpret the results later.
+   This count helps estimate how many pools should be activated by one cognate epitope: peptide occurrence plus one additional pool for each additional peptide sharing the same epitope.
 
    .. function:: cpp.how_many_peptides(lst, ep_length) -> Counter object, dictionary
       :noindex:
@@ -228,12 +248,11 @@ More detailed quickstart
          >>> t
          Counter({1: 6, 2: 1256, 3: 4})
          >>> r
-         {'MFVFLVLL': 1,'FVFLVLLP': 1,VFLVLLPL': 1,'FLVLLPLV': 1,'LVLLPLVS': 1,'VLLPLVSS': 2, ...,}
+         {'MFVFLVLL': 1, 'FVFLVLLP': 1, 'VFLVLLPL': 1, ...}
 
    => There are 6 epitopes present in a single peptide, 1256 epitopes present shared by two peptides, and 4 epitopes shared by 4 peptides. For each epitope, number of peptides sharing it is in the dictionary.
 
-4. (Optional) **Then you need to determine peptide occurrence across
-   pools, i.e. to how many pools one peptide would be added.**
+4. (Optional) **Determine peptide occurrence: the number of pools to which a single peptide is added.**
 
    .. note:: Peptide occurrence affects number of peptides in one pool, and therefore too high peptide occurrence may lead to higher dilution of a single peptide.
 
@@ -245,7 +264,7 @@ More detailed quickstart
       :param l: number of peptides
       :type l: int
       :return: list with possible peptide occurrences given number of pools and number of peptides.
-      :rtype: Counter object, dictionary
+      :rtype: list
 
       .. code-block:: python
 
@@ -258,9 +277,7 @@ More detailed quickstart
 
 5. **Now, you need to find the address arrangement given your number of pools, number of peptides, and peptide occurrence.**
 
-   For that, we developed a separate package **codepub**.
-
-   We suggest you use the **codepub.bba** function. If you have a lot of peptides (1000+), we recommend using faster alternative: **codepub.rcbba**. Codepub documentation is available here: `CodePUB readthedocs <https://codepub.readthedocs.io/en/latest/Introduction.html>`_
+   Address arrangements are generated by the separate **codepub** package. Use ``cdp.bba`` for reliable search, or ``cdp.rcbba`` for faster search with large peptide sets. Codepub documentation is available here: `CodePUB readthedocs <https://codepub.readthedocs.io/en/latest/Introduction.html>`_
 
    .. note:: With large parameters, the algorithm needs some time to finish the arrangement. If the arrangement fails, try with other parameters.
 
@@ -278,7 +295,7 @@ More detailed quickstart
       :param start_a: desired first address of the arrangement, optional
       :type start_a: str
       :param W_des: desired balance for the resulting arrangement
-      :type W_des: 
+      :type W_des: list, optional
       :return:
          1) list with number of item in each pool, i.e. balance;
          2) list with address arrangement
@@ -286,7 +303,7 @@ More detailed quickstart
 
       .. code-block:: python
 
-         >>> balance, lines = cdp.bba(n_pools=12, iters=4, len_lst=250)
+         >>> balance, lines = cdp.bba(m=12, r=4, n=250)
          >>> balance
          [81, 85, 85, 85, 81, 82, 87, 81, 85, 81, 84, 83]
          >>> lines
@@ -308,7 +325,7 @@ More detailed quickstart
       :param n_pools: number of pools
       :type n_pools: int
       :return:
-         1) pools -- dictionary with keys as pools indices and values as peptides that should be added to this pools;
+         1) pools -- dictionary with keys as pools indices and values as peptides that should be added to each pool;
          2) peptide address -- dictionary with peptides as keys and corresponding addresses as values.
       :rtype: dictionary, dictionary
 
@@ -326,13 +343,7 @@ More detailed quickstart
 
    The simulation produces a DataFrame with every possible epitope of the provided length and all pools where this epitope is present. This table is needed to interpret the results.
 
-   The function has two regimes: with and without drop-outs. Without
-   drop-outs, it returns a table as there were no mistakes, and all
-   pools that should be activated were activated. With drop-outs, it
-   returns a table with all possible mistakes (i.e. all possible
-   non-activated pools). This option will need time to be generated,
-   usually several minutes, although it depends on the number of
-   peptides and on occurrence.
+   The function has two regimes. ``without dropouts`` assumes all expected pools are activated. ``with dropouts`` enumerates possible false-negative pool patterns, where pools that should be activated are missing from the observed activation set.
 
    .. note:: "With drop-outs" regime is needed only on very special cases, for example, for calculation of robustness of the scheme to experimental errors.
 
@@ -403,7 +414,7 @@ More detailed quickstart
 
    **# of peptides** — number of peptides in which there are epitopes that are present in the same pools (= number of possible peptides upon activation of such pools)
 
-   **Remained** — only upon regime=”with dropouts”, list of pools remained after mistake
+   **Remained** — in ``with dropouts`` mode, the subset of activated pools retained after simulated drop-outs.
 
    **# of lost** — only upon regime=”with dropouts”, number of dropped pools due to mistake
 
@@ -413,24 +424,17 @@ More detailed quickstart
 
    Save resulting table, it will be required for results interpretation.
 
-   .. tip:: This table can be used to intepret experiment results without applying Bayesian mixture model. Refer to description of :func:`cdp.cpp.run_experiment` for details.
+   .. tip:: This table can be used to interpret experimental results without the Bayesian mixture model. See :func:`cpp.run_experiment` for details.
 
-7. (Optional) **To avoid mixing pools manually, you can print special
-   mask using files with their 3D models produced by this step.**
+7. (Optional) **Generate 3D-printable masks.**
 
-   One mask is needed for each pool. Each mask is a thin
-   card with holes located at the spots where the needed peptides are
-   located in the plate. Therefore, each mask has the number of
-   holes equal to the number of peptides in a pool. Then, this card
-   should be placed on an empty tip box, and a tip should be inserted
-   into each hole. This way, if you are using a multichannel pipette,
-   all tips are already arranged to take only the required peptides.
+   To reduce manual pooling errors, copepodTCR can generate one 3D-printable mask per pool. Each mask has holes at the peptide positions that can be used to organize tips into required patterns.
 
-   [How it looks like: `here <https://drive.google.com/file/d/1wtLNnKj8I7iYdlu1owY5Cl4SegYcouei/view?usp=sharing>`_.]
+   Example mask workflow: `video/photo link <https://drive.google.com/file/d/1wtLNnKj8I7iYdlu1owY5Cl4SegYcouei/view?usp=sharing>`_.
 
    .. note:: The rendering of 3D models is a long process, so it could take time.
 
-   To generate the files with 3D models, you need two functions. But first, you need to check with engine is available for boolean operations. By default it is manifold3d, but also you can use blender if it is available.
+   Before generating masks, choose an available boolean-operation engine. ``manifold3d`` is the default; Blender can be used if available.
 
    .. code-block:: python
 
@@ -438,7 +442,7 @@ More detailed quickstart
 
    Now ENGINE should be passed as argument to the next function:
 
-   .. function:: cpp.pools_stl(peptides_table, pools, engine, rows = 16, cols = 24, length = 122.10, width = 79.97, thickness = 1.5, hole_radius = 4.0 / 2, x_offset = 9.05, y_offset = 6.20, well_spacing = 4.5) -> dictionary
+   .. function:: cpp.pools_stl(peptides_table, pools, engine, rows = 16, cols = 24, length = 122.10, width = 79.97, thickness = 1.5, hole_radius = 4.0 / 2, x_offset = 9.05, y_offset = 6.20, well_spacing = 4.5, hole16 = False) -> dictionary
       :noindex:
 
       :param peptides_table: table representing the arrangement of peptides in a plate, is not produced by any function in the package
@@ -465,6 +469,8 @@ More detailed quickstart
       :type y_offset: float
       :param well_spacing: the distance between wells, in mm
       :type well_spacing: float
+      :param hole16: whether to add a hole at position 16, 24
+      :type hole16: bool
       :return: dictionary with Mesh objects, where key is pool index, and value is a Mesh object of a corresponding mask
       :rtype: dictionary
 
@@ -490,11 +496,13 @@ More detailed quickstart
 
 8. **To interpret the results, you can use the Bayesian mixture model of activation signal.**
    
-   Plate notation for the model (for 12 pools and 3 replicas).
+   Plate notation for the model (for 12 pools and 3 replicates).
 
    .. image:: model_scheme.png
+      :width: 600px
+      :align: center
 
-   .. function:: cpp.activation_model(obs, n_pools, inds, neg_control=None, neg_share=None, cores=1) -> model, fig, pandas DataFrame, list, InferenceData, list
+   .. function:: cpp.activation_model(obs, n_pools, inds, neg_control=None, neg_share=None, cores=1) -> model, ax, pandas DataFrame, numpy array, InferenceData, list
       :noindex:
 
       .. note:: Fitting might take several minutes.
@@ -505,7 +513,7 @@ More detailed quickstart
       :type n_pools: int
       :param inds: list with indices for observed values
       :type inds: list
-      :param neg_control: optional list with negative control values; if not provided, it is estimated from obs
+      :param neg_control: optional list with negative control values; if not provided, values from the pool with the lowest mean observed signal are used
       :type neg_control: list or None
       :param neg_share: expected share of negative pools (between 0 and 1); default is 0.5
       :type neg_share: float or None
@@ -513,16 +521,18 @@ More detailed quickstart
       :type cores: int
       :return:
          1) model -- PyMC model object used for fitting  
-         2) fig -- posterior predictive KDE and observed data KDE (ArviZ)
+         2) ax -- posterior predictive KDE and observed data KDE (ArviZ)
          3) probs -- probability for each pool of being drawn from a distribution of activated or non-activated pools
          4) neg_control -- normalized control values used in model
          5) idata_alt -- full posterior sampling trace (InferenceData object)
          6) [p_mean, n_mean] -- posterior mean of the offset and baseline (negative) component
-      :rtype: model, figure, pandas DataFrame, list, arviz.InferenceData, list
+      :rtype: model, axes, pandas DataFrame, numpy array, arviz.InferenceData, list
+
+      ``neg_share`` is the prior expectation for the share of pools that should be non-activated. If one epitope is expected to activate ``iters + e - 1`` pools, where ``e`` is the modal number of peptides sharing the same epitope from :func:`cpp.how_many_peptides`, it can be estimated as ``(n_pools - iters - e + 1) / n_pools``. If this value is unknown, the model uses ``0.5`` by default.
 
       .. code-block:: python
 
-         >>> model, fig, probs, neg_control, trace, [p_mean, n_mean] = cpp.activation_model(obs, 12, inds)
+         >>> model, ax, probs, neg_control, trace, [p_mean, n_mean] = cpp.activation_model(obs, 12, inds)
 
       .. image:: model_fit.png
 
@@ -562,7 +572,7 @@ More detailed quickstart
          +------+---------+
 
 
-   The **Pool** column contains pool index, and column **assign** the probability of the pools to be drawn from the distribution of non-activated pool. The pool is considered to be activated if assign <= 0.5.
+   The **assign** column is the posterior probability that a pool belongs to the non-activated component. Pools with ``assign <= 0.5`` are treated as activated.
 
    Using this table, you can assess which pools were activated and which were not, and then check the result in check_results table with simulation. However, also you can use the following functions:
 
@@ -573,7 +583,7 @@ More detailed quickstart
       :type sim: pandas DataFrame
       :param probs: DataFrame with probabilities produced by :func:`cpp.activation_model`
       :type probs: pandas DataFrame
-      :return: peptide_probs -- probabilitity for each peptide to cause such a pattern of activation
+      :return: peptide_probs -- probability for each peptide to cause such a pattern of activation
       :rtype: pandas DataFrame
 
       .. code-block:: python
@@ -615,7 +625,7 @@ More detailed quickstart
 
    And then this table can be used to find cognate peptides:
 
-   .. function:: cpp.results_analysis(peptide_probs, probs, sim) -> list, list, list
+   .. function:: cpp.results_analysis(peptide_probs, probs, sim) -> int, str, list, list
       :noindex:
 
       :param peptide_probs: DataFrame with probabilities for each peptide produced by :func:`cpp.peptide_probabilities`
@@ -629,11 +639,11 @@ More detailed quickstart
          2) note about detected drop-outs (erroneously non-activated pools);
          3) list of the most possible peptides;
          4) list of all possible peptides given this pattern of pools activation.
-      :rtype: int, list, list, list
+      :rtype: int, str, list, list
 
       .. code-block:: python
 
-         >>> n_act_pools, note, most, possible = cpp.peptide_probabilities(sim, probs)
+         >>> n_act_pools, note, most, possible = cpp.results_analysis(peptide_probs, probs, sim)
          >>> n_act_pools
          5
          >>> note
@@ -645,14 +655,14 @@ More detailed quickstart
 
 9. **Plotting results.**
 
-   Also you plot results using copepodTCR built-in functions.
+   You can visualize results with copepodTCR plotting functions.
 
    **Bubbleplot**
-   Each bubble represents one peptide. Its size represents the difference between activated and non-activated pools in the address of a peptide (it this difference is not positive, such a peptide is not shown). X-axis: position of a peptide in protein. Y-axis: its probability.
+   Each bubble represents one peptide. Bubble size is the number of activated pools in the peptide address minus the number of non-activated pools; peptides with non-positive values are not shown. X-axis: position of a peptide in protein. Y-axis: its probability.
 
    .. code-block:: python
 
-      >>> cpp.bubbleplot(peptide_probs)
+      >>> cpp.bubbleplot(peptide_probs, peptide_shift=5)
 
    .. image:: bubble_plot.png
 
@@ -662,7 +672,7 @@ More detailed quickstart
 
       >>> import plotly.io as pio
       >>> pio.renderers.default = "notebook_connected"
-      >>> cpp.hover_bubbleplot(peptide_probs)
+      >>> cpp.hover_bubbleplot(peptide_probs, peptide_shift=5)
 
    **Scatterplot for pools**
    Also you make a scatterplot with pools. Each dot is one replicate, with its pool index on X-axis and its log10 percentage of activated T cells on Y-axis. Pools identified by the activation model as activated are plotted green, others pools are gray.
@@ -679,7 +689,7 @@ More detailed quickstart
 Play with the approach using simulated data (Optional)
 -------------------------------------------------------
 
-If you want to play with the approach with the generated data, you can use the following pipeline.
+To explore the workflow with simulated data, use the following pipeline.
 
 .. image:: simulation_pipeline.png
 
@@ -715,6 +725,10 @@ If you want to play with the approach with the generated data, you can use the f
       >>> sequence
          'EMKFLDQSQLGYVHPKWHHGTEMDEWSRSNSAYGKHQEATRLCSQWWVKTYMPTDPCWMLRYTNCCAMVPRYADFCMRDYRYAYIYFVNWNHECSDVIMETCCFALGKKLSTPTCTPGCVTVIYECKSEFEVGWPPHIIEGSAEFYAVACFVTRFMCPQTKANLLKIIISFHLHHYGQAEQICYKNEIPCCAMKFFDHREGLESNCLTCMQWPCNKSLFDPFPVMYRFSMAGNQGEPPCGYAVTMNARCTMGRWQKFRCEFKGCFYHNINVYTGCETMHECQIPVPMVHQTTLLYPCNVRSKDIDPCDWSYLEDDKERGWCGKFQMGSQIFRKFTPPPWTNRGWNHMDDTEARHRWCLTWKFTLDEPAEDTCILWIHSVYLWVVCMQGTAMSMRMVSFTLLCFMRAPPCEVMHYCDPQQTRDEELPMVGYITEELKSMFTSSSWPGSQSPGWGTWDLSIKRHSVKVPDMINPTHVVKPTKCICNQSLGWTFSEIDMYARHDIQKRWKCPIWNGQFRYEVIHSKQNPFQNSDEQPT'
 
+   The sequence is generated slightly longer than needed so that slicing the first ``len_lst`` peptides after peptide generation produces enough peptides.
+
+   .. code-block:: python
+
       ## Then with this sequence you can generate peptides
       >>> lst_all = cpp.peptide_generation(sequence, pep_length, shift)
       >>> lst = lst_all[:len_lst]
@@ -727,7 +741,7 @@ If you want to play with the approach with the generated data, you can use the f
       >>> pools, peptide_address = cpp.pooling(lst=lst, addresses=lines, n_pools=n_pools)
       >>> check_results = cpp.run_experiment(lst=lst, peptide_address=peptide_address, ep_length=ep_length, pools=pools, iters=iters, n_pools=n_pools, regime='without dropouts')
 
-4. **Then you need to select a cognate epitope to later check whether the model can recover it. You can do it manually if you particularly like some of them. But also you can do that randomly.**
+4. **Select a cognate epitope to test whether the model can recover it. You can choose one manually or sample one at random.**
 
    .. code-block:: python
 
@@ -753,33 +767,33 @@ If you want to play with the approach with the generated data, you can use the f
       >>> print(inds_n_check)
       [0, 1, 2, 3, 4, 7, 8]
 
-5. **Then you can simulate activation signal. For that, you would need to determine paratemers of the model.**
+5. **Then you can simulate activation signal. For that, you would need to determine parameters of the model.**
 
    Plate notation for the simulation model:
 
    .. image:: model_simulation.png
 
-   * mu_n - mu of the negative distribution (distribution of signal of non-activated pools), ranges from 0 to 100.
+   * mu_n -- mean of the non-activated pool signal distribution, ranges from 0 to 100.
 
-   * sigma_n - sigma of the negative distribution, ranges from 0 to 100.
+   * sigma_n -- standard deviation of the non-activated pool signal distribution, ranges from 0 to 100.
 
-   * mu_off - mu of the offset which will be used to obtain positive distribution (distribution of signal of activated pools) from the negative distribution, ranges from 0 to 100.
+   * mu_off -- mean of the positive-signal offset, ranges from 0 to 100.
 
-   * sigma_off - sigma of the offset which will be used to obtain positive distribution, ranges from 0 to 100.
+   * sigma_off -- standard deviation of the positive-signal offset, ranges from 0 to 100.
 
-   * r - number of replicas in the experiment
+   * r -- number of replicates in the experiment.
 
-   * sigma_p_r - variance between replicas from positive distribution, ranges between 0 to 100.
+   * sigma_p_r -- standard deviation of replicate variability for positive-distribution measurements, ranges from 0 to 100.
 
-   * sigma_n_r - variance between replicas from negative distribution, ranges between 0 to 100.
+   * sigma_n_r -- standard deviation of replicate variability for negative-distribution measurements, ranges from 0 to 100.
 
-   * n_pools - number of pools
+   * n_pools -- number of pools.
 
-   * p_shape - number of activated pools in simulation, you can make it equal to the number of pools where cognate epitope is present, or you can make more / fewer to see how the algorithm responds to mistakes.
+   * p_shape -- number of activated pools in simulation; this can equal the number of pools where the cognate epitope is present, or it can be higher or lower to test how the algorithm responds to mistakes.
 
-   * pl_shape - number of slightly activated pools in simulation corresponding to context-dependent activation. For simplicity, we recommend setting it to 0.
+   * pl_shape -- number of slightly activated pools in simulation corresponding to context-dependent activation. For simplicity, we recommend setting it to 0.
 
-   * low_offset - the degree to which activation is decreased in pools from pl_shape, ranges from 0 to 1. We recommend setting it to 1, then it will not be applied.
+   * low_offset -- the degree to which activation is decreased in pools from ``pl_shape``, ranges from 0 to 1. We recommend setting it to 1, then it will not be applied.
 
 
    .. code-block:: python
@@ -802,6 +816,8 @@ If you want to play with the approach with the generated data, you can use the f
       >>> cells = pd.DataFrame(columns = ['Pool', 'Percentage'])
       >>> cells['Percentage'] = p_results + n_results
       >>> cells['Pool'] = inds_p_check*r + inds_n_check*r
+
+   Because ``pl_shape = 0`` in this example, ``pl_results`` is empty and is not added to ``cells``.
 
    Cells is a DataFrame with the simulated data:
 
@@ -846,16 +862,16 @@ If you want to play with the approach with the generated data, you can use the f
 
       >>> inds = list(cells['Pool'])
       >>> obs = list(cells['Percentage'])
-      >>> fig, probs = cpp.activation_model(obs, n_pools, inds)
+      >>> model, ax, probs, neg_control, trace, [p_mean, n_mean] = cpp.activation_model(obs, n_pools, inds)
       >>> peptide_probs = cpp.peptide_probabilities(check_results, probs)
       >>> n_act_pools, message, most, possible = cpp.results_analysis(peptide_probs, probs, check_results)
       >>> n_act_pools
       5
       >>> message
-      'No drop-outs were detected',
+      'No drop-outs were detected'
       >>> most
       ['YCNQNWDWDMCEVVCGR', 'WDWDMCEVVCGRDFCHC']
-      >>>
+      >>> possible
       ['YCNQNWDWDMCEVVCGR', 'WDWDMCEVVCGRDFCHC']
 
    Now you can compare recovered cognate peptides with ones you chose:
@@ -868,7 +884,7 @@ If you want to play with the approach with the generated data, you can use the f
 
    .. code-block:: python
 
-      >>> cpp.bubbleplot(peptide_probs)
+      >>> cpp.bubbleplot(peptide_probs, peptide_shift=shift)
 
    Or using plotly to make interactive bubbleplot:
 
@@ -876,7 +892,7 @@ If you want to play with the approach with the generated data, you can use the f
 
       >>> import plotly.io as pio
       >>> pio.renderers.default = "notebook_connected"
-      >>> cpp.hover_bubbleplot(peptide_probs)
+      >>> cpp.hover_bubbleplot(peptide_probs, peptide_shift=shift)
 
    Also you can make a scatterplot with activation signal from pools:
 
@@ -887,10 +903,24 @@ If you want to play with the approach with the generated data, you can use the f
 
 8. **You can play with different parameters to check how well the approach works.**
    
-   For example, you can decrease the offset for the positive distribution, to check how different should be activated and non-activated pools to yield correct results.
+   For example, decreasing the positive-signal offset lets you test how much separation between activated and non-activated pools is needed for correct recovery.
 
 Function reference
 ==================
+
+Reproducibility
+---------------
+
+.. function:: cpp.set_seed(seed) -> None
+
+      :param seed: random seed value
+      :type seed: int
+      :return: None
+      :rtype: None
+
+      .. code-block:: python
+
+         >>> cpp.set_seed(123)
 
 .. _occurrence-section:
 
@@ -913,7 +943,9 @@ Peptide occurrence search
 
       :param n: set length
       :type n: int
-      :return: how many items are selected from the set
+      :param k: number of selected items
+      :type k: int
+      :return: number of ways to choose k items from n
       :rtype: int
 
       .. code-block:: python
@@ -966,6 +998,7 @@ Peptides generation and assessment
       .. note::
          - If the input is a list of proteins, the peptides will be generated for each individually and concatenated.
          - If protein_end is True, peptides near the C-terminus will be padded by upstream sequence if shorter than expected.
+         - If protein_end is True and a protein is shorter than peptide_length, no peptide is generated for this protein and a warning is raised.
 
 
 .. function:: cpp.string_overlap(str1, str2) -> int
@@ -982,10 +1015,20 @@ Peptides generation and assessment
          >>> cpp.string_overlap('ASDFGHJKTYUIO', 'GHJKTYUIOTYUI')
          9
 
-.. function:: cpp.find_pair_with_overlap(lst, target_overlap) -> list
+.. function:: cpp.all_overlaps(strings) -> Counter object
 
-      :param lst: ordered list of peptides
-      :type lst: list
+      :param strings: ordered list of peptides
+      :type strings: list
+      :return: Counter with overlap lengths as keys and numbers of consecutive peptide pairs as values
+      :rtype: Counter object
+
+      .. note::
+         If more than one overlap length is detected, the function returns the Counter and raises a warning about inconsistent overlap.
+
+.. function:: cpp.find_pair_with_overlap(strings, target_overlap) -> list
+
+      :param strings: ordered list of peptides
+      :type strings: list
       :param target_overlap: overlap length
       :type target_overlap: int
       :return: list of lists with peptides with specified overlap length.
@@ -1013,7 +1056,7 @@ Peptides generation and assessment
          >>> t
          Counter({1: 6, 2: 1256, 3: 4})
          >>> r
-         {'MFVFLVLL': 1,'FVFLVLLP': 1,VFLVLLPL': 1,'FLVLLPLV': 1,'LVLLPLVS': 1,'VLLPLVSS': 2, ...,}
+         {'MFVFLVLL': 1, 'FVFLVLLP': 1, 'VFLVLLPL': 1, ...}
 
 .. _pooling-section:
 
@@ -1023,6 +1066,8 @@ Pooling
 .. function:: cpp.bad_address_predictor(all_ns) -> list
 
       .. tip:: Keep in mind that produced arrangement might be imbalanced.
+
+      .. note:: A bad address is detected when three consecutive addresses produce ambiguous pairwise unions. The function removes the middle address from such triples.
 
       :param all_ns: address arrangement
       :type all_ns: list
@@ -1076,7 +1121,7 @@ Pooling
       :param lst: ordered list of peptides
       :type lst: list
       :param ep_length: expected epitope length
-      :type ep_length: ep
+      :type ep_length: int
       :return: activated pools for every possible epitope of expected length from entered peptides
       :rtype: dictionary
 
@@ -1085,10 +1130,12 @@ Pooling
          >>> cpp.epitope_pools_activation(peptide_address, lst, 8)
          {'[0, 1, 2, 3]': ['MFVFLVLL', 'FVFLVLLP', 'VFLVLLPL', 'FLVLLPLV', 'LVLLPLVS'], '[0, 1, 2, 3, 9]': ['VLLPLVSS', 'LLPLVSSQ', 'LPLVSSQC', 'PLVSSQCV', 'LVSSQCVN'], '[0, 1, 3, 9, 11]': ['VSSQCVNL', 'SSQCVNLT', ...], ... }
 
-.. function:: cpp.peptide_search(lst, act_profile, act_pools, iters, n_pools, regime) -> list, list
+.. function:: cpp.peptide_search(lst, ep_length, act_profile, act_pools, iters, n_pools, regime) -> list, list
 
       :param lst: ordered list of peptides
       :type lst: list
+      :param ep_length: expected epitope length
+      :type ep_length: int
       :param act_profile: activated pools for every possible epitope of expected length from entered peptides, produced by :func:`cpp.epitope_pools_activation`
       :type act_profile: dictionary
       :param act_pools: activated pools
@@ -1104,9 +1151,9 @@ Pooling
 
       .. code-block:: python
 
-         >>> cpp.peptide_search(lst, act_profile, [0, 3, 8, 9, 11], 4, 12, 'without dropouts')
+         >>> cpp.peptide_search(lst, 8, act_profile, [0, 3, 8, 9, 11], 4, 12, 'without dropouts')
          (['CNDPFLGVYYHKNNKSW', 'LGVYYHKNNKSWMESEF'], ['LGVYYHKN', 'GVYYHKNN', 'VYYHKNNK', 'YYHKNNKS', 'YHKNNKSW'])
-         >>> cpp.peptide_search(lst, act_profile, [0, 3, 8, 11], iters, n_pools, 'with dropouts')
+         >>> cpp.peptide_search(lst, 8, act_profile, [0, 3, 8, 11], iters, n_pools, 'with dropouts')
          (['CNDPFLGVYYHKNNKSW', 'LLKYNENGTITDAVDCA', 'LGVYYHKNNKSWMESEF', 'QPRTFLLKYNENGTITD'], ['YNENGTIT', 'LKYNENGT', 'YHKNNKSW', 'KYNENGTI', 'YYHKNNKS', 'LGVYYHKN', 'VYYHKNNK', 'NENGTITD', 'LLKYNENG', 'GVYYHKNN'])
 
 .. function:: cpp.run_experiment(lst, peptide_address, ep_length, pools, iters, n_pools, regime) -> pandas DataFrame
@@ -1128,38 +1175,31 @@ Pooling
       :param regime: regime of simulation, with or without drop-outs
       :type regime: “with dropouts” or “without dropouts”
       :return:
-         1) pools -- dictionary with keys as pools indices and values as peptides that should be added to this pools;
-         2) peptide address -- dictionary with peptides as keys and corresponding addresses as values.
-      :rtype: dictionary, dictionary
+         pandas DataFrame with simulated epitope activation patterns and peptide recovery results
+      :rtype: pandas DataFrame
 
       .. code-block:: python
 
          >>> df = cpp.run_experiment(lst=lst, peptide_address=peptide_address, ep_length=8, pools=pools, iters=iters, n_pools=n_pools, regime='without dropouts')
 
-   This table can be used to interpret results of the experiment without using Bayesian mixture model.
+   This table can be used to interpret experimental results without the Bayesian mixture model.
 
-   You need to find all rows where the “Act Pools” column contains your combination of activated pools. Then, you will know all possible peptides and epitopes that could lead to the activation of such a combination of pools.
+   After the experiment, the number of activated pools depends on peptide occurrence, overlap length, and expected epitope length. You can check the distribution of epitope presence in your peptides with :func:`cpp.how_many_peptides`. The expected number of activated pools is peptide occurrence plus one additional pool for each additional peptide sharing the same epitope.
 
-   If you can not find your combination of activated pools in the table, here is the sequence of actions.
+   If exact activated pools are found in the table:
 
-   After the experiment, you will know the number of activated pools. This number depends on the length of overlap and the length of the expected epitope. You can check the distribution of epitope presence in your peptides using :func:`cpp.how_many_peptides` function. The number of activated pools would be equal to peptide occurrence plus one per additional peptide sharing this epitope.
+   -  Use those rows to identify all possible peptides and epitopes that could activate the observed pool combination.
 
-   This way, if the epitope is present only in 1 peptide (usually, it is the case for epitopes at the ends of the protein), then the number of activated pools is equal to peptide occurrence. If the epitope is present in two peptides, then the number of activated pools is equal to peptide occurrence +1.
+   If fewer pools are activated than expected:
 
-   If overlap length is consistent across all peptides, then the number of activated pools would be the same for almost all epitopes (except for the epitopes at the ends of the protein). Although even if the overlap is inconsistent, you can use the analysis, but it will hinder the interpretation of the results in some cases.
+   -  The target peptide may be at the end of the peptide list, with the target epitope outside an overlap with the next peptide.
+   -  The target peptide may have a shorter-than-usual overlap with its neighbor. Check this with :func:`cpp.all_overlaps` or :func:`cpp.how_many_peptides`.
+   -  Some expected pools may be false negatives. In this case, use the ``with dropouts`` simulation regime.
 
-   If a shift length between two peptides is equal to or less than the expected epitope length divided by two, then the number of activated pools should be equal to the peptide occurrence value + 1.
+   If more pools are activated than expected:
 
-   If the number of activated pools is less than according to the rule described above, then three options are possible:
-
-   -  The target peptide is the peptide at the end of your peptide list, and the target epitope is located not in an overlap of this peptide with the next one. This could be checked easily: if your activated pools are not the same as the activated pools for any epitope from the first or last peptide, then you should check our second option.
-   -  For the target peptide, overlap with its neighbor is less than usual, and therefore target epitope is not shared by the usual number of peptides. You can check that using :func:`cpp.all_overlaps` or :func:`cpp.how_many_peptides`. Nevertheless, given the absence of drop-outs, you still should be able to find the target peptide in the table with simulation results by searching for all rows where the “Act Pools” column contains your combination of activated pools.
-   -  Some pools were not activated, although they should be; then, we recommend using the “with drop-outs” regime of the simulation. It imitates drop-outs of all possible pools, so you should be able to find your case in the resulting table.
-
-   If the number of activated pools is higher than according to the rule described above, then two options are possible:
-
-   -  For the target peptide, overlap with its neighbor is bigger than usual, and therefore target epitope is shared between more peptides. You can check that using :func:`cpp.all_overlaps` or :func:`cpp.how_many_peptides`. Nevertheless, given the absence of drop-outs, you still should be able to find the target peptide in the table with simulation results by searching for all rows where the “Act Pools” column contains your combination of activated pools.
-   -  Some pools were activated, although they should not be. This issue is not addressed in the package.
+   -  The target peptide may have a longer-than-usual overlap with its neighbor. Check this with :func:`cpp.all_overlaps` or :func:`cpp.how_many_peptides`.
+   -  Some pools may be false positives. This issue is not addressed in the package.
 
    .. code-block:: python
 
@@ -1221,16 +1261,7 @@ Pooling
    epitope” should contain the value “True”; otherwise, recovery was
    unsuccessful.
 
-   Also, the regime “with drop-outs” can not differentiate between
-   dropped pools due to a mistake and absent pools due to experiment
-   design. This way, for epitopes located at the end of proteins, the
-   algorithm would think that pools were dropped and would try to
-   recover them. Because of that, if you suspect the epitope located at
-   the end of the peptide to be the target epitope, we recommend first
-   using the “without drop-outs” regime. You can look at the sequence of
-   actions described above. The same applies to peptides with longer
-   overlap. So, we strongly recommend using peptides with consistent
-   overlap length.
+   The ``with dropouts`` regime cannot distinguish true experimental drop-outs from activation patterns caused by terminal peptides or unusual overlaps. For suspected terminal epitopes or inconsistent overlaps, inspect the ``without dropouts`` table first.
 
 .. _3D-section:
 
@@ -1247,7 +1278,7 @@ Pooling
       >>> cpp.pick_engine()
       manifold
 
-   If manifold is not available, cpp.pick_engine() will check availability of Blender and raise an error if it is not available:
+   If manifold is unavailable, ``pick_engine()`` checks for Blender. If neither engine is available, it raises a RuntimeError.
 
    .. code-block:: python
 
@@ -1279,16 +1310,16 @@ Pooling
       :param engine: engine for trimesh.boolean.union() and trimesh.difference(), "manifold"
       :type engine: str
       :param marks: whether marks to indicate pool index will be added to the plate
-      :param marks: int or Boolean
+      :type marks: int or bool
       :return: masks with holes based in entered coordinates
       :rtype: Mesh object
 
       .. code-block:: python
 
-         >>> cpp.stl_generator(rows = 16, cols = 24, length = 122.10, width = 79.97, thickness = 1.5, hole_radius = 4.0 / 2, x_offset = 9.05, y_offset = 6.20, well_spacing = 4.5, [(1, 1), (2, 2), (1, 2)])
+         >>> cpp.stl_generator(16, 24, 122.10, 79.97, 1.5, 2.0, 9.05, 6.20, 4.5, [(1, 1), (2, 2), (1, 2)], engine=ENGINE)
          Mesh object
 
-.. function:: cpp.pools_stl(peptides_table, pools, engine, rows = 16, cols = 24, length = 122.10, width = 79.97, thickness = 1.5, hole_radius = 4.0 / 2, x_offset = 9.05, y_offset = 6.20, well_spacing = 4.5) -> dictionary
+.. function:: cpp.pools_stl(peptides_table, pools, engine, rows = 16, cols = 24, length = 122.10, width = 79.97, thickness = 1.5, hole_radius = 4.0 / 2, x_offset = 9.05, y_offset = 6.20, well_spacing = 4.5, hole16 = False) -> dictionary
 
       .. note:: Rendering of 3D models might take some time.
 
@@ -1316,6 +1347,8 @@ Pooling
       :type y_offset: float
       :param well_spacing: the distance between wells, in mm
       :type well_spacing: float
+      :param hole16: whether to add a hole at position 16, 24
+      :type hole16: bool
       :return: dictionary with Mesh objects, where key is pool index, and value is a Mesh object of a corresponding mask
       :rtype: dictionary
 
@@ -1357,7 +1390,7 @@ Pooling
 Results interpretation with a Bayesian mixture model
 ----------------------------------------------------
 
-.. note:: If the model doesn't even start and you encounter pytensor ERROR with constant folding together with ImportError, it might be an xcode problem. Here the discussion about how to fix that: `PYMC discourse <https://discourse.pymc.io/t/pytensor-fails-to-compile-model-after-upgrading-to-mac-os-15-4/16796>`_).
+.. note:: If model fitting fails with a PyTensor constant-folding error and an ImportError on macOS, the issue may be related to the Xcode compiler setup. See this discussion: `PYMC discourse <https://discourse.pymc.io/t/pytensor-fails-to-compile-model-after-upgrading-to-mac-os-15-4/16796>`_.
 
    Quick fix is to import pytensor and force it to use appropriate C compiler:
 
@@ -1366,7 +1399,7 @@ Results interpretation with a Bayesian mixture model
       import pytensor
       pytensor.config.cxx = '/usr/bin/clang++'
 
-.. function:: cpp.activation_model(obs, n_pools, inds, neg_control=None, neg_share=None, cores=1) -> model, fig, pandas DataFrame, list, InferenceData, list
+.. function:: cpp.activation_model(obs, n_pools, inds, neg_control=None, neg_share=None, cores=1) -> model, ax, pandas DataFrame, numpy array, InferenceData, list
 
       .. note:: Fitting might take several minutes.
 
@@ -1376,7 +1409,7 @@ Results interpretation with a Bayesian mixture model
       :type n_pools: int
       :param inds: list with indices for observed values
       :type inds: list
-      :param neg_control: optional list with negative control values; if not provided, it is estimated from obs
+      :param neg_control: optional list with negative control values; if not provided, values from the pool with the lowest mean observed signal are used
       :type neg_control: list or None
       :param neg_share: expected share of negative pools (between 0 and 1); default is 0.5
       :type neg_share: float or None
@@ -1384,16 +1417,18 @@ Results interpretation with a Bayesian mixture model
       :type cores: int
       :return:
          1) model -- PyMC model object used for fitting  
-         2) fig -- posterior predictive KDE and observed data KDE (ArviZ)
+         2) ax -- posterior predictive KDE and observed data KDE (ArviZ)
          3) probs -- probability for each pool of being drawn from a distribution of activated or non-activated pools
          4) neg_control -- normalized control values used in model
          5) idata_alt -- full posterior sampling trace (InferenceData object)
          6) [p_mean, n_mean] -- posterior mean of the offset and baseline (negative) component
-      :rtype: model, figure, pandas DataFrame, list, arviz.InferenceData, list
+      :rtype: model, axes, pandas DataFrame, numpy array, arviz.InferenceData, list
+
+      ``neg_share`` is the prior expectation for the share of pools that should be non-activated. If one epitope is expected to activate ``iters + e - 1`` pools, where ``e`` is the modal number of peptides sharing the same epitope from :func:`cpp.how_many_peptides`, it can be estimated as ``(n_pools - iters - e + 1) / n_pools``. If this value is unknown, the model uses ``0.5`` by default.
 
       .. code-block:: python
 
-         >>> model, fig, probs, neg_control, trace, [p_mean, n_mean] = cpp.activation_model(obs, 12, inds)
+         >>> model, ax, probs, neg_control, trace, [p_mean, n_mean] = cpp.activation_model(obs, 12, inds)
 
       .. image:: model_fit.png
 
@@ -1438,14 +1473,14 @@ Results interpretation with a Bayesian mixture model
       :type sim: pandas DataFrame
       :param probs: DataFrame with probabilities produced by :func:`cpp.activation_model`
       :type probs: pandas DataFrame
-      :return: peptide_probs -- probabilitity for each peptide to cause such a pattern of activation
+      :return: peptide_probs -- probability for each peptide to cause such a pattern of activation
       :rtype: pandas DataFrame
 
       .. code-block:: python
 
          >>> peptide_probs = cpp.peptide_probabilities(sim, probs)
 
-.. function:: cpp.results_analysis(peptide_probs, probs, sim) -> list, list, list
+.. function:: cpp.results_analysis(peptide_probs, probs, sim) -> int, str, list, list
 
       :param peptide_probs: DataFrame with probabilities for each peptide produced by :func:`cpp.peptide_probabilities`
       :type peptide_probs: pandas DataFrame
@@ -1458,11 +1493,11 @@ Results interpretation with a Bayesian mixture model
          2) note about detected drop-outs (erroneously non-activated pools);
          3) list of the most possible peptides;
          4) list of all possible peptides given this pattern of pools activation.
-      :rtype: int, list, list, list
+      :rtype: int, str, list, list
 
       .. code-block:: python
 
-         >>> n_act_pools, note, most, possible = cpp.peptide_probabilities(sim, probs)
+         >>> n_act_pools, note, most, possible = cpp.results_analysis(peptide_probs, probs, sim)
          >>> n_act_pools
          5
          >>> note
@@ -1477,7 +1512,7 @@ In silico data generation
 
 .. function:: cpp.random_amino_acid_sequence(length) -> str
 
-      :param length: length of the random amino acid sequence from which peptides would be generated, calculate how long it should be for your number of peptides
+      :param length: length of the random amino acid sequence to generate
       :type length: int
       :return: generated amino acid sequence of determined length
       :rtype: str
@@ -1492,37 +1527,37 @@ In silico data generation
 
       .. note:: Generation might take several minutes.
 
-      :param mu_off: mu of the Truncated Normal distribution for the offset.
+      :param mu_off: mean of the Truncated Normal distribution for the positive-signal offset.
       :type mu_off: float, from 0 to 100
 
-      :param sigma_off: sigma of the Truncated Normal distribution for the offset.
+      :param sigma_off: standard deviation of the Truncated Normal distribution for the positive-signal offset.
       :type sigma_off: float, from 0 to 100
 
-      :param mu_n: mu of the Truncated Normal distribution for the negative (non-activated) signal source.
+      :param mu_n: mean of the Truncated Normal distribution for the negative (non-activated) signal source.
       :type mu_n: float, from 0 to 100
 
-      :param sigma_n: sigma of the Truncated Normal distribution for the negative signal source.
+      :param sigma_n: standard deviation of the Truncated Normal distribution for the negative signal source.
       :type sigma_n: float, from 0 to 100
 
-      :param r: number of replicas for each pool
+      :param r: number of replicates for each pool
       :type r: int
 
-      :param sigma_p_r: sigma of measurement error for positive and low-positive pools (replicate variability)
+      :param sigma_p_r: standard deviation of replicate variability for positive-distribution measurements
       :type sigma_p_r: float, from 0 to 100
 
-      :param sigma_n_r: sigma of measurement error for negative pools (replicate variability)
+      :param sigma_n_r: standard deviation of replicate variability for negative-distribution measurements
       :type sigma_n_r: float, from 0 to 100
 
-      :param n_pools: total number of pools in the experiment
+      :param n_pools: number of pools
       :type n_pools: int
 
-      :param p_shape: number of strongly activated pools
+      :param p_shape: number of activated pools in simulation
       :type p_shape: int
 
-      :param pl_shape: number of low-activated (weak signal) pools
+      :param pl_shape: number of slightly activated pools in simulation corresponding to context-dependent activation
       :type pl_shape: int
 
-      :param low_offset: scalar between 0 and 1 to reduce signal intensity for low-activated pools
+      :param low_offset: degree to which activation is decreased in pools from pl_shape
       :type low_offset: float
 
       :param cores: number of CPU cores to use for MCMC sampling
@@ -1555,18 +1590,20 @@ In silico data generation
 Plotting results
 ----------------
 
-.. function:: cpp.poolplot(probs, cells, inds, most) -> fig
+.. function:: cpp.poolplot(probs, cells, inds, most, ax=None) -> matplotlib axes
 
-      :param df: table with pool probabilities generated by :func:`cpp.activation_model`
-      :type df: pandas DataFrame
+      :param probs: table with pool probabilities generated by :func:`cpp.activation_model`
+      :type probs: pandas DataFrame
       :param cells: list with observed values
       :type cells: list
       :param inds: list with indices for observed values
       :type inds: list
-      :param most: list with most possible peptides generated by :func:`cpp.run_analysis`
+      :param most: list with most possible peptides generated by :func:`cpp.results_analysis`
       :type most: list
-      :return: bubbleplot
-      :rtype: fig
+      :param ax: optional matplotlib axes to plot on
+      :type ax: matplotlib axes or None
+      :return: matplotlib axes with the scatterplot
+      :rtype: matplotlib axes
 
       .. code-block:: python
       
@@ -1574,27 +1611,33 @@ Plotting results
       
       .. image:: pool_plot.png
 
-.. function:: cpp.bubbleplot(df) -> fig
+.. function:: cpp.bubbleplot(df, peptide_shift=5, ax=None) -> matplotlib axes
 
       :param df: table with peptide probabilities generated by :func:`cpp.peptide_probabilities`
       :type df: pandas DataFrame
-      :return: bubbleplot
-      :rtype: fig
+      :param peptide_shift: shift between generated peptides, used to scale peptide position on X axis
+      :type peptide_shift: int
+      :param ax: optional matplotlib axes to plot on
+      :type ax: matplotlib axes or None
+      :return: matplotlib axes with the bubbleplot
+      :rtype: matplotlib axes
 
       .. code-block:: python
 
-         >>> cpp.bubbleplot(peptide_probs)
+         >>> cpp.bubbleplot(peptide_probs, peptide_shift=5)
       
       .. image:: bubble_plot.png
 
-.. function:: cpp.hover_bubbleplot(df) -> interactive fig
+.. function:: cpp.hover_bubbleplot(df, peptide_shift=5) -> plotly Figure
 
       :param df: table with peptide probabilities generated by :func:`cpp.peptide_probabilities`
       :type df: pandas DataFrame
-      :return: bubbleplot
-      :rtype: fig
+      :param peptide_shift: shift between generated peptides, used to scale peptide position on X axis
+      :type peptide_shift: int
+      :return: interactive bubbleplot
+      :rtype: plotly Figure
 
       .. code-block:: python
 
-         >>> fig = cpp.hover_bubbleplot(peptide_probs)
+         >>> fig = cpp.hover_bubbleplot(peptide_probs, peptide_shift=5)
          >>> fig.show()

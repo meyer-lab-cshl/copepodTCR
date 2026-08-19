@@ -8,13 +8,13 @@ CopepodTCR
 
 .. image:: ./logo.svg
 
-CopepodTCR (COmbinatorial PEptide POoling Design for TCR specificity) is a Python tool developed for providing peptide pooling schemes for T cell specificity assays. You can access the tool via Python, the command line, or a web application.
+CopepodTCR (COmbinatorial PEptide POoling Design for TCR specificity) is a Python package for designing combinatorial peptide-pooling schemes for T cell specificity assays. The tool can be used from Python and through the web application.
 
 For insight into the method and algorithm, see the **Introduction** page.
 
 For installation guidance, visit the **Installation** page.
 
-Begin with the package by exploring the **Quickstart** section on the **Usage** page. For a deeper understanding, we advise the **More detailed quickstart** section. The Usage page also lists the function reference.
+Start with the **Quickstart** section on the **Usage** page. For a more detailed workflow, see **More detailed quickstart**. The Usage page also contains the function reference.
 
 CopepodTCR was developed at CSHL.
 

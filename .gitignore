@@ -1,0 +1,24 @@
+## OS cruft
+functions/.DS_Store
+.DS_Store
+
+## Python caches
+functions/__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+## Build artifacts
+dist/
+
+## Jupyter checkpoints
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+
+## Data
+data/**
+
+## IDE
+.idea/
+.aiassistant/

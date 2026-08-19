@@ -59,7 +59,7 @@ But if they were not, here is the list of requirements:
 ```python
     pip install "pandas>=1.5.3"
     pip install "numpy>=1.23.5"
-    pip install "trimesh>=3.23.5"
+    pip install "trimesh>=4.7.1"
     pip install "pymc>=5.9.2"
     pip install "arviz>=0.16.1"
     pip install "matplotlib>=3.10.5"

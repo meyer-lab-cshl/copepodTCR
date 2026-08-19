@@ -3,82 +3,86 @@ Installation
 
 1. Install copepodTCR.
 
-	With pip:
+   With pip:
 
-	.. code-block:: python
+   .. code-block:: python
 
-		pip install copepodTCR
+      pip install copepodTCR
 
-	Or with conda:
+   Or with conda:
 
-	.. code-block:: python
+   .. code-block:: python
 
-		conda install -c vasilisa.kovaleva copepodTCR
+      conda install -c vasilisa.kovaleva copepodTCR
 
-2. Instal dependencies for 3D modeling of masks. You can skip this step, if you don't plan to use function from **3D model** section.
-	
-	After installing copepodTCR either way, install manifold3d:
+2. Install dependencies for 3D mask modeling. You can skip this step if you do not plan to use functions from the **3D models** section.
 
-	.. code-block:: python
+   After installing copepodTCR either way, install manifold3d:
 
-		pip install manifold3d
+   .. code-block:: python
 
-	Alternative to manifold3d is Blender, it can be installed from `Blender official website <https://www.blender.org/>`_ (version 4.5 and higher).
+      pip install manifold3d
 
-	You can use :func:`cpp.pick_engine()` to check with engines are available in you environment.
+   Blender is an alternative to manifold3d. It can be installed from the `Blender official website <https://www.blender.org/>`_ (version 4.5 or higher).
+
+   Use :func:`cpp.pick_engine()` to check which boolean-operation engines are available in your environment.
 
 
 Requirements
 ------------
 
-Except for manifold3d, required packages should be installed simulataneously with the copepodTCR packages.
-
-But if they were not, here is the list of requirements:
+Except for manifold3d, the required packages should be installed automatically with copepodTCR. If they are missing, install them manually.
 
 * pandas>=1.5.3
 
-	.. code-block:: python
+  .. code-block:: python
 
-		pip install "pandas>=1.5.3"
+     pip install "pandas>=1.5.3"
 
 * numpy>=1.23.5
 
-	.. code-block:: python
+  .. code-block:: python
 
-		pip install "numpy>=1.23.5"
+     pip install "numpy>=1.23.5"
 
-* trimesh>=3.23.5
+* codepub>=2.3
 
-	.. code-block:: python
+  .. code-block:: python
 
-		pip install "trimesh>=3.23.5"
+     pip install "codepub>=2.3"
+
+* trimesh>=4.7.1
+
+  .. code-block:: python
+
+     pip install "trimesh>=4.7.1"
 
 * PyMC>=5.9.2
 
-	.. code-block:: python
+  .. code-block:: python
 
-		pip install "pymc>=5.9.2"
+     pip install "pymc>=5.9.2"
 
 * Arviz>=0.16.1
 
-	.. code-block:: python
+  .. code-block:: python
 
-		pip install "arviz>=0.16.1"
+     pip install "arviz>=0.16.1"
 
 * matplotlib>=3.10.5
 
-	.. code-block:: python
+  .. code-block:: python
 
-		pip install "matplotlib>=3.10.5"
+     pip install "matplotlib>=3.10.5"
 
 * seaborn>=0.13.2
 
-	.. code-block:: python
+  .. code-block:: python
 
-		pip install "seaborn>=0.13.2"
+     pip install "seaborn>=0.13.2"
 
 * plotly>=6.2.0
 
-	.. code-block:: python
+  .. code-block:: python
 
-		pip install "plotly>=6.2.0"
+     pip install "plotly>=6.2.0"
